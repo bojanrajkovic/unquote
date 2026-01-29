@@ -1,0 +1,15 @@
+{
+  "enabledPlugins": {
+    "serena@claude-plugins-official": true,
+    "ed3d-research-agents@ed3d-plugins": true,
+    "ed3d-hook-skill-reinforcement@ed3d-plugins": true,
+    "ed3d-extending-claude@ed3d-plugins": true,
+    "ed3d-basic-agents@ed3d-plugins": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "ed3d-plan-and-execute@ed3d-plugins": true,
+    "ed3d-house-style@ed3d-plugins": true,
+    "ed3d-hook-claudemd-reminder@ed3d-plugins": true
+  }
+}

@@ -1,0 +1,20 @@
+version: '3'
+
+tasks:
+  build:
+    desc: Build all projects
+    deps:
+      - build:api
+      - build:tui
+
+  build:api:
+    desc: Build the Node.js API project
+    dir: api
+    cmds:
+      - pnpm run build
+
+  build:tui:
+    desc: Build the Go TUI project
+    dir: tui
+    cmds:
+      - go build -o bin/tui .
