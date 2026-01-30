@@ -1,0 +1,36 @@
+{
+  "name": "@unquote/game-generator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint .",
+    "format": "oxfmt ."
+  },
+  "dependencies": {
+    "@sinclair/typebox": "catalog:prod",
+    "luxon": "catalog:prod"
+  },
+  "devDependencies": {
+    "@tsconfig/node24": "catalog:build",
+    "@tsconfig/strictest": "catalog:build",
+    "@types/luxon": "catalog:build",
+    "@types/node": "catalog:build",
+    "fast-check": "catalog:testing",
+    "nanoid": "catalog:testing",
+    "oxfmt": "catalog:lint",
+    "oxlint": "catalog:lint",
+    "typescript": "catalog:build",
+    "vitest": "catalog:testing"
+  }
+}

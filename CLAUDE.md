@@ -1,6 +1,6 @@
 # Unquote
 
-Last verified: 2026-01-28
+Last verified: 2026-01-30
 
 A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encrypted quotes by substituting letters.
 
@@ -29,6 +29,7 @@ A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encry
 
 - `api/` - REST API (pnpm monorepo with `packages/`)
   - `packages/api/` - Main API server
+  - `packages/game-generator/` - Puzzle generation library
 - `tui/` - Terminal UI client (Go module)
 
 ## API Architecture
@@ -67,7 +68,8 @@ Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 ### Scopes
 
-- `api` - API changes
+- `api` - API server changes
+- `game-generator` - Puzzle generation library changes
 - `tui` - TUI changes
 
 ### Guidelines

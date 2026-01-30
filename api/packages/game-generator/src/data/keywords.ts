@@ -1,0 +1,36 @@
+/**
+ * Wordlist for keyword cipher generation.
+ * Each word should be at least 4 characters with unique letters preferred.
+ */
+export const KEYWORDS: readonly string[] = [
+  "PUZZLE",
+  "CIPHER",
+  "WISDOM",
+  "SPHINX",
+  "QUARTZ",
+  "GALAXY",
+  "BRONZE",
+  "MYSTIC",
+  "FALCON",
+  "VORTEX",
+  "KNIGHT",
+  "PRISM",
+  "WALTZ",
+  "FJORD",
+  "NYMPH",
+  "GLYPH",
+  "ZEBRA",
+  "JUMBO",
+  "QUICK",
+  "BLAZE",
+  "CROWN",
+  "DRIFT",
+  "FLAME",
+  "GHOST",
+  "HAVEN",
+  "IVORY",
+  "JOKER",
+  "KARMA",
+  "LEMON",
+  "MANGO",
+];

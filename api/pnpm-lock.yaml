@@ -12,6 +12,9 @@ catalogs:
     '@tsconfig/strictest':
       specifier: ^2.0.0
       version: 2.0.8
+    '@types/luxon':
+      specifier: ^3.4.0
+      version: 3.7.1
     '@types/node':
       specifier: ^20.0.0
       version: 20.19.30
@@ -56,10 +59,19 @@ catalogs:
     fastify:
       specifier: ^5.2.0
       version: 5.7.2
+    luxon:
+      specifier: ^3.5.0
+      version: 3.7.2
   testing:
     '@vitest/coverage-v8':
       specifier: ^3.0.0
       version: 3.2.4
+    fast-check:
+      specifier: ^3.0.0
+      version: 3.23.2
+    nanoid:
+      specifier: ^5.1.6
+      version: 5.1.6
     vitest:
       specifier: ^3.0.0
       version: 3.2.4
@@ -129,6 +141,46 @@ importers:
       tsx:
         specifier: catalog:build
         version: 4.21.0
+      typescript:
+        specifier: catalog:build
+        version: 5.9.3
+      vitest:
+        specifier: catalog:testing
+        version: 3.2.4(@types/node@20.19.30)(tsx@4.21.0)(yaml@2.8.2)
+
+  packages/game-generator:
+    dependencies:
+      '@sinclair/typebox':
+        specifier: catalog:prod
+        version: 0.34.48
+      luxon:
+        specifier: catalog:prod
+        version: 3.7.2
+    devDependencies:
+      '@tsconfig/node24':
+        specifier: catalog:build
+        version: 24.0.4
+      '@tsconfig/strictest':
+        specifier: catalog:build
+        version: 2.0.8
+      '@types/luxon':
+        specifier: catalog:build
+        version: 3.7.1
+      '@types/node':
+        specifier: catalog:build
+        version: 20.19.30
+      fast-check:
+        specifier: catalog:testing
+        version: 3.23.2
+      nanoid:
+        specifier: catalog:testing
+        version: 5.1.6
+      oxfmt:
+        specifier: catalog:lint
+        version: 0.27.0
+      oxlint:
+        specifier: catalog:lint
+        version: 1.42.0
       typescript:
         specifier: catalog:build
         version: 5.9.3
@@ -699,6 +751,9 @@ packages:
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
+  '@types/luxon@3.7.1':
+    resolution: {integrity: sha512-H3iskjFIAn5SlJU7OuxUmTEpebK6TKB8rxZShDslBMZJ5u9S//KM1sbdAisiSrqwLQncVjnpi2OK2J51h+4lsg==}
+
   '@types/node@20.19.30':
     resolution: {integrity: sha512-WJtwWJu7UdlvzEAUm484QNg5eAoq5QR08KDNx7g45Usrs2NtOPiX8ugDqmKdXkyL03rBqU5dYNYVQetEpBHq2g==}
 
@@ -903,6 +958,10 @@ packages:
     resolution: {integrity: sha512-knvyeauYhqjOYvQ66MznSMs83wmHrCycNEN6Ao+2AeYEfxUIkuiVxdEa1qlGEPK+We3n0THiDciYSsCcgW/DoA==}
     engines: {node: '>=12.0.0'}
 
+  fast-check@3.23.2:
+    resolution: {integrity: sha512-h5+1OzzfCC3Ef7VbtKdcv7zsstUQwUDlYpUTvjeUsJAssPgLn7QzbboPtL5ro04Mq0rPOsMzl7q5hIbRs2wD1A==}
+    engines: {node: '>=8.0.0'}
+
   fast-decode-uri-component@1.0.1:
     resolution: {integrity: sha512-WKgKWg5eUxvRZGwW8FvfbaH7AXSh2cL+3j5fMGzUMCxWBJ3dV3a7Wz8y2f/uQ0e3B6WmodD3oS54jTQ9HVTIIg==}
 
@@ -1053,6 +1112,10 @@ packages:
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
 
+  luxon@3.7.2:
+    resolution: {integrity: sha512-vtEhXh/gNjI9Yg1u4jX/0YVPMvxzHuGgCm6tC5kZyb08yjGWGnqAjGJvcXbqQR2P3MyMEFnRbpcdFS6PBcLqew==}
+    engines: {node: '>=12'}
+
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
@@ -1187,6 +1250,9 @@ packages:
 
   process-warning@5.0.0:
     resolution: {integrity: sha512-a39t9ApHNx2L4+HBnQKqxxHNs1r7KF+Intd8Q/g1bUh6q0WIp9voPXJ/x0j+ZL45KF1pJd9+q2jLIRMfvEshkA==}
+
+  pure-rand@6.1.0:
+    resolution: {integrity: sha512-bVWawvoZoBYpp6yIoQtQXHZjmz35RSVHnUOTefl8Vcjr8snTPY1wnpSPMWekcFwbxI6gtmT7rSYPFvz71ldiOA==}
 
   quick-format-unescaped@4.0.4:
     resolution: {integrity: sha512-tYC1Q1hgyRuHgloV/YXs2w15unPVh8qfu/qCTfhTYamaw7fyhumKa2yGpdSo87vY32rIclj+4fWYQXUMs9EHvg==}
@@ -1917,6 +1983,8 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
+  '@types/luxon@3.7.1': {}
+
   '@types/node@20.19.30':
     dependencies:
       undici-types: 6.21.0
@@ -2156,6 +2224,10 @@ snapshots:
 
   expect-type@1.3.0: {}
 
+  fast-check@3.23.2:
+    dependencies:
+      pure-rand: 6.1.0
+
   fast-decode-uri-component@1.0.1: {}
 
   fast-deep-equal@3.1.3: {}
@@ -2322,6 +2394,8 @@ snapshots:
 
   lru-cache@10.4.3: {}
 
+  luxon@3.7.2: {}
+
   magic-string@0.30.21:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
@@ -2466,6 +2540,8 @@ snapshots:
   process-warning@4.0.1: {}
 
   process-warning@5.0.0: {}
+
+  pure-rand@6.1.0: {}
 
   quick-format-unescaped@4.0.4: {}
 
