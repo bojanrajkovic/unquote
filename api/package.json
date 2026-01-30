@@ -1,0 +1,24 @@
+{
+  "name": "@unquote/workspace",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.2",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "build": "pnpm -r run build",
+    "lint": "oxlint --config .oxlintrc.json packages/",
+    "format": "oxfmt --config .oxfmtrc.json packages/",
+    "format:check": "oxfmt --config .oxfmtrc.json --check packages/",
+    "test": "pnpm -r run test",
+    "typecheck": "pnpm -r run typecheck"
+  },
+  "devDependencies": {
+    "@tsconfig/node24": "catalog:build",
+    "@tsconfig/strictest": "catalog:build",
+    "oxfmt": "catalog:lint",
+    "oxlint": "catalog:lint",
+    "typescript": "catalog:build"
+  }
+}

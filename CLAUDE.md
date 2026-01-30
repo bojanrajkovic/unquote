@@ -6,23 +6,39 @@ A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encry
 
 ## Tech Stack
 
-- **API**: Node.js (pnpm)
-- **TUI**: Go
+- **API**: Node.js 24+ / Fastify 5 / TypeScript (pnpm 10 monorepo)
+- **TUI**: Go 1.25.6
 - **Task runner**: Task (via mise)
 - **Version management**: mise
 
 ## Commands
 
+### Build
 - `task build` - Build all projects
 - `task build:api` - Build the API
 - `task build:tui` - Build the TUI
 
+### API Development (run from `api/`)
+- `pnpm run build` - Build all packages
+- `pnpm run test` - Run tests (vitest)
+- `pnpm run lint` - Lint with oxlint
+- `pnpm run format` - Format with oxfmt
+- `pnpm run typecheck` - TypeScript type checking
+
 ## Project Structure
 
-- `api/` - REST API serving game data and answer validation
-- `tui/` - Terminal UI client for playing the game
+- `api/` - REST API (pnpm monorepo with `packages/`)
+  - `packages/api/` - Main API server
+- `tui/` - Terminal UI client (Go module)
 
-## API Endpoints (Planned)
+## API Architecture
+
+- **Framework**: Fastify with TypeBox type provider
+- **Documentation**: OpenAPI 3 via `@eropple/fastify-openapi3`
+- **Security**: helmet, cors, rate limiting (100 req/min), under-pressure
+- **Port**: 3000
+
+### Endpoints (Planned)
 
 - `GET /game/today` - Retrieve the cryptoquip of the day
 - `POST /game/check` - Validate a solution attempt

@@ -4,6 +4,13 @@
 
 # Node
 node_modules/
+dist/
+
+# MCP plugins
+.serena/cache/
+
+# Implementation plans (working docs)
+docs/implementation-plans/
 
 # Go
 bin/

@@ -17,4 +17,4 @@ tasks:
     desc: Build the Go TUI project
     dir: tui
     cmds:
-      - go build -o bin/tui .
+      - go build -o bin/unquote .
