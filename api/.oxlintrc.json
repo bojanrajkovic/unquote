@@ -16,6 +16,7 @@
         "typescript/no-non-null-assertion": "error",
         "typescript/array-type": ["error", { "default": "array" }],
         "import/no-cycle": "error",
+        "import/no-unassigned-import": "off",
         "curly": "error",
         "unicorn/numeric-separators-style": "warn"
     },

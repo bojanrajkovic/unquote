@@ -18,7 +18,7 @@
     "format": "oxfmt ."
   },
   "dependencies": {
-    "@sinclair/typebox": "catalog:prod",
+    "typebox": "catalog:prod",
     "luxon": "catalog:prod"
   },
   "devDependencies": {

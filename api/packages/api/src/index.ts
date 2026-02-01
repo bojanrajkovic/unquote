@@ -1,6 +1,8 @@
 // eslint-disable-next-line import/consistent-type-specifier-style
 import Fastify, { type FastifyInstance } from "fastify";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
+import type { Logger } from "pino";
+import fastifyEnv from "@fastify/env";
 import cors from "@fastify/cors";
 import fastifyOpenapi3 from "@eropple/fastify-openapi3";
 import helmet from "@fastify/helmet";
@@ -8,12 +10,27 @@ import rateLimit from "@fastify/rate-limit";
 import sensible from "@fastify/sensible";
 import underPressure from "@fastify/under-pressure";
 
+import { EnvSchema } from "./config/index.js";
+import { configureContainer, registerDependencyInjection } from "./deps/index.js";
+
+// Import type extensions for side effects
+import "./config/type-extensions.js";
+import "./deps/type-extensions.js";
+
 // eslint-disable-next-line max-lines-per-function
 const buildServer = async (): Promise<FastifyInstance> => {
   // eslint-disable-next-line new-cap
   const fastify = Fastify({
-    logger: true,
+    logger: {
+      level: process.env["LOG_LEVEL"] ?? "info",
+    },
   }).withTypeProvider<TypeBoxTypeProvider>();
+
+  // Register environment configuration first (validates and populates fastify.config)
+  await fastify.register(fastifyEnv, {
+    schema: EnvSchema,
+    dotenv: process.env["NODE_ENV"] !== "production",
+  });
 
   await fastify.register(helmet, {
     contentSecurityPolicy: false,
@@ -31,6 +48,10 @@ const buildServer = async (): Promise<FastifyInstance> => {
   });
 
   await fastify.register(sensible);
+
+  // Configure and register DI container
+  const container = configureContainer(fastify.config, fastify.log as Logger);
+  await fastify.register(registerDependencyInjection, { container });
 
   await fastify.register(rateLimit, {
     global: true,
@@ -54,7 +75,10 @@ const start = async (): Promise<void> => {
 
   // eslint-disable-next-line max-depth
   try {
-    await server.listen({ host: "0.0.0.0", port: 3000 });
+    await server.listen({
+      host: server.config.HOST,
+      port: server.config.PORT,
+    });
   } catch (error) {
     server.log.error(error);
     // eslint-disable-next-line no-process-exit, no-magic-numbers

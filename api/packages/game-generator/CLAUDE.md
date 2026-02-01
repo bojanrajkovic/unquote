@@ -1,6 +1,6 @@
 # Game Generator
 
-Last verified: 2026-01-30
+Last verified: 2026-01-31
 
 ## Purpose
 
@@ -15,14 +15,14 @@ Transforms quotes into cryptoquip puzzles with deterministic daily generation. E
 ## Dependencies
 
 - **Uses**: Luxon (DateTime), TypeBox (schema validation), fast-check (property testing)
-- **Used by**: API package (planned)
+- **Used by**: API package (via DI container as `quoteSource` and `gameGenerator` singletons)
 - **Boundary**: Pure library with no I/O dependencies; quote data loaded via QuoteSource abstraction
 
 ## Key Decisions
 
 - Keyword cipher algorithm: Uses memorable keywords to generate substitution, making puzzles feel crafted rather than random
 - Seeded randomness: All randomness accepts optional seed for reproducibility in tests and daily puzzles
-- TypeBox schemas: Use `@sinclair/typebox` for validation (not manual typeof checks)
+- TypeBox schemas: Use `typebox` for validation (not manual typeof checks)
 - nanoid-style IDs: Quote IDs are random strings (e.g., `tbwFfLG0D3I3UEhgU_qSr`), not sequential numbers
 
 ## Invariants

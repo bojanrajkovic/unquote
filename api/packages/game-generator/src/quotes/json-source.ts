@@ -1,7 +1,7 @@
 import { readFile, access } from "node:fs/promises";
 import { constants } from "node:fs";
-import { TypeCompiler } from "@sinclair/typebox/compiler";
-import { Type } from "@sinclair/typebox";
+import { Compile } from "typebox/compile";
+import { Type } from "typebox";
 import type { Quote } from "../types.js";
 import type { QuoteSource } from "./types.js";
 import { hashString, createSeededRng, selectFromArray } from "../random.js";
@@ -9,7 +9,7 @@ import { QuoteSchema } from "../schemas.js";
 
 // Compile the schema for efficient validation at runtime
 const QuoteArraySchema = Type.Array(QuoteSchema);
-const validateQuotes = TypeCompiler.Compile(QuoteArraySchema);
+const validateQuotes = Compile(QuoteArraySchema);
 
 /**
  * Loads quotes from a JSON file.
@@ -48,7 +48,7 @@ export class JsonQuoteSource implements QuoteSource {
 
     if (!validateQuotes.Check(parsed)) {
       const errors = Array.from(validateQuotes.Errors(parsed));
-      const errorMessages = errors.map((e) => `${e.path}: ${e.message}`).join("; ");
+      const errorMessages = errors.map((e) => `${e.instancePath || "root"}: ${e.message}`).join("; ");
       throw new Error(
         `Invalid quotes format in ${this.filePath}: ${errorMessages || "expected array of Quote objects with id, text, author, category, and difficulty fields"}`,
       );

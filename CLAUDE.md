@@ -1,6 +1,6 @@
 # Unquote
 
-Last verified: 2026-01-30
+Last verified: 2026-01-31
 
 A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encrypted quotes by substituting letters.
 
@@ -37,7 +37,25 @@ A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encry
 - **Framework**: Fastify with TypeBox type provider
 - **Documentation**: OpenAPI 3 via `@eropple/fastify-openapi3`
 - **Security**: helmet, cors, rate limiting (100 req/min), under-pressure
-- **Port**: 3000
+- **Configuration**: `@fastify/env` with TypeBox schema validation (fail-fast on missing required vars)
+- **DI**: Awilix with singleton + request scopes (see `src/deps/CLAUDE.md`)
+- **Observability**: OpenTelemetry auto-instrumentation (traces, Pino log correlation)
+- **Port**: 3000 (default, configurable via PORT env var)
+
+### Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `PORT` | No | 3000 | Server port |
+| `HOST` | No | 0.0.0.0 | Server host |
+| `LOG_LEVEL` | No | info | Pino log level |
+| `QUOTES_FILE_PATH` | Yes | - | Path to quotes JSON file |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | No | - | OpenTelemetry collector endpoint |
+
+### Testing
+
+- **Test containers**: Use `createTestContainer()` from `tests/helpers/` with mock defaults
+- **Override pattern**: Pass partial options to replace specific dependencies
 
 ### Endpoints (Planned)
 
