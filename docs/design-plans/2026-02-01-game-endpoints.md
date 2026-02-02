@@ -237,8 +237,45 @@ const CheckResponseSchema = Type.Object({
 
 ## Additional Considerations
 
-**Future extensibility:** When user accounts are added, the simple `encodeGameId`/`decodeGameId` functions can be absorbed into a `GameService` that handles user-specific game sessions. The API contract (opaque game ID string) remains stable — only internal implementation changes.
+### Session Model Evolution
 
-**Rate limiting:** Global rate limit (100 req/min) already configured. Per-user per-puzzle limits deferred until user accounts exist.
+When user accounts are added, game sessions will be looked up by `(date, userId)` tuple rather than encoding userId into the game ID. This keeps the game ID format stable (always just encoded date) while allowing user-specific state.
 
-**Hint casing:** API normalizes hints to uppercase for consistency. The game-generator produces mixed case (uppercase cipher, lowercase plain) which the API transforms before response.
+**Current (anonymous):**
+- GET returns puzzle with ID = encoded date
+- POST validates solution, returns correct/incorrect
+- No state stored
+
+**Future (authenticated):**
+- GET returns puzzle with ID = encoded date (unchanged)
+- Server creates/fetches session by `(decode(id) → date, currentUser)`
+- POST validates, records attempt to session, returns result
+- GameService handles session lifecycle internally
+
+The API contract stays identical. The game ID remains a puzzle identifier, not a session identifier.
+
+### Route Registration Order
+
+Register `/game/today` before `/game/:date` to prevent "today" from being captured as a date parameter. Fastify matches routes in registration order.
+
+### Timezone Handling
+
+`GET /game/today` uses UTC to determine the current date. The `date` field in the response clarifies which day's puzzle was returned, allowing clients to display appropriately for the user's timezone.
+
+When user accounts exist, we can derive "today" from user's timezone preference without API changes.
+
+### Quote Selection Stability
+
+**Known limitation:** The current `selectFromArray` implementation uses `rng() * array.length` for selection. Adding or removing quotes changes the array length, which changes which quote is selected for every date.
+
+**Fix (game-generator change, separate from this design):** Use rendezvous hashing instead of index-based selection. Score each quote as `hash(seed + quoteId)` and select the highest scorer. This makes selection stable: adding a quote only affects ~1/n of dates (where n = quote count).
+
+This is outside the scope of the API endpoints design but should be addressed before quote database changes are common.
+
+### Rate Limiting
+
+Global rate limit (100 req/min) already configured. Per-user per-puzzle limits deferred until user accounts exist.
+
+### Hint Casing
+
+API normalizes hints to uppercase for consistency. The game-generator produces mixed case (uppercase cipher, lowercase plain) which the API transforms before response.
