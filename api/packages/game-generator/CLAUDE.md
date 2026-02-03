@@ -1,6 +1,6 @@
 # Game Generator
 
-Last verified: 2026-01-31
+Last verified: 2026-02-03
 
 ## Purpose
 
@@ -17,6 +17,10 @@ Transforms quotes into cryptoquip puzzles with deterministic daily generation. E
 - **Uses**: Luxon (DateTime), TypeBox (schema validation), fast-check (property testing)
 - **Used by**: API package (via DI container as `quoteSource` and `gameGenerator` singletons)
 - **Boundary**: Pure library with no I/O dependencies; quote data loaded via QuoteSource abstraction
+
+## Shared Resources
+
+Test and development quote data lives in `api/resources/quotes.json` (shared across packages), not within this package's source tree. The `JsonQuoteSource` accepts any file path; callers provide the location.
 
 ## Key Decisions
 

@@ -8,7 +8,7 @@ import { JsonQuoteSource } from "./json-source.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const quotesPath = join(__dirname, "../data/quotes.json");
+const quotesPath = join(__dirname, "../../../../resources/quotes.json");
 
 describe("JsonQuoteSource", () => {
   let source: JsonQuoteSource;

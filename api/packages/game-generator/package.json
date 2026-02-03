@@ -10,7 +10,7 @@
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "rimraf dist && tsc",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
@@ -30,6 +30,7 @@
     "nanoid": "catalog:testing",
     "oxfmt": "catalog:lint",
     "oxlint": "catalog:lint",
+    "rimraf": "catalog:build",
     "typescript": "catalog:build",
     "vitest": "catalog:testing"
   }

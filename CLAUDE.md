@@ -1,6 +1,6 @@
 # Unquote
 
-Last verified: 2026-01-31
+Last verified: 2026-02-03
 
 A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encrypted quotes by substituting letters.
 
@@ -57,10 +57,11 @@ A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encry
 - **Test containers**: Use `createTestContainer()` from `tests/helpers/` with mock defaults
 - **Override pattern**: Pass partial options to replace specific dependencies
 
-### Endpoints (Planned)
+### Endpoints
 
-- `GET /game/today` - Retrieve the cryptoquip of the day
-- `POST /game/check` - Validate a solution attempt
+- `GET /game/today` - Retrieve today's cryptoquip puzzle
+- `GET /game/:date` - Retrieve puzzle for a specific date (ISO format: YYYY-MM-DD)
+- `POST /game/:id/check` - Validate a solution attempt using opaque game ID
 
 ## Commit Messages
 

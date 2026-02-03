@@ -4,7 +4,7 @@ import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import type { Logger } from "pino";
 import fastifyEnv from "@fastify/env";
 import cors from "@fastify/cors";
-import fastifyOpenapi3 from "@eropple/fastify-openapi3";
+import fastifyOpenapi3, { oas3PluginAjv } from "@eropple/fastify-openapi3";
 import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
 import sensible from "@fastify/sensible";
@@ -12,6 +12,7 @@ import underPressure from "@fastify/under-pressure";
 
 import { EnvSchema } from "./config/index.js";
 import { configureContainer, registerDependencyInjection } from "./deps/index.js";
+import { registerGameRoutes } from "./domain/game/routes/index.js";
 
 // Import type extensions for side effects
 import "./config/type-extensions.js";
@@ -23,6 +24,9 @@ const buildServer = async (): Promise<FastifyInstance> => {
   const fastify = Fastify({
     logger: {
       level: process.env["LOG_LEVEL"] ?? "info",
+    },
+    ajv: {
+      plugins: [oas3PluginAjv],
     },
   }).withTypeProvider<TypeBoxTypeProvider>();
 
@@ -43,8 +47,6 @@ const buildServer = async (): Promise<FastifyInstance> => {
   await fastify.register(underPressure, {
     maxEventLoopDelay: 1000,
     maxEventLoopUtilization: 0.98,
-    maxHeapUsedBytes: 100_000_000,
-    maxRssBytes: 100_000_000,
   });
 
   await fastify.register(sensible);
@@ -59,12 +61,25 @@ const buildServer = async (): Promise<FastifyInstance> => {
     timeWindow: "1 minute",
   });
 
+  // Register OpenAPI plugin BEFORE routes so it can discover them
   await fastify.register(fastifyOpenapi3, {
     openapiInfo: {
       title: "Unquote API",
       version: "0.1.0",
     },
+    publish: {
+      ui: "scalar",
+      scalarExtraOptions: {
+        theme: "solarized",
+        url: "/openapi.json",
+      },
+      json: true,
+      yaml: true,
+    },
   });
+
+  // Register game routes with /game prefix
+  await fastify.register(registerGameRoutes, { prefix: "/game" });
 
   return fastify;
 };

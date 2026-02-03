@@ -10,7 +10,7 @@
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "rimraf dist && tsc",
     "dev": "tsx watch --import ./src/instrumentation.ts src/index.ts",
     "start": "node --import ./dist/instrumentation.js dist/index.js",
     "typecheck": "tsc --noEmit",
@@ -37,14 +37,19 @@
     "awilix": "catalog:prod",
     "fastify": "catalog:prod",
     "fastify-plugin": "catalog:prod",
+    "luxon": "catalog:prod",
     "pino": "catalog:prod",
+    "sqids": "catalog:prod",
     "typebox": "catalog:prod"
   },
   "devDependencies": {
     "@tsconfig/node24": "catalog:build",
     "@tsconfig/strictest": "catalog:build",
+    "@types/luxon": "catalog:build",
     "@types/node": "catalog:build",
     "@vitest/coverage-v8": "catalog:testing",
+    "fast-check": "catalog:testing",
+    "rimraf": "catalog:build",
     "tsx": "catalog:build",
     "typescript": "catalog:build",
     "vitest": "catalog:testing"

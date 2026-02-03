@@ -8,7 +8,7 @@ import type { Quote } from "../types.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const quotesPath = join(__dirname, "../data/quotes.json");
+const quotesPath = join(__dirname, "../../../../resources/quotes.json");
 
 describe("KeywordCipherGenerator", () => {
   let generator: KeywordCipherGenerator;
