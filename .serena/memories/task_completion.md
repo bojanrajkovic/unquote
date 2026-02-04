@@ -1,40 +1,46 @@
 # Task Completion Checklist
 
-When completing tasks, run these commands:
+## Before Committing Changes
 
-## Linting
+### API Changes (from `api/` directory)
+
+1. **Build**: `pnpm run build`
+2. **Test**: `pnpm run test`
+3. **Lint**: `pnpm run lint`
+4. **Format**: `pnpm run format`
+5. **Typecheck**: `pnpm run typecheck`
+
+### TUI Changes (from `tui/` directory)
+
+1. **Build**: `go build -o bin/unquote ./main.go`
+2. **Test**: `go test ./...`
+3. **Vet**: `go vet ./...`
+
+## Commit Format
+
 ```bash
-cd api && pnpm lint
+git commit -m "type(scope): description
+
+Optional body explaining WHAT and WHY.
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 ```
 
-## Type Checking
-```bash
-cd api && pnpm --filter @unquote/api typecheck
-```
+## After Major Changes
 
-## Testing
-```bash
-cd api && pnpm test
-```
+Consider updating CLAUDE.md files if:
+- New packages/modules added
+- API contracts changed
+- New invariants or guarantees
+- New anti-patterns discovered
 
-## Building
-```bash
-cd api && pnpm build
-```
+Update "Last verified" date when reviewing documentation accuracy.
 
-## Full Verification
-```bash
-cd api && pnpm install && pnpm build && pnpm lint && pnpm test
-```
+## Feature Branch Workflow
 
-## Git Commit Format
-Follow Conventional Commits:
-```
-<type>(<scope>): <description>
-
-- Item 1
-- Item 2
-```
-
-Types: feat, fix, docs, refactor, test, build, perf, ci, chore
-Scopes: api, tui
+1. Create worktree: `git worktree add ../.worktrees/<name> -b <branch>`
+2. Implement feature with tests
+3. Run all verification commands
+4. Commit with conventional commit message
+5. Merge or create PR
+6. Clean up: `git worktree remove ../.worktrees/<name>`
