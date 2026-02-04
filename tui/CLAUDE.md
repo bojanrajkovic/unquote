@@ -8,6 +8,7 @@ Terminal UI client for playing cryptoquip puzzles.
 
 - **Framework**: Bubble Tea (Elm architecture for Go)
 - **Styling**: Lip Gloss
+- **Mouse zones**: bubblezone (click detection)
 - **Language**: Go 1.25.6
 
 ## Commands
@@ -41,6 +42,7 @@ From `tui/` directory:
 - **States**: Loading -> Playing -> (Checking -> Playing | Solved) or Error
 - **Timer**: `Model.Elapsed()` returns total time; timer runs while Playing, pauses on Solved/Checking
 - **Persistence**: Session auto-restored on startup; auto-saved on input changes and solve
+- **Mouse**: Left-click on letter cells navigates cursor; non-letter cells ignore clicks
 - **Invariants**: Terminal size validated before rendering; minimum 40x10
 
 ### storage package

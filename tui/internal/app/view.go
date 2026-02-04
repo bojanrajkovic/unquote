@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
+	zone "github.com/lrstanley/bubblezone"
 
 	"github.com/bojanrajkovic/unquote/tui/internal/puzzle"
 	"github.com/bojanrajkovic/unquote/tui/internal/ui"
@@ -120,7 +121,7 @@ func (m Model) viewPlaying() string {
 	// Help bar based on state
 	help := m.renderHelp()
 
-	return lipgloss.JoinVertical(
+	view := lipgloss.JoinVertical(
 		lipgloss.Left,
 		header,
 		difficulty,
@@ -135,6 +136,9 @@ func (m Model) viewPlaying() string {
 		status,
 		help,
 	)
+
+	// Scan to process zone markers and calculate boundaries
+	return zone.Scan(view)
 }
 
 func (m Model) renderHeader() string {

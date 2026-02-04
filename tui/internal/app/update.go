@@ -1,11 +1,13 @@
 package app
 
 import (
+	"fmt"
 	"strings"
 	"time"
 	"unicode"
 
 	tea "github.com/charmbracelet/bubbletea"
+	zone "github.com/lrstanley/bubblezone"
 
 	"github.com/bojanrajkovic/unquote/tui/internal/puzzle"
 )
@@ -20,6 +22,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		return m.handleKeyMsg(msg)
+
+	case tea.MouseMsg:
+		return m.handleMouseMsg(msg)
 
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
@@ -77,6 +82,38 @@ func (m Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case StateSolved:
 		// No input when solved (just Esc to quit)
 		return m, nil
+	}
+
+	return m, nil
+}
+
+func (m Model) handleMouseMsg(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
+	// Only handle left click release (the "click" action)
+	if msg.Action != tea.MouseActionRelease || msg.Button != tea.MouseButtonLeft {
+		return m, nil
+	}
+
+	// Only handle clicks in playing state
+	if m.state != StatePlaying {
+		return m, nil
+	}
+
+	// Ignore clicks if terminal too small
+	if m.IsTooSmall() {
+		return m, nil
+	}
+
+	// Check each cell's zone for click
+	for _, cell := range m.cells {
+		if !cell.IsLetter {
+			continue
+		}
+
+		zoneID := fmt.Sprintf("cell-%d", cell.Index)
+		if zone.Get(zoneID).InBounds(msg) {
+			m.cursorPos = cell.Index
+			return m, nil
+		}
 	}
 
 	return m, nil

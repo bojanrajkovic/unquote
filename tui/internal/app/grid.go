@@ -1,10 +1,12 @@
 package app
 
 import (
+	"fmt"
 	"strings"
 	"unicode"
 
 	"github.com/charmbracelet/lipgloss"
+	zone "github.com/lrstanley/bubblezone"
 
 	"github.com/bojanrajkovic/unquote/tui/internal/puzzle"
 	"github.com/bojanrajkovic/unquote/tui/internal/ui"
@@ -43,18 +45,25 @@ func (m Model) renderGrid() string {
 
 // renderLine renders a single line with input row above cipher row
 func (m Model) renderLine(cells []puzzle.Cell, highlightChar rune) string {
-	var inputCells []string
-	var cipherCells []string
+	var columns []string
 
 	for _, cell := range cells {
-		inputCells = append(inputCells, m.renderInputCell(cell, highlightChar))
-		cipherCells = append(cipherCells, m.renderCipherCell(cell))
+		inputContent := m.renderInputCell(cell, highlightChar)
+		cipherContent := m.renderCipherCell(cell)
+
+		// Join input and cipher vertically to form a column
+		column := lipgloss.JoinVertical(lipgloss.Left, inputContent, cipherContent)
+
+		// Wrap letter cell columns with zone marker for click detection
+		// This creates a single zone spanning both rows
+		if cell.IsLetter {
+			column = zone.Mark(fmt.Sprintf("cell-%d", cell.Index), column)
+		}
+
+		columns = append(columns, column)
 	}
 
-	inputRow := lipgloss.JoinHorizontal(lipgloss.Top, inputCells...)
-	cipherRow := lipgloss.JoinHorizontal(lipgloss.Top, cipherCells...)
-
-	return lipgloss.JoinVertical(lipgloss.Left, inputRow, cipherRow)
+	return lipgloss.JoinHorizontal(lipgloss.Top, columns...)
 }
 
 // renderInputCell renders the user input cell (top row)
