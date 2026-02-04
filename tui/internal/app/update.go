@@ -193,8 +193,8 @@ func (m Model) handleLetterInput(letter rune) (tea.Model, tea.Cmd) {
 
 	// Set the input
 	if puzzle.SetInput(m.cells, m.cursorPos, letter) {
-		// Auto-advance to next letter cell
-		nextPos := puzzle.NextLetterCell(m.cells, m.cursorPos)
+		// Auto-advance to next unfilled letter cell
+		nextPos := puzzle.NextUnfilledLetterCell(m.cells, m.cursorPos)
 		if nextPos >= 0 {
 			m.cursorPos = nextPos
 		}

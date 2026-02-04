@@ -37,6 +37,17 @@ func NextLetterCell(cells []Cell, currentPos int) int {
 	return -1
 }
 
+// NextUnfilledLetterCell finds the next editable cell that has no input yet
+// Returns -1 if no unfilled letter cell exists after the current position
+func NextUnfilledLetterCell(cells []Cell, currentPos int) int {
+	for i := currentPos + 1; i < len(cells); i++ {
+		if cells[i].IsLetter && cells[i].Input == 0 {
+			return i
+		}
+	}
+	return -1
+}
+
 // PrevLetterCell finds the previous editable cell index before the given position
 // Returns -1 if no previous letter cell exists
 func PrevLetterCell(cells []Cell, currentPos int) int {

@@ -79,6 +79,34 @@ func TestNextLetterCell(t *testing.T) {
 	}
 }
 
+func TestNextUnfilledLetterCell(t *testing.T) {
+	cells := BuildCells("A, BC")
+	// Fill some cells: A is filled, B is unfilled, C is filled
+	cells[0].Input = 'X' // A is filled
+	cells[4].Input = 'Z' // C is filled
+
+	tests := []struct {
+		name       string
+		currentPos int
+		expected   int
+	}{
+		{"from filled A skips to unfilled B", 0, 3},
+		{"from comma finds unfilled B", 1, 3},
+		{"from space finds unfilled B", 2, 3},
+		{"from unfilled B returns -1 (C is filled)", 3, -1},
+		{"from filled C returns -1", 4, -1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := NextUnfilledLetterCell(cells, tt.currentPos)
+			if result != tt.expected {
+				t.Errorf("NextUnfilledLetterCell(%d) = %d, expected %d", tt.currentPos, result, tt.expected)
+			}
+		})
+	}
+}
+
 func TestPrevLetterCell(t *testing.T) {
 	cells := BuildCells("A, B")
 
