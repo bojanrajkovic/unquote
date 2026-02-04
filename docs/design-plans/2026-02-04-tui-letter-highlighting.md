@@ -20,7 +20,6 @@ The implementation leverages the existing render pipeline in `grid.go` without a
 - **Cell**: A single character position in the puzzle grid, containing the cipher letter, player input, and metadata like position index
 - **Active cell**: The cell currently under the cursor where the player can type input
 - **Related cells**: All cells that share the same cipher letter as the active cell
-- **WCAG AA**: Web Content Accessibility Guidelines Level AA, requiring 4.5:1 minimum contrast ratio for normal text
 - **Render pipeline**: The View() function execution path that converts model state into terminal output on each screen update
 
 ## Architecture
@@ -88,6 +87,6 @@ Highlight logic follows existing conditional styling pattern in `renderInputCell
 
 ## Additional Considerations
 
-**Accessibility:** `RelatedCellStyle` uses colors meeting WCAG AA contrast requirements (4.5:1 minimum). Background-only styling (no bold) ensures visual distinction from active cell while remaining accessible.
+**Accessibility:** `RelatedCellStyle` uses background-only styling (no bold) to ensure visual distinction from the active cell. Terminal color schemes vary, making specific contrast ratios dependent on user configuration.
 
 **Performance:** Highlight character derived at render time adds negligible overhead. Single comparison per cell during existing render loop.

@@ -42,6 +42,11 @@ var ActiveCellStyle = CellStyle.
 	Background(ColorWhite).
 	Bold(true)
 
+// RelatedCellStyle highlights cells sharing the same cipher letter as the active cell.
+// Uses background tint without bold to differentiate from ActiveCellStyle.
+var RelatedCellStyle = CellStyle.
+	Background(lipgloss.Color("236"))
+
 // CipherStyle renders the cipher letter below input
 var CipherStyle = lipgloss.NewStyle().
 	Width(3).

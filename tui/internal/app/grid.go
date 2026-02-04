@@ -21,6 +21,13 @@ func (m Model) renderGrid() string {
 		return ""
 	}
 
+	// Derive highlight character from cursor position
+	// Only highlight if cursor is on a letter cell
+	var highlightChar rune
+	if m.cursorPos >= 0 && m.cursorPos < len(m.cells) && m.cells[m.cursorPos].IsLetter {
+		highlightChar = m.cells[m.cursorPos].Char
+	}
+
 	// Group cells by word and wrap into lines
 	groups := ui.GroupCellsByWord(m.cells)
 	lines := ui.WrapWordGroups(groups, maxLineWidth, cellWidth)
@@ -28,19 +35,19 @@ func (m Model) renderGrid() string {
 	var renderedLines []string
 	for _, line := range lines {
 		cells := ui.FlattenLine(line)
-		renderedLines = append(renderedLines, m.renderLine(cells))
+		renderedLines = append(renderedLines, m.renderLine(cells, highlightChar))
 	}
 
 	return strings.Join(renderedLines, "\n\n")
 }
 
 // renderLine renders a single line with input row above cipher row
-func (m Model) renderLine(cells []puzzle.Cell) string {
+func (m Model) renderLine(cells []puzzle.Cell, highlightChar rune) string {
 	var inputCells []string
 	var cipherCells []string
 
 	for _, cell := range cells {
-		inputCells = append(inputCells, m.renderInputCell(cell))
+		inputCells = append(inputCells, m.renderInputCell(cell, highlightChar))
 		cipherCells = append(cipherCells, m.renderCipherCell(cell))
 	}
 
@@ -51,7 +58,7 @@ func (m Model) renderLine(cells []puzzle.Cell) string {
 }
 
 // renderInputCell renders the user input cell (top row)
-func (m Model) renderInputCell(cell puzzle.Cell) string {
+func (m Model) renderInputCell(cell puzzle.Cell, highlightChar rune) string {
 	if !cell.IsLetter {
 		// Non-letter: show the character as-is (punctuation, space)
 		return ui.CellStyle.Render(string(cell.Char))
@@ -65,9 +72,14 @@ func (m Model) renderInputCell(cell puzzle.Cell) string {
 		content = "_"
 	}
 
-	// Highlight if this is the cursor position
+	// Highlight if this is the cursor position (takes precedence)
 	if cell.Index == m.cursorPos {
 		return ui.ActiveCellStyle.Render(content)
+	}
+
+	// Highlight related cells (same cipher letter as cursor)
+	if highlightChar != 0 && cell.Char == highlightChar {
+		return ui.RelatedCellStyle.Render(content)
 	}
 
 	return ui.CellStyle.Render(content)
