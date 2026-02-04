@@ -93,8 +93,8 @@ export class KeywordCipherGenerator implements GameGenerator {
     // Encrypt
     const encryptedText = encryptText(quote.text, mapping);
 
-    // Generate default hints (2 reveals)
-    const hints = generateHints(mapping, 2);
+    // Generate default hints (2 reveals) - pass encryptedText so hints are useful
+    const hints = generateHints(mapping, encryptedText, 2);
 
     return {
       quoteId: quote.id,
