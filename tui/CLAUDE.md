@@ -1,6 +1,6 @@
 # TUI
 
-Last verified: 2026-02-03
+Last verified: 2026-02-04
 
 Terminal UI client for playing cryptoquip puzzles.
 
@@ -21,6 +21,7 @@ From `tui/` directory:
 - `internal/api/` - API client for REST communication
 - `internal/app/` - Bubble Tea model, update loop, and views
 - `internal/puzzle/` - Domain logic (cells, navigation, solution assembly)
+- `internal/storage/` - Session persistence (XDG state directory)
 - `internal/ui/` - Styling and text wrapping utilities
 
 ## Contracts
@@ -38,7 +39,14 @@ From `tui/` directory:
 ### app package
 - **Exposes**: `Model`, `New()`, `NewWithClient(client)` for testing
 - **States**: Loading -> Playing -> (Checking -> Playing | Solved) or Error
+- **Timer**: `Model.Elapsed()` returns total time; timer runs while Playing, pauses on Solved/Checking
+- **Persistence**: Session auto-restored on startup; auto-saved on input changes and solve
 - **Invariants**: Terminal size validated before rendering; minimum 40x10
+
+### storage package
+- **Exposes**: `GameSession`, `SaveSession()`, `LoadSession()`, `SessionExists()`
+- **Guarantees**: Atomic writes; missing files return nil (not error)
+- **Best-effort**: All persistence is non-blocking; errors silently ignored
 
 ### ui package
 - **Exposes**: Style definitions (colors, styles), text wrapping functions: `WordWrapText()`, `GroupCellsByWord()`, `WrapWordGroups()`, `FlattenLine()`

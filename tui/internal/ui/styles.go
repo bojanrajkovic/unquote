@@ -73,3 +73,7 @@ var SuccessStyle = lipgloss.NewStyle().
 // LoadingStyle renders loading indicator
 var LoadingStyle = lipgloss.NewStyle().
 	Foreground(ColorSecondary)
+
+// TimerStyle renders the elapsed time display
+var TimerStyle = lipgloss.NewStyle().
+	Foreground(ColorMuted)

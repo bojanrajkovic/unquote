@@ -3,12 +3,20 @@ package app
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/bojanrajkovic/unquote/tui/internal/puzzle"
 	"github.com/bojanrajkovic/unquote/tui/internal/ui"
 )
+
+// formatElapsed formats a duration as MM:SS
+func formatElapsed(d time.Duration) string {
+	minutes := int(d.Minutes())
+	seconds := int(d.Seconds()) % 60
+	return fmt.Sprintf("%02d:%02d", minutes, seconds)
+}
 
 // View renders the UI
 func (m Model) View() string {
@@ -94,6 +102,9 @@ func (m Model) viewPlaying() string {
 	diffText := puzzle.DifficultyText(m.puzzle.Difficulty)
 	difficulty := ui.DifficultyStyle.Render(fmt.Sprintf("Difficulty: %s", diffText))
 
+	// Timer
+	timer := ui.TimerStyle.Render(fmt.Sprintf("Time: %s", formatElapsed(m.Elapsed())))
+
 	// Hints
 	hints := m.renderHints()
 
@@ -113,6 +124,7 @@ func (m Model) viewPlaying() string {
 		lipgloss.Left,
 		header,
 		difficulty,
+		timer,
 		"",
 		hints,
 		"",
@@ -156,7 +168,7 @@ func (m Model) renderStatus() string {
 	case StateChecking:
 		return ui.LoadingStyle.Render("Checking solution...")
 	case StateSolved:
-		return ui.SuccessStyle.Render("Congratulations! You solved it!")
+		return ui.SuccessStyle.Render(fmt.Sprintf("Congratulations! You solved it in %s!", formatElapsed(m.Elapsed())))
 	default:
 		if m.statusMsg != "" {
 			return ui.ErrorStyle.Render(m.statusMsg)

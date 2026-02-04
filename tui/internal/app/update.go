@@ -2,6 +2,7 @@ package app
 
 import (
 	"strings"
+	"time"
 	"unicode"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -34,6 +35,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case errMsg:
 		return m.handleError(msg)
+
+	case tickMsg:
+		// Only tick while playing - this triggers re-render for timer display
+		if m.state == StatePlaying {
+			return m, tickCmd()
+		}
+		return m, nil
+
+	case sessionLoadedMsg:
+		return m.handleSessionLoaded(msg)
 	}
 
 	return m, nil
@@ -89,7 +100,8 @@ func (m Model) handlePlayingKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		puzzle.ClearAllInput(m.cells)
 		m.cursorPos = puzzle.FirstLetterCell(m.cells)
 		m.statusMsg = ""
-		return m, nil
+		// Save session after clearing all
+		return m, saveSessionCmd(m.puzzle.ID, m.cells, m.Elapsed())
 
 	case "enter":
 		// Submit solution if complete
@@ -121,7 +133,8 @@ func (m Model) handlePlayingKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			}
 		}
 		m.statusMsg = ""
-		return m, nil
+		// Save session after clearing
+		return m, saveSessionCmd(m.puzzle.ID, m.cells, m.Elapsed())
 
 	default:
 		// Check for letter input
@@ -153,7 +166,8 @@ func (m Model) handleLetterInput(letter rune) (tea.Model, tea.Cmd) {
 	// Clear any status message when typing
 	m.statusMsg = ""
 
-	return m, nil
+	// Save session after input
+	return m, saveSessionCmd(m.puzzle.ID, m.cells, m.Elapsed())
 }
 
 func (m Model) handleSubmit() (tea.Model, tea.Cmd) {
@@ -175,10 +189,13 @@ func (m Model) handleSolutionChecked(msg solutionCheckedMsg) (tea.Model, tea.Cmd
 	if msg.correct {
 		m.state = StateSolved
 		m.statusMsg = ""
-	} else {
-		m.state = StatePlaying
-		m.statusMsg = "Not quite right. Keep trying!"
+		// Capture final elapsed time
+		m.elapsedAtPause = m.elapsedAtPause + time.Since(m.startTime)
+		// Save solved state
+		return m, saveSolvedSessionCmd(m.puzzle.ID, m.cells, m.elapsedAtPause)
 	}
+	m.state = StatePlaying
+	m.statusMsg = "Not quite right. Keep trying!"
 	return m, nil
 }
 
@@ -187,7 +204,44 @@ func (m Model) handlePuzzleFetched(msg puzzleFetchedMsg) (tea.Model, tea.Cmd) {
 	m.cells = puzzle.BuildCells(msg.puzzle.EncryptedText)
 	m.cursorPos = puzzle.FirstLetterCell(m.cells)
 	m.state = StatePlaying
-	return m, nil
+	m.startTime = time.Now()
+	m.elapsedAtPause = 0
+	// Load any saved session for this puzzle
+	return m, loadSessionCmd(msg.puzzle.ID)
+}
+
+func (m Model) handleSessionLoaded(msg sessionLoadedMsg) (tea.Model, tea.Cmd) {
+	if msg.session == nil {
+		// No saved session - start fresh timer
+		return m, tickCmd()
+	}
+
+	// Restore inputs - iterate cells and apply saved inputs
+	// This must happen for both solved and in-progress sessions
+	for i := range m.cells {
+		if !m.cells[i].IsLetter {
+			continue
+		}
+		cipherChar := string(m.cells[i].Char)
+		if input, ok := msg.session.Inputs[cipherChar]; ok && input != "" {
+			// SetInput propagates to all cells with same cipher letter
+			puzzle.SetInput(m.cells, i, rune(input[0]))
+		}
+	}
+
+	// Check if already solved
+	if msg.session.Solved {
+		m.state = StateSolved
+		m.elapsedAtPause = msg.session.CompletionTime
+		m.statusMsg = ""
+		return m, nil
+	}
+
+	// Restore timer state for in-progress sessions
+	m.elapsedAtPause = msg.session.ElapsedTime
+	m.startTime = time.Now()
+
+	return m, tickCmd()
 }
 
 func (m Model) handleError(msg errMsg) (tea.Model, tea.Cmd) {
