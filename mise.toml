@@ -2,3 +2,4 @@
 node = "lts"
 task = "latest"
 go = "1.25.6"
+"go:golang.org/x/tools/gopls" = "latest"
