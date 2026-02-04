@@ -63,6 +63,22 @@ A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encry
 - `GET /game/:date` - Retrieve puzzle for a specific date (ISO format: YYYY-MM-DD)
 - `POST /game/:id/check` - Validate a solution attempt using opaque game ID
 
+## TUI Architecture
+
+- **Framework**: Bubble Tea (Elm architecture for Go)
+- **Styling**: Lip Gloss
+- **Configuration**: `UNQUOTE_API_URL` env var (default: `http://localhost:3000`)
+
+### TUI Development (run from `tui/`)
+- `go build -o bin/unquote ./main.go` - Build binary
+- `go test ./...` - Run all tests
+
+### Package Structure
+- `internal/api/` - API client for REST communication
+- `internal/app/` - Bubble Tea model, update loop, and views
+- `internal/puzzle/` - Domain logic (cells, navigation, solution assembly)
+- `internal/ui/` - Styling and text wrapping utilities
+
 ## Commit Messages
 
 Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).

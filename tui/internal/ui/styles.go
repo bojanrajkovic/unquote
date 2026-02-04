@@ -1,0 +1,75 @@
+package ui
+
+import "github.com/charmbracelet/lipgloss"
+
+// Colors
+var (
+	ColorPrimary   = lipgloss.Color("63")  // Purple
+	ColorSecondary = lipgloss.Color("86")  // Aqua
+	ColorSuccess   = lipgloss.Color("42")  // Green
+	ColorError     = lipgloss.Color("196") // Red
+	ColorMuted     = lipgloss.Color("245") // Gray
+	ColorWhite     = lipgloss.Color("15")  // White
+)
+
+// HeaderStyle renders the main title header
+var HeaderStyle = lipgloss.NewStyle().
+	Bold(true).
+	Foreground(ColorWhite).
+	Background(ColorPrimary).
+	Align(lipgloss.Center).
+	Padding(1, 2)
+
+// DifficultyStyle renders the difficulty indicator
+var DifficultyStyle = lipgloss.NewStyle().
+	Foreground(ColorMuted).
+	Align(lipgloss.Center)
+
+// HintStyle renders the hint clues
+var HintStyle = lipgloss.NewStyle().
+	Foreground(ColorSecondary).
+	Italic(true).
+	PaddingLeft(2)
+
+// CellStyle renders a single puzzle cell (user input)
+var CellStyle = lipgloss.NewStyle().
+	Width(3).
+	Align(lipgloss.Center)
+
+// ActiveCellStyle renders the currently focused cell
+var ActiveCellStyle = CellStyle.
+	Foreground(ColorPrimary).
+	Background(ColorWhite).
+	Bold(true)
+
+// CipherStyle renders the cipher letter below input
+var CipherStyle = lipgloss.NewStyle().
+	Width(3).
+	Align(lipgloss.Center).
+	Foreground(ColorMuted)
+
+// AuthorStyle renders the quote author
+var AuthorStyle = lipgloss.NewStyle().
+	Foreground(ColorMuted).
+	Italic(true).
+	Align(lipgloss.Right).
+	PaddingTop(1)
+
+// HelpStyle renders the help bar at bottom
+var HelpStyle = lipgloss.NewStyle().
+	Foreground(ColorMuted).
+	PaddingTop(1)
+
+// ErrorStyle renders error messages
+var ErrorStyle = lipgloss.NewStyle().
+	Foreground(ColorError).
+	Bold(true)
+
+// SuccessStyle renders success messages
+var SuccessStyle = lipgloss.NewStyle().
+	Foreground(ColorSuccess).
+	Bold(true)
+
+// LoadingStyle renders loading indicator
+var LoadingStyle = lipgloss.NewStyle().
+	Foreground(ColorSecondary)
