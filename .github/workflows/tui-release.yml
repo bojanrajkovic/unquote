@@ -56,7 +56,7 @@ jobs:
           cache: true
 
       - name: Run CI checks
-        run: mise run ci
+        run: mise run :ci
 
   release:
     name: Create Release
