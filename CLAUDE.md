@@ -1,6 +1,6 @@
 # Unquote
 
-Last verified: 2026-02-03
+Last verified: 2026-02-04
 
 A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encrypted quotes by substituting letters.
 
@@ -8,15 +8,14 @@ A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encry
 
 - **API**: Node.js 24+ / Fastify 5 / TypeScript (pnpm 10 monorepo)
 - **TUI**: Go 1.25.6
-- **Task runner**: Task (via mise)
-- **Version management**: mise
+- **Version management & tasks**: mise
 
 ## Commands
 
 ### Build
-- `task build` - Build all projects
-- `task build:api` - Build the API
-- `task build:tui` - Build the TUI
+- `mise run build` - Build all projects
+- `mise run //api:build` - Build the API
+- `mise run //tui:build` - Build the TUI
 
 ### API Development (run from `api/`)
 - `pnpm run build` - Build all packages

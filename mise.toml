@@ -1,5 +1,13 @@
+experimental_monorepo_root = true
+
 [tools]
 node = "lts"
-task = "latest"
 go = "1.25.6"
 "go:golang.org/x/tools/gopls" = "latest"
+
+[monorepo]
+config_roots = ["api", "tui"]
+
+[tasks.build]
+description = "Build all projects"
+depends = ["//api:build", "//tui:build"]

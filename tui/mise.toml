@@ -1,0 +1,3 @@
+[tasks.build]
+description = "Build the TUI"
+run = "go build -o bin/unquote ."
