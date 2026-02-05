@@ -18,8 +18,8 @@
     "format": "oxfmt ."
   },
   "dependencies": {
-    "typebox": "catalog:prod",
-    "luxon": "catalog:prod"
+    "luxon": "catalog:prod",
+    "typebox": "catalog:prod"
   },
   "devDependencies": {
     "@tsconfig/node24": "catalog:build",

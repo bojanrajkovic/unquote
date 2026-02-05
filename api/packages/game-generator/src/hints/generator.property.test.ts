@@ -31,12 +31,13 @@ describe("hint generation properties", () => {
   const fullCiphertext = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
   // Generate random ciphertext (uppercase letters only)
-  const ciphertextArbitrary = fc.string({ minLength: 1, maxLength: 100 }).map((s) =>
-    s
-      .toUpperCase()
-      .split("")
-      .filter((c) => /[A-Z]/.test(c))
-      .join("") || "ABC",
+  const ciphertextArbitrary = fc.string({ minLength: 1, maxLength: 100 }).map(
+    (s) =>
+      s
+        .toUpperCase()
+        .split("")
+        .filter((c) => /[A-Z]/.test(c))
+        .join("") || "ABC",
   );
 
   describe("property: hints validity", () => {
@@ -59,11 +60,16 @@ describe("hint generation properties", () => {
 
     it("hints count never exceeds unique letters in ciphertext", () => {
       fc.assert(
-        fc.property(cipherMappingArbitrary, ciphertextArbitrary, fc.integer({ min: 0, max: 100 }), (mapping, ciphertext, count) => {
-          const hints = generateHints(mapping, ciphertext, count);
-          const uniqueCiphertextLetters = new Set([...ciphertext].filter((c) => /[A-Z]/.test(c)));
-          return hints.length <= uniqueCiphertextLetters.size;
-        }),
+        fc.property(
+          cipherMappingArbitrary,
+          ciphertextArbitrary,
+          fc.integer({ min: 0, max: 100 }),
+          (mapping, ciphertext, count) => {
+            const hints = generateHints(mapping, ciphertext, count);
+            const uniqueCiphertextLetters = new Set([...ciphertext].filter((c) => /[A-Z]/.test(c)));
+            return hints.length <= uniqueCiphertextLetters.size;
+          },
+        ),
       );
     });
 
@@ -80,17 +86,22 @@ describe("hint generation properties", () => {
 
     it("all hint cipher letters appear in ciphertext", () => {
       fc.assert(
-        fc.property(cipherMappingArbitrary, ciphertextArbitrary, fc.integer({ min: 1, max: 26 }), (mapping, ciphertext, count) => {
-          const hints = generateHints(mapping, ciphertext, count);
+        fc.property(
+          cipherMappingArbitrary,
+          ciphertextArbitrary,
+          fc.integer({ min: 1, max: 26 }),
+          (mapping, ciphertext, count) => {
+            const hints = generateHints(mapping, ciphertext, count);
 
-          for (const hint of hints) {
-            if (!ciphertext.includes(hint.cipherLetter)) {
-              return false;
+            for (const hint of hints) {
+              if (!ciphertext.includes(hint.cipherLetter)) {
+                return false;
+              }
             }
-          }
 
-          return true;
-        }),
+            return true;
+          },
+        ),
       );
     });
   });
@@ -98,12 +109,17 @@ describe("hint generation properties", () => {
   describe("property: determinism", () => {
     it("same mapping, ciphertext, and count always produce same hints", () => {
       fc.assert(
-        fc.property(cipherMappingArbitrary, ciphertextArbitrary, fc.integer({ min: 0, max: 26 }), (mapping, ciphertext, count) => {
-          const hints1 = generateHints(mapping, ciphertext, count);
-          const hints2 = generateHints(mapping, ciphertext, count);
+        fc.property(
+          cipherMappingArbitrary,
+          ciphertextArbitrary,
+          fc.integer({ min: 0, max: 26 }),
+          (mapping, ciphertext, count) => {
+            const hints1 = generateHints(mapping, ciphertext, count);
+            const hints2 = generateHints(mapping, ciphertext, count);
 
-          return JSON.stringify(hints1) === JSON.stringify(hints2);
-        }),
+            return JSON.stringify(hints1) === JSON.stringify(hints2);
+          },
+        ),
       );
     });
   });
@@ -129,10 +145,15 @@ describe("hint generation properties", () => {
 
     it("handles negative count as zero", () => {
       fc.assert(
-        fc.property(cipherMappingArbitrary, ciphertextArbitrary, fc.integer({ max: -1 }), (mapping, ciphertext, count) => {
-          const hints = generateHints(mapping, ciphertext, count);
-          return hints.length === 0;
-        }),
+        fc.property(
+          cipherMappingArbitrary,
+          ciphertextArbitrary,
+          fc.integer({ max: -1 }),
+          (mapping, ciphertext, count) => {
+            const hints = generateHints(mapping, ciphertext, count);
+            return hints.length === 0;
+          },
+        ),
       );
     });
 

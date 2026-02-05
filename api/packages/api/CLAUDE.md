@@ -40,6 +40,7 @@ REST API server for the Unquote cryptoquip game. Serves puzzle endpoints and val
 ## Shared Resources
 
 Test data and fixtures shared across packages live in `api/resources/`:
+
 - `api/resources/quotes.json` - Quote data for testing and development
 
 Both `@unquote/api` and `@unquote/game-generator` tests can reference this location.

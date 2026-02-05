@@ -6,11 +6,7 @@ import fastifyOpenapi3, { oas3PluginAjv } from "@eropple/fastify-openapi3";
 import { JsonQuoteSource, KeywordCipherGenerator } from "@unquote/game-generator";
 
 import { registerDependencyInjection } from "../../../deps/index.js";
-import {
-  createTestContainer,
-  createSilentLogger,
-  getTestQuotesPath,
-} from "../../../../tests/helpers/index.js";
+import { createTestContainer, createSilentLogger, getTestQuotesPath } from "../../../../tests/helpers/index.js";
 import { registerGameRoutes } from "./index.js";
 
 /**

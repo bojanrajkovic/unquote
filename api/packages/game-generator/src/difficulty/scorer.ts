@@ -55,13 +55,19 @@ function calculateLengthDiversityFactor(letters: string): number {
  * - 4 letter words (that, have, with): 0.2 weight (slightly helpful)
  */
 function calculateShortWordScarcityFactor(words: readonly string[]): number {
-  if (words.length === 0) {return 50;}
+  if (words.length === 0) {
+    return 50;
+  }
 
   let helpfulWordScore = 0;
   for (const word of words) {
-    if (word.length <= 2) {helpfulWordScore += 1.0;}
-    else if (word.length === 3) {helpfulWordScore += 0.6;}
-    else if (word.length === 4) {helpfulWordScore += 0.2;}
+    if (word.length <= 2) {
+      helpfulWordScore += 1.0;
+    } else if (word.length === 3) {
+      helpfulWordScore += 0.6;
+    } else if (word.length === 4) {
+      helpfulWordScore += 0.2;
+    }
   }
 
   const ratio = helpfulWordScore / words.length;
@@ -77,7 +83,9 @@ function calculateShortWordScarcityFactor(words: readonly string[]): number {
  * Penalty applied when any letter exceeds 12% of text.
  */
 export function calculateLetterDominanceFactor(letters: string): number {
-  if (letters.length === 0) {return 50;}
+  if (letters.length === 0) {
+    return 50;
+  }
 
   const counts: Record<string, number> = {};
   for (const char of letters) {
@@ -108,7 +116,9 @@ export function calculateLetterDominanceFactor(letters: string): number {
  * Uses cubic scaling for aggressive repetition penalty.
  */
 export function calculatePatternUniquenessFactor(words: string[]): number {
-  if (words.length <= 1) {return 50;}
+  if (words.length <= 1) {
+    return 50;
+  }
 
   const uniqueWords = new Set(words).size;
   const ratio = uniqueWords / words.length;
@@ -124,7 +134,9 @@ export function calculatePatternUniquenessFactor(words: string[]): number {
  * - Bonus penalty for 3+ occurrences: -20 points per word
  */
 export function calculateWordRepetitionFactor(words: string[]): number {
-  if (words.length === 0) {return 50;}
+  if (words.length === 0) {
+    return 50;
+  }
 
   const counts: Record<string, number> = {};
   for (const word of words) {
@@ -153,14 +165,20 @@ export function calculateWordRepetitionFactor(words: string[]): number {
  * Scale: 5 or fewer unique = 0, 20+ unique = 100
  */
 export function calculateAlphabetCoverageFactor(letters: string): number {
-  if (letters.length === 0) {return 50;}
+  if (letters.length === 0) {
+    return 50;
+  }
 
   const uniqueLetters = new Set(letters).size;
 
   // Expect ~12-15 unique letters in a typical quote
   // <5 unique = very easy, >20 unique = harder
-  if (uniqueLetters <= 5) {return 0;}
-  if (uniqueLetters >= 20) {return 100;}
+  if (uniqueLetters <= 5) {
+    return 0;
+  }
+  if (uniqueLetters >= 20) {
+    return 100;
+  }
 
   // Linear scale from 5-20
   return Math.round(((uniqueLetters - 5) / 15) * 100);
@@ -171,7 +189,9 @@ export function calculateAlphabetCoverageFactor(letters: string): number {
  * Fewer common letter pairs = higher difficulty.
  */
 function calculateDigramFactor(letters: string): number {
-  if (letters.length < 2) {return 50;}
+  if (letters.length < 2) {
+    return 50;
+  }
 
   const upperLetters = letters.toUpperCase();
 

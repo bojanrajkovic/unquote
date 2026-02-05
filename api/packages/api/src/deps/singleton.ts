@@ -1,9 +1,4 @@
-import {
-  createContainer,
-  asValue,
-  asFunction,
-  type AwilixContainer,
-} from "awilix";
+import { createContainer, asValue, asFunction, type AwilixContainer } from "awilix";
 import type { Logger } from "pino";
 import type { QuoteSource, GameGenerator } from "@unquote/game-generator";
 import { JsonQuoteSource, KeywordCipherGenerator } from "@unquote/game-generator";
@@ -27,10 +22,7 @@ export type AppSingletonCradle = {
  * @param logger - Pino logger instance from Fastify
  * @returns Configured Awilix container with typed cradle
  */
-export function configureContainer(
-  config: AppConfig,
-  logger: Logger,
-): AwilixContainer<AppSingletonCradle> {
+export function configureContainer(config: AppConfig, logger: Logger): AwilixContainer<AppSingletonCradle> {
   const container = createContainer<AppSingletonCradle>({
     strict: true,
   });
@@ -45,8 +37,7 @@ export function configureContainer(
 
     // GameGenerator depends on QuoteSource
     gameGenerator: asFunction(
-      (cradle: AppSingletonCradle) =>
-        new KeywordCipherGenerator(cradle.quoteSource),
+      (cradle: AppSingletonCradle) => new KeywordCipherGenerator(cradle.quoteSource),
     ).singleton(),
   });
 

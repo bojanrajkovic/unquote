@@ -30,7 +30,9 @@ export function createSeededRng(seed: number): () => number {
   // Initialize state from seed using SplitMix32
   // This ensures good state initialization even from poor seeds
   let z = seed >>> 0;
-  if (z === 0) {z = 1;} // Avoid zero seed
+  if (z === 0) {
+    z = 1;
+  } // Avoid zero seed
   for (let i = 0; i < 4; i++) {
     z = Math.imul(z ^ (z >>> 16), 0x85_eb_ca_6b) >>> 0;
     z = Math.imul(z ^ (z >>> 13), 0xc2_b2_ae_35) >>> 0;

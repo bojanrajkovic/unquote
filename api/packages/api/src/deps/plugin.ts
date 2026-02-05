@@ -15,9 +15,7 @@ export type DependencyInjectionPluginOptions = {
  * - Creates request-scoped containers in onRequest hook
  * - Disposes request scopes in onResponse hook
  */
-const dependencyInjectionPlugin: FastifyPluginAsync<
-  DependencyInjectionPluginOptions
-> = async (fastify, options) => {
+const dependencyInjectionPlugin: FastifyPluginAsync<DependencyInjectionPluginOptions> = async (fastify, options) => {
   const { container } = options;
 
   // Attach singleton container and deps getter to Fastify instance
@@ -39,10 +37,7 @@ const dependencyInjectionPlugin: FastifyPluginAsync<
   // Create request scope on each request
   fastify.addHook("onRequest", async (request) => {
     // request.log is a child logger with request context (trace_id from OTel)
-    const requestScope = configureRequestScope(
-      container,
-      request.log as Logger,
-    );
+    const requestScope = configureRequestScope(container, request.log as Logger);
     request.diScope = requestScope;
   });
 

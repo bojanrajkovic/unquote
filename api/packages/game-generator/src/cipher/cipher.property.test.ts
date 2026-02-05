@@ -63,21 +63,29 @@ describe("cipher properties", () => {
 
           // Check 26 keys
           const keys = Object.keys(puzzle.mapping);
-          if (keys.length !== 26) {return false;}
+          if (keys.length !== 26) {
+            return false;
+          }
 
           // Check all values are unique
           const values = Object.values(puzzle.mapping);
           const uniqueValues = new Set(values);
-          if (uniqueValues.size !== 26) {return false;}
+          if (uniqueValues.size !== 26) {
+            return false;
+          }
 
           // Check all keys are lowercase a-z
           for (const key of keys) {
-            if (!/^[a-z]$/.test(key)) {return false;}
+            if (!/^[a-z]$/.test(key)) {
+              return false;
+            }
           }
 
           // Check all values are uppercase A-Z
           for (const value of values) {
-            if (!/^[A-Z]$/.test(value)) {return false;}
+            if (!/^[A-Z]$/.test(value)) {
+              return false;
+            }
           }
 
           return true;
@@ -94,7 +102,9 @@ describe("cipher properties", () => {
           const reverseMapping: Record<string, string> = {};
           for (const [plain, cipher] of Object.entries(puzzle.mapping)) {
             // Check no duplicate cipher letters (would break bijectivity)
-            if (cipher in reverseMapping) {return false;}
+            if (cipher in reverseMapping) {
+              return false;
+            }
             reverseMapping[cipher] = plain;
           }
 

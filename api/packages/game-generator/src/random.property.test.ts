@@ -11,7 +11,9 @@ describe("random utilities properties", () => {
           const rng2 = createSeededRng(seed);
           // eslint-disable-next-line no-plusplus
           for (let i = 0; i < n; i += 1) {
-            if (rng1() !== rng2()) {return false;}
+            if (rng1() !== rng2()) {
+              return false;
+            }
           }
           return true;
         }),
@@ -25,7 +27,9 @@ describe("random utilities properties", () => {
           // eslint-disable-next-line no-plusplus
           for (let i = 0; i < n; i += 1) {
             const val = rng();
-            if (val < 0 || val >= 1) {return false;}
+            if (val < 0 || val >= 1) {
+              return false;
+            }
           }
           return true;
         }),
@@ -36,7 +40,9 @@ describe("random utilities properties", () => {
       fc.assert(
         fc.property(fc.integer(), fc.integer(), fc.integer({ min: 10, max: 50 }), (seed1, seed2, n) => {
           // Skip if seeds are the same
-          if (seed1 === seed2) {return true;}
+          if (seed1 === seed2) {
+            return true;
+          }
 
           const rng1 = createSeededRng(seed1);
           const rng2 = createSeededRng(seed2);
@@ -70,7 +76,9 @@ describe("random utilities properties", () => {
       fc.assert(
         fc.property(fc.string(), fc.string(), (str1, str2) => {
           // Skip if strings are identical
-          if (str1 === str2) {return true;}
+          if (str1 === str2) {
+            return true;
+          }
 
           const hash1 = hashString(str1);
           const hash2 = hashString(str2);

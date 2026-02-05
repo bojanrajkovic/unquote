@@ -164,9 +164,7 @@ export type TestContainerOptions = {
  *   quoteSource: myCustomMockQuoteSource,
  * });
  */
-export function createTestContainer(
-  options: TestContainerOptions = {},
-): AwilixContainer<AppSingletonCradle> {
+export function createTestContainer(options: TestContainerOptions = {}): AwilixContainer<AppSingletonCradle> {
   const container = createContainer<AppSingletonCradle>({
     strict: true,
   });
@@ -183,9 +181,7 @@ export function createTestContainer(
     config: asValue(config),
     logger: asValue(logger),
     quoteSource: asValue(quoteSource),
-    gameGenerator: asValue(
-      options.gameGenerator ?? createMockGameGenerator(),
-    ),
+    gameGenerator: asValue(options.gameGenerator ?? createMockGameGenerator()),
   });
 
   return container;

@@ -7,11 +7,7 @@ import { JsonQuoteSource, KeywordCipherGenerator } from "@unquote/game-generator
 import { DateTime } from "luxon";
 
 import { registerDependencyInjection } from "../../../deps/index.js";
-import {
-  createTestContainer,
-  createSilentLogger,
-  getTestQuotesPath,
-} from "../../../../tests/helpers/index.js";
+import { createTestContainer, createSilentLogger, getTestQuotesPath } from "../../../../tests/helpers/index.js";
 import { solutionRoutes } from "./solution.js";
 import { encodeGameId } from "../game-id.js";
 

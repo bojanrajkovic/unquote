@@ -4,12 +4,7 @@ import { DateTime } from "luxon";
 import type { GameGenerator, QuoteSource } from "@unquote/game-generator";
 
 import { encodeGameId } from "../game-id.js";
-import {
-  PuzzleResponseSchema,
-  DateParamsSchema,
-  type PuzzleResponse,
-  type DateParams,
-} from "./schemas.js";
+import { PuzzleResponseSchema, DateParamsSchema, type PuzzleResponse, type DateParams } from "./schemas.js";
 
 /**
  * Generate puzzle response from a DateTime.
@@ -81,9 +76,7 @@ const puzzleRoutesPlugin: FastifyPluginAsync = async (fastify) => {
 
       const deps = request.deps;
       if (!deps) {
-        throw fastify.httpErrors.internalServerError(
-          "dependency injection not initialized",
-        );
+        throw fastify.httpErrors.internalServerError("dependency injection not initialized");
       }
 
       const { gameGenerator, quoteSource } = deps;
@@ -126,9 +119,7 @@ const puzzleRoutesPlugin: FastifyPluginAsync = async (fastify) => {
 
       const deps = request.deps;
       if (!deps) {
-        throw fastify.httpErrors.internalServerError(
-          "dependency injection not initialized",
-        );
+        throw fastify.httpErrors.internalServerError("dependency injection not initialized");
       }
 
       const { gameGenerator, quoteSource } = deps;
@@ -137,9 +128,7 @@ const puzzleRoutesPlugin: FastifyPluginAsync = async (fastify) => {
       const date = DateTime.fromISO(dateStr, { zone: "utc" });
 
       if (!date.isValid) {
-        throw fastify.httpErrors.badRequest(
-          `invalid date format: expected YYYY-MM-DD, got '${dateStr}'`,
-        );
+        throw fastify.httpErrors.badRequest(`invalid date format: expected YYYY-MM-DD, got '${dateStr}'`);
       }
 
       try {

@@ -13,28 +13,20 @@ const DEFAULT_HINT_COUNT = 2;
  * @param count - Number of hints to generate (default: 2)
  * @returns Array of hints revealing letter mappings
  */
-export function generateHints(
-  mapping: CipherMapping,
-  ciphertext: string,
-  count: number = DEFAULT_HINT_COUNT,
-): Hint[] {
+export function generateHints(mapping: CipherMapping, ciphertext: string, count: number = DEFAULT_HINT_COUNT): Hint[] {
   if (count <= 0) {
     return [];
   }
 
   // Extract unique uppercase letters from ciphertext
-  const ciphertextLetters = new Set(
-    [...ciphertext.toUpperCase()].filter((char) => /[A-Z]/.test(char)),
-  );
+  const ciphertextLetters = new Set([...ciphertext.toUpperCase()].filter((char) => /[A-Z]/.test(char)));
 
   if (ciphertextLetters.size === 0) {
     return [];
   }
 
   // Filter mapping to only letters present in ciphertext
-  const entries = Object.entries(mapping).filter(([, cipherLetter]) =>
-    ciphertextLetters.has(cipherLetter),
-  );
+  const entries = Object.entries(mapping).filter(([, cipherLetter]) => ciphertextLetters.has(cipherLetter));
 
   if (entries.length === 0) {
     return [];

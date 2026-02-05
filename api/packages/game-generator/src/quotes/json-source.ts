@@ -26,7 +26,9 @@ export class JsonQuoteSource implements QuoteSource {
    * Called lazily on first access to allow async validation.
    */
   private async validatePath(): Promise<void> {
-    if (this.validated) {return;}
+    if (this.validated) {
+      return;
+    }
 
     try {
       await access(this.filePath, constants.R_OK);

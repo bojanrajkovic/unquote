@@ -50,9 +50,7 @@ const solutionRoutesPlugin: FastifyPluginAsync = async (fastify) => {
 
       const deps = request.deps;
       if (!deps) {
-        throw fastify.httpErrors.internalServerError(
-          "dependency injection not initialized",
-        );
+        throw fastify.httpErrors.internalServerError("dependency injection not initialized");
       }
 
       const { gameGenerator, quoteSource } = deps;
@@ -69,9 +67,7 @@ const solutionRoutesPlugin: FastifyPluginAsync = async (fastify) => {
       // Get the original quote
       const quote = await quoteSource.getQuote(puzzle.quoteId);
       if (!quote) {
-        throw fastify.httpErrors.internalServerError(
-          "quote not found for puzzle",
-        );
+        throw fastify.httpErrors.internalServerError("quote not found for puzzle");
       }
 
       // Validate the solution
