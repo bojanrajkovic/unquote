@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      api--release_created: ${{ steps.release.outputs['api--release_created'] }}
+      tui--release_created: ${{ steps.release.outputs['tui--release_created'] }}
+      pr: ${{ steps.release.outputs.pr }}
+    steps:
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Run Release Please
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      - name: Enable auto-merge on release PRs
+        if: steps.release.outputs.prs_created == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          # Get all PR numbers from the release output
+          prs='${{ steps.release.outputs.prs }}'
+          echo "PRs created: $prs"
+
+          # Parse and auto-merge each PR
+          echo "$prs" | jq -r '.[].number' | while read pr_number; do
+            echo "Enabling auto-merge for PR #$pr_number"
+            gh pr merge --auto --squash "$pr_number" --repo ${{ github.repository }}
+          done

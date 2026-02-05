@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "separate-pull-requests": true,
+  "include-component-in-tag": true,
+  "include-v-in-tag": true,
+  "tag-separator": "-",
+  "packages": {
+    "api": {
+      "release-type": "node",
+      "package-name": "@unquote/api",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "tui": {
+      "release-type": "go",
+      "package-name": "unquote-tui",
+      "changelog-path": "CHANGELOG.md"
+    }
+  }
+}
