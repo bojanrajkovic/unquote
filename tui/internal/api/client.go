@@ -55,7 +55,7 @@ func (c *Client) FetchTodaysPuzzle() (*Puzzle, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch puzzle: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
@@ -78,7 +78,7 @@ func (c *Client) FetchPuzzleByDate(date string) (*Puzzle, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch puzzle: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
@@ -113,7 +113,7 @@ func (c *Client) CheckSolution(gameID, solution string) (*CheckResponse, error) 
 	if err != nil {
 		return nil, fmt.Errorf("failed to check solution: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, fmt.Errorf("game not found: invalid game ID")

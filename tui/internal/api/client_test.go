@@ -28,7 +28,7 @@ func TestFetchTodaysPuzzle(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(expected)
+		_ = json.NewEncoder(w).Encode(expected)
 	}))
 	defer server.Close()
 
@@ -52,7 +52,7 @@ func TestFetchTodaysPuzzle(t *testing.T) {
 func TestFetchTodaysPuzzle_ServerError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("internal server error"))
+		_, _ = w.Write([]byte("internal server error"))
 	}))
 	defer server.Close()
 
@@ -79,7 +79,7 @@ func TestFetchPuzzleByDate(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(expected)
+		_ = json.NewEncoder(w).Encode(expected)
 	}))
 	defer server.Close()
 
@@ -115,7 +115,7 @@ func TestCheckSolution_Correct(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(CheckResponse{Correct: true})
+		_ = json.NewEncoder(w).Encode(CheckResponse{Correct: true})
 	}))
 	defer server.Close()
 
@@ -133,7 +133,7 @@ func TestCheckSolution_Correct(t *testing.T) {
 func TestCheckSolution_Incorrect(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(CheckResponse{Correct: false})
+		_ = json.NewEncoder(w).Encode(CheckResponse{Correct: false})
 	}))
 	defer server.Close()
 
@@ -151,7 +151,7 @@ func TestCheckSolution_Incorrect(t *testing.T) {
 func TestCheckSolution_NotFound(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("game not found"))
+		_, _ = w.Write([]byte("game not found"))
 	}))
 	defer server.Close()
 

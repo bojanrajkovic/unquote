@@ -56,7 +56,7 @@ func SaveSession(session *GameSession) error {
 	}
 
 	if err := os.Rename(tmpPath, path); err != nil {
-		os.Remove(tmpPath) // cleanup on failure
+		_ = os.Remove(tmpPath) // cleanup on failure
 		return fmt.Errorf("renaming session file: %w", err)
 	}
 
