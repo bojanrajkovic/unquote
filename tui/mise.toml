@@ -1,3 +1,34 @@
+[tools]
+"aqua:golangci/golangci-lint" = "2.8.0"
+"aqua:mvdan/gofumpt" = "0.7.0"
+
 [tasks.build]
 description = "Build the TUI"
 run = "go build -o bin/unquote ."
+
+[tasks.fmt]
+description = "Format Go code with gofumpt"
+run = "gofumpt -l -w -extra ."
+
+[tasks.lint]
+description = "Run golangci-lint"
+run = "golangci-lint run ./..."
+
+[tasks.vet]
+description = "Run go vet"
+run = "go vet ./..."
+
+[tasks.test]
+description = "Run Go tests"
+run = "go test -v -race -count=1 ./..."
+
+[tasks.ci]
+description = "Run all CI checks"
+run = """
+set -e
+mise run :fmt
+mise run :vet
+mise run :lint
+mise run :test
+mise run :build
+"""

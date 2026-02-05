@@ -51,7 +51,7 @@ func SaveSession(session *GameSession) error {
 
 	// Write to temp file then rename for atomicity
 	tmpPath := path + ".tmp"
-	if err := os.WriteFile(tmpPath, data, 0644); err != nil {
+	if err := os.WriteFile(tmpPath, data, 0o644); err != nil {
 		return fmt.Errorf("writing session file: %w", err)
 	}
 

@@ -34,10 +34,10 @@ type Model struct {
 	statusMsg      string
 	width          int
 	height         int
-	sizeReady      bool           // true after first WindowSizeMsg received
+	sizeReady      bool // true after first WindowSizeMsg received
 	client         *api.Client
-	startTime      time.Time      // when current timer run started
-	elapsedAtPause time.Duration  // accumulated time before pause/solve
+	startTime      time.Time     // when current timer run started
+	elapsedAtPause time.Duration // accumulated time before pause/solve
 }
 
 // New creates a new Model with initial state

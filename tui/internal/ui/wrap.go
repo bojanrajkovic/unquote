@@ -39,7 +39,7 @@ func GroupCellsByWord(cells []puzzle.Cell) []WordGroup {
 
 // WrapWordGroups distributes word groups across lines based on max width
 // Returns a slice of lines, where each line is a slice of word groups
-func WrapWordGroups(groups []WordGroup, maxWidth int, cellWidth int) [][]WordGroup {
+func WrapWordGroups(groups []WordGroup, maxWidth, cellWidth int) [][]WordGroup {
 	var lines [][]WordGroup
 	var currentLine []WordGroup
 	currentWidth := 0

@@ -9,12 +9,12 @@ import (
 
 func TestRenderInputCell(t *testing.T) {
 	tests := []struct {
-		name         string
-		cell         puzzle.Cell
-		cursorPos    int
+		name          string
+		cell          puzzle.Cell
+		cursorPos     int
 		highlightChar rune
 		expectedStyle string
-		description  string
+		description   string
 	}{
 		// Active cell (cursor is on this cell)
 		{
@@ -25,10 +25,10 @@ func TestRenderInputCell(t *testing.T) {
 				Input:    'B',
 				IsLetter: true,
 			},
-			cursorPos:    0,
+			cursorPos:     0,
 			highlightChar: 0,
 			expectedStyle: "B", // Content should be "B" but wrapped in ActiveCellStyle
-			description:  "Cursor on letter cell with user input should use ActiveCellStyle",
+			description:   "Cursor on letter cell with user input should use ActiveCellStyle",
 		},
 		{
 			name: "cursor on letter cell without user input",
@@ -38,10 +38,10 @@ func TestRenderInputCell(t *testing.T) {
 				Input:    0,
 				IsLetter: true,
 			},
-			cursorPos:    0,
+			cursorPos:     0,
 			highlightChar: 0,
 			expectedStyle: "_", // Content should be "_" but wrapped in ActiveCellStyle
-			description:  "Cursor on letter cell without user input should use ActiveCellStyle with underscore",
+			description:   "Cursor on letter cell without user input should use ActiveCellStyle with underscore",
 		},
 
 		// Related cell (same cipher letter, not cursor)
@@ -53,10 +53,10 @@ func TestRenderInputCell(t *testing.T) {
 				Input:    'X',
 				IsLetter: true,
 			},
-			cursorPos:    0, // Cursor is elsewhere
+			cursorPos:     0,   // Cursor is elsewhere
 			highlightChar: 'A', // Highlight character is 'A'
 			expectedStyle: "X", // Content is "X" but wrapped in RelatedCellStyle
-			description:  "Letter cell with same cipher as highlight char should use RelatedCellStyle",
+			description:   "Letter cell with same cipher as highlight char should use RelatedCellStyle",
 		},
 		{
 			name: "related letter cell without user input",
@@ -66,10 +66,10 @@ func TestRenderInputCell(t *testing.T) {
 				Input:    0,
 				IsLetter: true,
 			},
-			cursorPos:    0,
+			cursorPos:     0,
 			highlightChar: 'A',
 			expectedStyle: "_", // Content is "_" but wrapped in RelatedCellStyle
-			description:  "Related letter cell without user input should use RelatedCellStyle with underscore",
+			description:   "Related letter cell without user input should use RelatedCellStyle with underscore",
 		},
 
 		// Regular cell (no highlighting)
@@ -81,10 +81,10 @@ func TestRenderInputCell(t *testing.T) {
 				Input:    'Y',
 				IsLetter: true,
 			},
-			cursorPos:    0,
+			cursorPos:     0,
 			highlightChar: 'A',
 			expectedStyle: "Y", // Content is "Y" but wrapped in CellStyle
-			description:  "Letter cell without highlighting should use CellStyle",
+			description:   "Letter cell without highlighting should use CellStyle",
 		},
 		{
 			name: "letter cell with no highlight active",
@@ -94,10 +94,10 @@ func TestRenderInputCell(t *testing.T) {
 				Input:    'Z',
 				IsLetter: true,
 			},
-			cursorPos:    0,
-			highlightChar: 0, // No highlight character (cursor on non-letter)
+			cursorPos:     0,
+			highlightChar: 0,   // No highlight character (cursor on non-letter)
 			expectedStyle: "Z", // Content is "Z" but wrapped in CellStyle
-			description:  "Letter cell with no active highlight should use CellStyle",
+			description:   "Letter cell with no active highlight should use CellStyle",
 		},
 
 		// Non-letter cells (punctuation, spaces)
@@ -109,10 +109,10 @@ func TestRenderInputCell(t *testing.T) {
 				Input:    0,
 				IsLetter: false,
 			},
-			cursorPos:    0,
+			cursorPos:     0,
 			highlightChar: 'A',
 			expectedStyle: " ",
-			description:  "Non-letter cell should always use CellStyle",
+			description:   "Non-letter cell should always use CellStyle",
 		},
 		{
 			name: "non-letter cell (punctuation)",
@@ -122,10 +122,10 @@ func TestRenderInputCell(t *testing.T) {
 				Input:    0,
 				IsLetter: false,
 			},
-			cursorPos:    0,
+			cursorPos:     0,
 			highlightChar: 'A',
 			expectedStyle: ",",
-			description:  "Punctuation cell should always use CellStyle",
+			description:   "Punctuation cell should always use CellStyle",
 		},
 		{
 			name: "cursor on non-letter cell",
@@ -135,10 +135,10 @@ func TestRenderInputCell(t *testing.T) {
 				Input:    0,
 				IsLetter: false,
 			},
-			cursorPos:    5, // Cursor is on this non-letter cell
+			cursorPos:     5, // Cursor is on this non-letter cell
 			highlightChar: 0, // Non-letters don't produce highlight char
 			expectedStyle: ",",
-			description:  "Cursor on non-letter cell should use CellStyle (no highlighting)",
+			description:   "Cursor on non-letter cell should use CellStyle (no highlighting)",
 		},
 
 		// Active cell precedence over related cell
@@ -150,10 +150,10 @@ func TestRenderInputCell(t *testing.T) {
 				Input:    'B',
 				IsLetter: true,
 			},
-			cursorPos:    0, // Cursor is on this cell
+			cursorPos:     0,   // Cursor is on this cell
 			highlightChar: 'A', // This cell also matches highlight char
 			expectedStyle: "B", // Should use ActiveCellStyle (cursor takes precedence)
-			description:  "Active cell should take precedence over related cell highlighting",
+			description:   "Active cell should take precedence over related cell highlighting",
 		},
 	}
 
@@ -185,7 +185,8 @@ func verifyStyleApplication(t *testing.T, tt struct {
 	highlightChar rune
 	expectedStyle string
 	description   string
-}, result string) {
+}, result string,
+) {
 	if !tt.cell.IsLetter {
 		// Non-letter cells always use CellStyle regardless of cursor/highlight
 		// Just verify content is present
@@ -206,36 +207,36 @@ func verifyStyleApplication(t *testing.T, tt struct {
 func TestRenderInputCellTableDrivenComprehensive(t *testing.T) {
 	// Test the complete matrix of cell states
 	testCases := []struct {
-		name          string
-		cells         []puzzle.Cell
-		cursorPos     int
-		highlightChar rune
-		cellIndex     int // Which cell in cells[] to test
-		shouldBeActive bool
+		name            string
+		cells           []puzzle.Cell
+		cursorPos       int
+		highlightChar   rune
+		cellIndex       int // Which cell in cells[] to test
+		shouldBeActive  bool
 		shouldBeRelated bool
-		description   string
+		description     string
 	}{
 		{
-			name: "empty puzzle",
-			cells: []puzzle.Cell{},
-			cursorPos: 0,
-			highlightChar: 0,
-			cellIndex: 0,
-			shouldBeActive: false,
+			name:            "empty puzzle",
+			cells:           []puzzle.Cell{},
+			cursorPos:       0,
+			highlightChar:   0,
+			cellIndex:       0,
+			shouldBeActive:  false,
 			shouldBeRelated: false,
-			description: "Empty puzzle should not crash",
+			description:     "Empty puzzle should not crash",
 		},
 		{
 			name: "single letter cell as cursor",
 			cells: []puzzle.Cell{
 				{Index: 0, Char: 'A', Input: 'B', IsLetter: true},
 			},
-			cursorPos: 0,
-			highlightChar: 0,
-			cellIndex: 0,
-			shouldBeActive: true,
+			cursorPos:       0,
+			highlightChar:   0,
+			cellIndex:       0,
+			shouldBeActive:  true,
 			shouldBeRelated: false,
-			description: "Single letter cell with cursor should be active",
+			description:     "Single letter cell with cursor should be active",
 		},
 		{
 			name: "multiple letters - cursor and highlight",
@@ -244,12 +245,12 @@ func TestRenderInputCellTableDrivenComprehensive(t *testing.T) {
 				{Index: 1, Char: 'A', Input: 0, IsLetter: true},
 				{Index: 2, Char: 'C', Input: 'X', IsLetter: true},
 			},
-			cursorPos: 0,
-			highlightChar: 'A',
-			cellIndex: 1,
-			shouldBeActive: false,
+			cursorPos:       0,
+			highlightChar:   'A',
+			cellIndex:       1,
+			shouldBeActive:  false,
 			shouldBeRelated: true,
-			description: "Second cell with same char as active cell should be highlighted",
+			description:     "Second cell with same char as active cell should be highlighted",
 		},
 		{
 			name: "cursor on non-letter prevents highlighting",
@@ -258,12 +259,12 @@ func TestRenderInputCellTableDrivenComprehensive(t *testing.T) {
 				{Index: 1, Char: ' ', Input: 0, IsLetter: false},
 				{Index: 2, Char: 'A', Input: 'C', IsLetter: true},
 			},
-			cursorPos: 1, // Non-letter
-			highlightChar: 0, // No highlight when on non-letter
-			cellIndex: 2,
-			shouldBeActive: false,
+			cursorPos:       1, // Non-letter
+			highlightChar:   0, // No highlight when on non-letter
+			cellIndex:       2,
+			shouldBeActive:  false,
 			shouldBeRelated: false,
-			description: "No highlighting when cursor is on non-letter cell",
+			description:     "No highlighting when cursor is on non-letter cell",
 		},
 		{
 			name: "puzzle with punctuation and letters",
@@ -273,12 +274,12 @@ func TestRenderInputCellTableDrivenComprehensive(t *testing.T) {
 				{Index: 2, Char: ',', Input: 0, IsLetter: false},
 				{Index: 3, Char: 'H', Input: 0, IsLetter: true},
 			},
-			cursorPos: 0, // On 'H'
-			highlightChar: 'H',
-			cellIndex: 3, // Another 'H'
-			shouldBeActive: false,
+			cursorPos:       0, // On 'H'
+			highlightChar:   'H',
+			cellIndex:       3, // Another 'H'
+			shouldBeActive:  false,
 			shouldBeRelated: true,
-			description: "Letter H at index 3 should be highlighted because cursor is on H at index 0",
+			description:     "Letter H at index 3 should be highlighted because cursor is on H at index 0",
 		},
 	}
 
@@ -324,32 +325,32 @@ func TestRenderInputCellStylePrecedence(t *testing.T) {
 	// This is a critical property: when cursor is on a cell that also matches the highlight char,
 	// active cell style (cursor) takes visual precedence
 	tests := []struct {
-		name string
-		cell puzzle.Cell
-		cursorPos int
+		name          string
+		cell          puzzle.Cell
+		cursorPos     int
 		highlightChar rune
-		expectActive bool
+		expectActive  bool
 	}{
 		{
-			name: "cursor takes precedence",
-			cell: puzzle.Cell{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
-			cursorPos: 0,
+			name:          "cursor takes precedence",
+			cell:          puzzle.Cell{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
+			cursorPos:     0,
 			highlightChar: 'A', // Same as cell.Char
-			expectActive: true,
+			expectActive:  true,
 		},
 		{
-			name: "non-cursor, matching highlight",
-			cell: puzzle.Cell{Index: 1, Char: 'A', Input: 'Y', IsLetter: true},
-			cursorPos: 0,
+			name:          "non-cursor, matching highlight",
+			cell:          puzzle.Cell{Index: 1, Char: 'A', Input: 'Y', IsLetter: true},
+			cursorPos:     0,
 			highlightChar: 'A',
-			expectActive: false, // Not cursor position, so should be related not active
+			expectActive:  false, // Not cursor position, so should be related not active
 		},
 		{
-			name: "cursor, no highlight char",
-			cell: puzzle.Cell{Index: 0, Char: 'B', Input: 'Z', IsLetter: true},
-			cursorPos: 0,
+			name:          "cursor, no highlight char",
+			cell:          puzzle.Cell{Index: 0, Char: 'B', Input: 'Z', IsLetter: true},
+			cursorPos:     0,
 			highlightChar: 0,
-			expectActive: true,
+			expectActive:  true,
 		},
 	}
 
