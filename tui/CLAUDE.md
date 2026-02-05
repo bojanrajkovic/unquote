@@ -24,6 +24,7 @@ From `tui/` directory:
 - `internal/puzzle/` - Domain logic (cells, navigation, solution assembly)
 - `internal/storage/` - Session persistence (XDG state directory)
 - `internal/ui/` - Styling and text wrapping utilities
+- `internal/version/` - Build-time version info (ldflags injection)
 
 ## Contracts
 
@@ -53,6 +54,11 @@ From `tui/` directory:
 ### ui package
 - **Exposes**: Style definitions (colors, styles), text wrapping functions: `WordWrapText()`, `GroupCellsByWord()`, `WrapWordGroups()`, `FlattenLine()`
 - **Guarantees**: Consistent color palette across all UI states; word-aware line breaking respects cell boundaries
+
+### version package
+- **Exposes**: `Info` struct, `Get()`, `Version` and `Branch` vars (ldflags targets)
+- **Guarantees**: `Get()` always returns valid Info (defaults to "dev" if no ldflags); commit hash truncated to 12 chars
+- **Build integration**: Set via `-ldflags "-X ...Version=v1.0.0"` at compile time; goreleaser handles this automatically
 
 ## Key Decisions
 

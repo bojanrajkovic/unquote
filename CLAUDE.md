@@ -77,6 +77,7 @@ A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encry
 - `internal/app/` - Bubble Tea model, update loop, and views
 - `internal/puzzle/` - Domain logic (cells, navigation, solution assembly)
 - `internal/ui/` - Styling and text wrapping utilities
+- `internal/version/` - Build-time version info (ldflags injection)
 
 ## Commit Messages
 
