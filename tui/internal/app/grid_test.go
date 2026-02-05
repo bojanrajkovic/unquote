@@ -10,11 +10,11 @@ import (
 func TestRenderInputCell(t *testing.T) {
 	tests := []struct {
 		name          string
+		expectedStyle string
+		description   string
 		cell          puzzle.Cell
 		cursorPos     int
 		highlightChar rune
-		expectedStyle string
-		description   string
 	}{
 		// Active cell (cursor is on this cell)
 		{
@@ -180,11 +180,11 @@ func TestRenderInputCell(t *testing.T) {
 // It does this by comparing the rendered output against what we expect from each style.
 func verifyStyleApplication(t *testing.T, tt struct {
 	name          string
+	expectedStyle string
+	description   string
 	cell          puzzle.Cell
 	cursorPos     int
 	highlightChar rune
-	expectedStyle string
-	description   string
 }, result string,
 ) {
 	if !tt.cell.IsLetter {
@@ -208,13 +208,13 @@ func TestRenderInputCellTableDrivenComprehensive(t *testing.T) {
 	// Test the complete matrix of cell states
 	testCases := []struct {
 		name            string
+		description     string
 		cells           []puzzle.Cell
 		cursorPos       int
+		cellIndex       int
 		highlightChar   rune
-		cellIndex       int // Which cell in cells[] to test
 		shouldBeActive  bool
 		shouldBeRelated bool
-		description     string
 	}{
 		{
 			name:            "empty puzzle",

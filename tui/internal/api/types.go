@@ -12,8 +12,8 @@ type Puzzle struct {
 	Date          string `json:"date"`
 	EncryptedText string `json:"encryptedText"`
 	Author        string `json:"author"`
-	Difficulty    int    `json:"difficulty"`
 	Hints         []Hint `json:"hints"`
+	Difficulty    int    `json:"difficulty"`
 }
 
 // CheckRequest represents the request body for checking a solution

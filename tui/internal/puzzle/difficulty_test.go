@@ -4,25 +4,25 @@ import "testing"
 
 func TestDifficultyText(t *testing.T) {
 	tests := []struct {
-		score    int
 		expected string
+		score    int
 	}{
 		// Easy (0-25)
-		{0, "Easy"},
-		{10, "Easy"},
-		{25, "Easy"},
+		{"Easy", 0},
+		{"Easy", 10},
+		{"Easy", 25},
 		// Medium (26-50)
-		{26, "Medium"},
-		{40, "Medium"},
-		{50, "Medium"},
+		{"Medium", 26},
+		{"Medium", 40},
+		{"Medium", 50},
 		// Hard (51-75)
-		{51, "Hard"},
-		{60, "Hard"},
-		{75, "Hard"},
+		{"Hard", 51},
+		{"Hard", 60},
+		{"Hard", 75},
 		// Expert (76-100)
-		{76, "Expert"},
-		{90, "Expert"},
-		{100, "Expert"},
+		{"Expert", 76},
+		{"Expert", 90},
+		{"Expert", 100},
 	}
 
 	for _, tt := range tests {

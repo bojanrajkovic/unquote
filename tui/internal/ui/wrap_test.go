@@ -57,13 +57,13 @@ func TestFlattenLine(t *testing.T) {
 func TestWordWrapText(t *testing.T) {
 	tests := []struct {
 		text     string
-		maxWidth int
 		expected string
+		maxWidth int
 	}{
-		{"hello world", 20, "hello world"},
-		{"hello world", 6, "hello\nworld"},
-		{"a b c d e", 5, "a b c\nd e"},
-		{"", 10, ""},
+		{"hello world", "hello world", 20},
+		{"hello world", "hello\nworld", 6},
+		{"a b c d e", "a b c\nd e", 5},
+		{"", "", 10},
 	}
 
 	for _, tt := range tests {

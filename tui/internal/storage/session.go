@@ -15,12 +15,12 @@ const appName = "unquote"
 
 // GameSession represents the persisted state of a puzzle game
 type GameSession struct {
+	SavedAt        time.Time         `json:"saved_at"`
+	Inputs         map[string]string `json:"inputs"`
 	GameID         string            `json:"game_id"`
-	Inputs         map[string]string `json:"inputs"`          // cipher letter -> input letter
-	ElapsedTime    time.Duration     `json:"elapsed_time"`    // accumulated time in nanoseconds
-	Solved         bool              `json:"solved"`          // true if puzzle was solved
-	CompletionTime time.Duration     `json:"completion_time"` // final solve time if solved
-	SavedAt        time.Time         `json:"saved_at"`        // timestamp of last save
+	ElapsedTime    time.Duration     `json:"elapsed_time"`
+	CompletionTime time.Duration     `json:"completion_time"`
+	Solved         bool              `json:"solved"`
 }
 
 // sessionPath returns the full path for a game session file.

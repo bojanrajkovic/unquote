@@ -52,9 +52,9 @@ func TestAssembleSolution(t *testing.T) {
 
 func TestIsComplete(t *testing.T) {
 	tests := []struct {
+		filled   map[int]rune
 		name     string
 		input    string
-		filled   map[int]rune
 		expected bool
 	}{
 		{

@@ -18,8 +18,8 @@ const (
 
 // Client handles communication with the Unquote API
 type Client struct {
-	baseURL    string
 	httpClient *http.Client
+	baseURL    string
 }
 
 // NewClient creates a new API client with configuration from environment

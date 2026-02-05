@@ -6,8 +6,8 @@ func TestBuildCells(t *testing.T) {
 	tests := []struct {
 		name           string
 		input          string
-		expectedLen    int
 		expectedLetter []bool
+		expectedLen    int
 	}{
 		{
 			name:           "simple word",

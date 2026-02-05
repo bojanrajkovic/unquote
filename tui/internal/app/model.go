@@ -26,18 +26,18 @@ const (
 
 // Model holds the application state
 type Model struct {
-	state          State
+	startTime      time.Time
 	puzzle         *api.Puzzle
-	cells          []puzzle.Cell
-	cursorPos      int
+	client         *api.Client
 	errorMsg       string
 	statusMsg      string
+	cells          []puzzle.Cell
+	state          State
+	cursorPos      int
 	width          int
 	height         int
-	sizeReady      bool // true after first WindowSizeMsg received
-	client         *api.Client
-	startTime      time.Time     // when current timer run started
-	elapsedAtPause time.Duration // accumulated time before pause/solve
+	elapsedAtPause time.Duration
+	sizeReady      bool
 }
 
 // New creates a new Model with initial state

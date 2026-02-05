@@ -8,8 +8,8 @@ import (
 func TestFormatElapsed(t *testing.T) {
 	tests := []struct {
 		name     string
-		duration time.Duration
 		expected string
+		duration time.Duration
 	}{
 		{
 			name:     "zero duration",

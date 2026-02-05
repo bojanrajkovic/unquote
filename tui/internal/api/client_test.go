@@ -50,7 +50,7 @@ func TestFetchTodaysPuzzle(t *testing.T) {
 }
 
 func TestFetchTodaysPuzzle_ServerError(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		_, _ = w.Write([]byte("internal server error"))
 	}))
@@ -131,7 +131,7 @@ func TestCheckSolution_Correct(t *testing.T) {
 }
 
 func TestCheckSolution_Incorrect(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(CheckResponse{Correct: false})
 	}))
@@ -149,7 +149,7 @@ func TestCheckSolution_Incorrect(t *testing.T) {
 }
 
 func TestCheckSolution_NotFound(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		_, _ = w.Write([]byte("game not found"))
 	}))
