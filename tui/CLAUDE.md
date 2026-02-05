@@ -120,6 +120,6 @@ Triggered automatically when you merge a PR to `main` that modifies files in `tu
 - Verify workflow permissions include `contents: write`
 
 **GoReleaser fails:**
-- Run `goreleaser check` locally in `tui/` to validate .goreleaser.yaml
+- Run `goreleaser check` locally in `tui/` to validate .goreleaser.yml
 - Check if tag already exists (goreleaser won't overwrite)
 - Verify GITHUB_TOKEN has write access to repository
