@@ -20,5 +20,6 @@
     "oxfmt": "catalog:lint",
     "oxlint": "catalog:lint",
     "typescript": "catalog:build"
-  }
+  },
+  "version": "1.0.0"
 }
