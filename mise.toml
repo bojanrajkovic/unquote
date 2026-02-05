@@ -4,6 +4,8 @@ experimental_monorepo_root = true
 node = "lts"
 go = "1.25.6"
 "go:golang.org/x/tools/gopls" = "latest"
+lefthook = "latest"
+"npm:@commitlint/cli" = "latest"
 
 [monorepo]
 config_roots = ["api", "tui"]

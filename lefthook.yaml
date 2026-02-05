@@ -1,0 +1,35 @@
+pre-commit:
+  parallel: true
+  commands:
+    # TUI checks (Go)
+    tui-fmt:
+      glob: "tui/**/*.go"
+      run: mise run //tui:fmt
+      stage_fixed: true
+
+    tui-vet:
+      glob: "tui/**/*.go"
+      run: mise run //tui:vet
+
+    tui-lint:
+      glob: "tui/**/*.go"
+      run: mise run //tui:lint
+
+    # API checks (TypeScript)
+    api-fmt:
+      glob: "api/**/*.ts"
+      run: mise run //api:fmt
+      stage_fixed: true
+
+    api-lint:
+      glob: "api/**/*.ts"
+      run: mise run //api:lint
+
+    api-typecheck:
+      glob: "api/**/*.ts"
+      run: mise run //api:typecheck
+
+commit-msg:
+  commands:
+    commitlint:
+      run: commitlint --edit {1}

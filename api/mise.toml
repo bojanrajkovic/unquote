@@ -1,3 +1,30 @@
 [tasks.build]
 description = "Build the API"
 run = "pnpm run build"
+
+[tasks.fmt]
+description = "Format TypeScript code"
+run = "pnpm run format"
+
+[tasks.lint]
+description = "Run oxlint"
+run = "pnpm run lint"
+
+[tasks.typecheck]
+description = "Run TypeScript type checking"
+run = "pnpm run typecheck"
+
+[tasks.test]
+description = "Run tests"
+run = "pnpm run test"
+
+[tasks.ci]
+description = "Run all CI checks"
+run = """
+set -e
+mise run :fmt
+mise run :lint
+mise run :typecheck
+mise run :test
+mise run :build
+"""
