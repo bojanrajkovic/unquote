@@ -310,10 +310,8 @@ func TestRenderInputCellTableDrivenComprehensive(t *testing.T) {
 				if !strings.Contains(result, expectedContent) {
 					t.Errorf("Expected content %q not found in result %q. Description: %s", expectedContent, result, tc.description)
 				}
-			} else {
-				if !strings.Contains(result, string(testCell.Char)) {
-					t.Errorf("Expected content %q not found in result %q. Description: %s", string(testCell.Char), result, tc.description)
-				}
+			} else if !strings.Contains(result, string(testCell.Char)) {
+				t.Errorf("Expected content %q not found in result %q. Description: %s", string(testCell.Char), result, tc.description)
 			}
 		})
 	}

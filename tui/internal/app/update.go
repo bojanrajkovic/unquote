@@ -57,8 +57,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	// Global keybindings (always work)
-	switch msg.String() {
-	case "esc":
+	if msg.String() == "esc" {
 		return m, tea.Quit
 	}
 
@@ -120,8 +119,7 @@ func (m Model) handleMouseMsg(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) handleErrorKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	switch msg.String() {
-	case "r":
+	if msg.String() == "r" {
 		// Retry on error
 		m.state = StateLoading
 		m.errorMsg = ""
@@ -227,7 +225,7 @@ func (m Model) handleSolutionChecked(msg solutionCheckedMsg) (tea.Model, tea.Cmd
 		m.state = StateSolved
 		m.statusMsg = ""
 		// Capture final elapsed time
-		m.elapsedAtPause = m.elapsedAtPause + time.Since(m.startTime)
+		m.elapsedAtPause += time.Since(m.startTime)
 		// Save solved state
 		return m, saveSolvedSessionCmd(m.puzzle.ID, m.cells, m.elapsedAtPause)
 	}
