@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.git/
+*.test.ts
+*.test.integration.ts
+*.spec.ts
+coverage/
+.env*
+docs/
+.serena/
+.claude/
+.worktrees/
+*.md
+.turbo/
+.eslintcache
+.oxlint-cache
