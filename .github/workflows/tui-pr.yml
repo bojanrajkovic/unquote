@@ -44,18 +44,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup mise (root)
+      - name: Setup mise
         uses: jdx/mise-action@v3
         with:
           cache: true
           experimental: true
-
-      - name: Setup mise (tui)
-        uses: jdx/mise-action@v3
-        with:
-          cache: true
-          experimental: true
-          working_directory: tui
 
       - name: Cache Go modules
         uses: actions/cache@v4
@@ -70,8 +63,6 @@ jobs:
       - name: Run CI checks
         working-directory: tui
         run: mise run :ci
-        env:
-          MISE_EXPERIMENTAL: "1"
 
   build-snapshot:
     name: Build Snapshot
@@ -93,18 +84,11 @@ jobs:
           change_path: "tui/"
           version_format: "${major}.${minor}.${patch}"
 
-      - name: Setup mise (root)
+      - name: Setup mise
         uses: jdx/mise-action@v3
         with:
           cache: true
           experimental: true
-
-      - name: Setup mise (tui)
-        uses: jdx/mise-action@v3
-        with:
-          cache: true
-          experimental: true
-          working_directory: tui
 
       - name: Cache Go modules
         uses: actions/cache@v4
