@@ -82,7 +82,7 @@ jobs:
         id: version
         uses: PaulHatch/semantic-version@v6.0.0
         with:
-          tag_prefix: "v"
+          tag_prefix: "tui-v"
           change_path: "tui/"
           version_format: "${major}.${minor}.${patch}"
 
@@ -90,7 +90,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          TAG="v${{ steps.version.outputs.version }}"
+          TAG="tui-v${{ steps.version.outputs.version }}"
           echo "Creating tag: $TAG"
           git tag -a "$TAG" -m "Release $TAG"
           git push origin "$TAG"

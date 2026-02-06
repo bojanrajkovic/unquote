@@ -80,7 +80,7 @@ jobs:
         id: version
         uses: PaulHatch/semantic-version@v6.0.0
         with:
-          tag_prefix: "v"
+          tag_prefix: "tui-v"
           change_path: "tui/"
           version_format: "${major}.${minor}.${patch}"
 
