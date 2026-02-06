@@ -47,17 +47,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup mise
+      - name: Setup mise (root)
         uses: jdx/mise-action@v3
         with:
           cache: true
           experimental: true
 
-      - name: Install TUI tools
-        working-directory: tui
-        run: mise install
-        env:
-          MISE_EXPERIMENTAL: "1"
+      - name: Setup mise (tui)
+        uses: jdx/mise-action@v3
+        with:
+          cache: true
+          experimental: true
+          working_directory: tui
 
       - name: Cache Go modules
         uses: actions/cache@v4
@@ -105,17 +106,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup mise
+      - name: Setup mise (root)
         uses: jdx/mise-action@v3
         with:
           cache: true
           experimental: true
 
-      - name: Install TUI tools
-        working-directory: tui
-        run: mise install
-        env:
-          MISE_EXPERIMENTAL: "1"
+      - name: Setup mise (tui)
+        uses: jdx/mise-action@v3
+        with:
+          cache: true
+          experimental: true
+          working_directory: tui
 
       - name: Cache Go modules
         uses: actions/cache@v4
