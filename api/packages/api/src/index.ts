@@ -92,6 +92,16 @@ const buildServer = async (): Promise<FastifyInstance> => {
 const start = async (): Promise<void> => {
   const server = await buildServer();
 
+  const shutdown = async (signal: string): Promise<void> => {
+    server.log.info({ signal }, "received signal, shutting down gracefully");
+    await server.close();
+    // eslint-disable-next-line no-process-exit
+    process.exit(0);
+  };
+
+  process.on("SIGTERM", () => void shutdown("SIGTERM"));
+  process.on("SIGINT", () => void shutdown("SIGINT"));
+
   // eslint-disable-next-line max-depth
   try {
     await server.listen({
