@@ -53,6 +53,9 @@ jobs:
           cache: true
           experimental: true
 
+      - name: Enable corepack
+        run: corepack enable
+
       - name: Install dependencies
         working-directory: api
         run: pnpm install --frozen-lockfile
