@@ -86,7 +86,7 @@ jobs:
         with:
           tag_prefix: "v"
           change_path: "tui/"
-          format: "${major}.${minor}.${patch}"
+          version_format: "${major}.${minor}.${patch}"
 
       - name: Create and push tag
         run: |

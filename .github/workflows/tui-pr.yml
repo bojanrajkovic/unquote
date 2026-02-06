@@ -84,7 +84,7 @@ jobs:
         with:
           tag_prefix: "v"
           change_path: "tui/"
-          format: "${major}.${minor}.${patch}"
+          version_format: "${major}.${minor}.${patch}"
 
       - name: Setup mise
         uses: jdx/mise-action@v3
