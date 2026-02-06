@@ -1,4 +1,4 @@
-name: API Docker
+name: API - Docker
 
 on:
   push:
@@ -23,6 +23,7 @@ jobs:
   # Build: Native platform builds pushed by digest
   # ─────────────────────────────────────────────
   build:
+    name: Build (${{ matrix.platform }})
     if: github.event_name != 'pull_request'
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -82,6 +83,7 @@ jobs:
   # Merge: Combine digests into multi-arch manifest
   # ─────────────────────────────────────────────
   merge:
+    name: Merge Manifests
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
     needs: [build]
@@ -125,6 +127,7 @@ jobs:
   # Validate: PR build (no push)
   # ─────────────────────────────────────────────
   validate:
+    name: Validate Build
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
