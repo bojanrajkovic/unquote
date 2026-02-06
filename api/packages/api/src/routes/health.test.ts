@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import Fastify, { type FastifyInstance } from "fastify";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import sensible from "@fastify/sensible";
@@ -11,7 +11,7 @@ import { healthRoutes } from "./health.js";
 describe("health routes", () => {
   let fastify: FastifyInstance;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const container = createTestContainer({
       logger: createSilentLogger(),
     });
@@ -29,7 +29,7 @@ describe("health routes", () => {
     await fastify.ready();
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await fastify.close();
   });
 
