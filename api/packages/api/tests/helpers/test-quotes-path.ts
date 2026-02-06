@@ -11,7 +11,7 @@ export function getTestQuotesPath(): string {
   const quotesPath = resolve(import.meta.dirname, "../../../../resources/quotes.json");
 
   if (!existsSync(quotesPath)) {
-    throw new Error(`Test quotes file not found at ${quotesPath}. ` + "Ensure api/resources/quotes.json exists.");
+    throw new Error(`Test quotes file not found at ${quotesPath}. Ensure api/resources/quotes.json exists.`);
   }
 
   return quotesPath;
