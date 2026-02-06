@@ -51,9 +51,13 @@ jobs:
         uses: jdx/mise-action@v3
         with:
           cache: true
+        env:
+          MISE_EXPERIMENTAL: "1"
 
       - name: Run CI checks
         run: mise run :ci
+        env:
+          MISE_EXPERIMENTAL: "1"
 
   build-snapshot:
     name: Build Snapshot
@@ -79,6 +83,8 @@ jobs:
         uses: jdx/mise-action@v3
         with:
           cache: true
+        env:
+          MISE_EXPERIMENTAL: "1"
 
       - name: Build snapshot
         uses: goreleaser/goreleaser-action@v6
