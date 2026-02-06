@@ -13,7 +13,7 @@ import underPressure from "@fastify/under-pressure";
 import { EnvSchema } from "./config/index.js";
 import { configureContainer, registerDependencyInjection } from "./deps/index.js";
 import { registerGameRoutes } from "./domain/game/routes/index.js";
-import { registerHealthRoutes } from "./domain/health/index.js";
+import { healthRoutes } from "./routes/health.js";
 
 // Import type extensions for side effects
 import "./config/type-extensions.js";
@@ -83,7 +83,7 @@ const buildServer = async (): Promise<FastifyInstance> => {
   await fastify.register(registerGameRoutes, { prefix: "/game" });
 
   // Register health routes at /health
-  await fastify.register(registerHealthRoutes, { prefix: "/health" });
+  await fastify.register(healthRoutes, { prefix: "/health" });
 
   return fastify;
 };

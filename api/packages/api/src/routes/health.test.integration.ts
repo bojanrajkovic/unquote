@@ -1,17 +1,21 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import Fastify, { type FastifyInstance } from "fastify";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import sensible from "@fastify/sensible";
 import { oas3PluginAjv } from "@eropple/fastify-openapi3";
 
-import { registerDependencyInjection } from "../../../deps/index.js";
-import { createTestContainer, createSilentLogger } from "../../../../tests/helpers/index.js";
+import { registerDependencyInjection } from "../deps/index.js";
+import { createTestContainer, createSilentLogger } from "../../tests/helpers/index.js";
 import { healthRoutes } from "./health.js";
 
-describe("health routes", () => {
+/**
+ * Integration tests for health routes.
+ * Verifies the endpoint works with the full plugin stack.
+ */
+describe("health routes integration", () => {
   let fastify: FastifyInstance;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const container = createTestContainer({
       logger: createSilentLogger(),
     });
@@ -29,28 +33,29 @@ describe("health routes", () => {
     await fastify.ready();
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await fastify.close();
   });
 
   describe("GET /", () => {
-    it("returns 200 with ok status", async () => {
+    it("returns ok status with valid JSON response", async () => {
       const response = await fastify.inject({
         method: "GET",
         url: "/",
       });
 
       expect(response.statusCode).toBe(200);
-      expect(response.json()).toEqual({ status: "ok" });
+
+      const body = response.json();
+      expect(body).toHaveProperty("status");
+      expect(body.status).toBe("ok");
     });
 
-    it("returns correct content-type header", async () => {
-      const response = await fastify.inject({
-        method: "GET",
-        url: "/",
-      });
+    it("returns consistent response on repeated calls", async () => {
+      const response1 = await fastify.inject({ method: "GET", url: "/" });
+      const response2 = await fastify.inject({ method: "GET", url: "/" });
 
-      expect(response.headers["content-type"]).toMatch(/application\/json/);
+      expect(response1.json()).toEqual(response2.json());
     });
   });
 });

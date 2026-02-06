@@ -22,7 +22,7 @@ REST API server for the Unquote cryptoquip game. Serves puzzle endpoints and val
 
 - TypeBox for schemas: Import from `"typebox"` (TypeBox 1.0), not `"@sinclair/typebox"`
 - Awilix for DI: Singleton container for services, request scope for logger
-- Concentric pattern: Routes organized under `src/domain/<domain>/routes/`
+- Domain routes: Business routes under `src/domain/<domain>/routes/`; infra routes under `src/routes/`
 - Luxon for dates: All date handling uses Luxon DateTime, not JS Date
 
 ## Development Tools
@@ -50,7 +50,7 @@ Both `@unquote/api` and `@unquote/game-generator` tests can reference this locat
 - `src/index.ts` - Server entry point, plugin registration
 - `src/domain/game/routes/` - Game endpoints (puzzle retrieval, solution checking)
 - `src/domain/game/game-id.ts` - Sqids-based date encoding for opaque game IDs
-- `src/domain/health/` - Health check endpoint (no DI dependencies)
+- `src/routes/health.ts` - Health check endpoint (no DI dependencies)
 - `src/deps/` - Awilix dependency injection configuration
 - `src/config/` - Environment variable schema and validation
 - `tests/helpers/` - Test utilities including DI container factory

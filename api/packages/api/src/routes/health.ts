@@ -15,10 +15,10 @@ export const HealthResponseSchema = schemaType(
 export type HealthResponse = Static<typeof HealthResponseSchema>;
 
 /**
- * Health check route.
+ * Health check route plugin.
  * - GET / - returns { status: "ok" }
  */
-const healthRoutesPlugin: FastifyPluginAsync = async (fastify) => {
+export const healthRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.route<{
     Reply: HealthResponse;
   }>({
@@ -40,5 +40,3 @@ const healthRoutesPlugin: FastifyPluginAsync = async (fastify) => {
     },
   });
 };
-
-export const healthRoutes: FastifyPluginAsync = healthRoutesPlugin;
