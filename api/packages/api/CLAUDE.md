@@ -1,6 +1,6 @@
 # API Server
 
-Last verified: 2026-02-03
+Last verified: 2026-02-05
 
 ## Purpose
 
@@ -8,7 +8,7 @@ REST API server for the Unquote cryptoquip game. Serves puzzle endpoints and val
 
 ## Contracts
 
-- **Exposes**: REST endpoints under `/game` prefix, OpenAPI documentation
+- **Exposes**: REST endpoints under `/game` and `/health` prefixes, OpenAPI documentation
 - **Guarantees**: Deterministic puzzles by date, type-safe request/response handling
 - **Expects**: `QUOTES_FILE_PATH` environment variable pointing to quotes JSON file
 
@@ -50,6 +50,7 @@ Both `@unquote/api` and `@unquote/game-generator` tests can reference this locat
 - `src/index.ts` - Server entry point, plugin registration
 - `src/domain/game/routes/` - Game endpoints (puzzle retrieval, solution checking)
 - `src/domain/game/game-id.ts` - Sqids-based date encoding for opaque game IDs
+- `src/domain/health/` - Health check endpoint (no DI dependencies)
 - `src/deps/` - Awilix dependency injection configuration
 - `src/config/` - Environment variable schema and validation
 - `tests/helpers/` - Test utilities including DI container factory
