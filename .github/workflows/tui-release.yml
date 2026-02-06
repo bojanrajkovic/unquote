@@ -1,0 +1,125 @@
+name: TUI - Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'tui/**'
+      - '.github/workflows/tui-*.yml'
+    tags-ignore:
+      - '**'
+
+permissions:
+  contents: write
+
+jobs:
+  check-release:
+    name: Check if Release Needed
+    runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.check.outputs.should_release }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check commit type
+        id: check
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "Commit message: $COMMIT_MSG"
+          if [[ $COMMIT_MSG =~ ^(feat|fix)(\(.+\))?!?: ]]; then
+            echo "should_release=true" >> $GITHUB_OUTPUT
+            echo "Release-triggering commit detected"
+          else
+            echo "should_release=false" >> $GITHUB_OUTPUT
+            echo "Commit type does not trigger release (not feat/fix)"
+          fi
+
+  ci-checks:
+    name: CI Checks
+    runs-on: ubuntu-latest
+    needs: check-release
+    if: needs.check-release.outputs.should_release == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup mise
+        uses: jdx/mise-action@v3
+        with:
+          cache: true
+          experimental: true
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: go-${{ runner.os }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            go-${{ runner.os }}-
+
+      - name: Run CI checks
+        working-directory: tui
+        run: mise run :ci
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [check-release, ci-checks]
+    if: needs.check-release.outputs.should_release == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Calculate version
+        id: version
+        uses: PaulHatch/semantic-version@v6.0.0
+        with:
+          tag_prefix: "v"
+          change_path: "tui/"
+          version_format: "${major}.${minor}.${patch}"
+
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          TAG="v${{ steps.version.outputs.version }}"
+          echo "Creating tag: $TAG"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup mise
+        uses: jdx/mise-action@v3
+        with:
+          cache: true
+          experimental: true
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: go-${{ runner.os }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            go-${{ runner.os }}-
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --clean
+          workdir: tui
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILD_BRANCH: main

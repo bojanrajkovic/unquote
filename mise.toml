@@ -6,6 +6,10 @@ go = "1.25.6"
 "go:golang.org/x/tools/gopls" = "latest"
 lefthook = "latest"
 "npm:@commitlint/cli" = "latest"
+# TUI tools
+"aqua:golangci/golangci-lint" = "2.8.0"
+"aqua:mvdan/gofumpt" = "0.7.0"
+"aqua:goreleaser/goreleaser" = "2.8.2"
 
 [monorepo]
 config_roots = ["api", "tui"]

@@ -24,6 +24,7 @@ From `tui/` directory:
 - `internal/puzzle/` - Domain logic (cells, navigation, solution assembly)
 - `internal/storage/` - Session persistence (XDG state directory)
 - `internal/ui/` - Styling and text wrapping utilities
+- `internal/version/` - Build-time version info (ldflags injection)
 
 ## Contracts
 
@@ -54,6 +55,11 @@ From `tui/` directory:
 - **Exposes**: Style definitions (colors, styles), text wrapping functions: `WordWrapText()`, `GroupCellsByWord()`, `WrapWordGroups()`, `FlattenLine()`
 - **Guarantees**: Consistent color palette across all UI states; word-aware line breaking respects cell boundaries
 
+### version package
+- **Exposes**: `Info` struct, `Get()`, `Version` and `Branch` vars (ldflags targets)
+- **Guarantees**: `Get()` always returns valid Info (defaults to "dev" if no ldflags); commit hash truncated to 12 chars
+- **Build integration**: Set via `-ldflags "-X ...Version=v1.0.0"` at compile time; goreleaser handles this automatically
+
 ## Key Decisions
 
 - **Bubble Tea**: Elm architecture ensures predictable state management
@@ -69,3 +75,57 @@ From `tui/` directory:
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `UNQUOTE_API_URL` | No | http://localhost:3000 | API base URL |
+
+## CI/CD Workflows
+
+### PR Workflow (tui-pr.yml)
+
+Triggered automatically when you open a PR that modifies files in `tui/` or `.github/workflows/tui-*.yml`.
+
+**Validation** (blocking):
+1. **Validate PR Title** - Checks PR title follows conventional commit format
+   - Valid: `feat(tui): add dark mode`, `fix(tui): correct alignment`, `docs(tui): update readme`
+   - Invalid: `Add dark mode`, `tui: add feature` (missing type prefix)
+   - Blocks merge if title is invalid
+
+2. **CI Checks** - Executes `mise run ci` (fmt, vet, lint, test, build)
+   - Blocks merge if any check fails
+
+3. **Build Snapshot** - Runs after CI passes
+   - Calculates alpha version from commit history
+   - Builds cross-platform binaries via goreleaser (Linux amd64/arm64, macOS amd64/arm64, Windows amd64)
+   - Uploads artifacts to GitHub Actions (7-day retention)
+   - Posts/updates PR comment with download links
+
+### Release Workflow (tui-release.yml)
+
+Triggered automatically when you merge a PR to `main` that modifies files in `tui/` or `.github/workflows/tui-*.yml`.
+
+**Release Decision**:
+1. **Check if Release Needed** - Examines the merge commit message
+   - Only proceeds if commit starts with `feat:` or `fix:` (with colon)
+   - Skips release for `docs:`, `chore:`, `refactor:`, `test:`, etc.
+
+2. **CI Checks** (if release needed) - Same checks as PR workflow
+
+3. **Create Release** (if CI passes):
+   - Calculates next semantic version (e.g., v0.1.0 → v0.1.1 for fix, v0.2.0 for feat)
+   - Creates and pushes git tag (e.g., v0.1.1)
+   - Runs goreleaser to build and publish GitHub Release with downloadable binaries for all platforms
+
+### Troubleshooting
+
+**PR workflow doesn't trigger:**
+- Check `paths:` filter in tui-pr.yml matches changed files (must be in `tui/` or `.github/workflows/tui-*.yml`)
+- Verify tui-pr.yml exists on the target branch
+- Verify PR is set to merge into the target branch
+
+**Release workflow doesn't trigger:**
+- Check commit message starts with `feat:` or `fix:` (with colon) - not `feat` or `fix` alone
+- Verify `paths:` filter matches changed files in `tui/`
+- Verify workflow permissions include `contents: write`
+
+**GoReleaser fails:**
+- Run `goreleaser check` locally in `tui/` to validate .goreleaser.yml
+- Check if tag already exists (goreleaser won't overwrite)
+- Verify GITHUB_TOKEN has write access to repository

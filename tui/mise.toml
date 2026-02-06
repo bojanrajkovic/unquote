@@ -1,10 +1,8 @@
-[tools]
-"aqua:golangci/golangci-lint" = "2.8.0"
-"aqua:mvdan/gofumpt" = "0.7.0"
-
 [tasks.build]
-description = "Build the TUI"
-run = "go build -o bin/unquote ."
+description = "Build the TUI binary with version info"
+run = """
+go build -ldflags "-X 'github.com/bojanrajkovic/unquote/tui/internal/version.Version=dev' -X 'github.com/bojanrajkovic/unquote/tui/internal/version.Branch=$(git rev-parse --abbrev-ref HEAD)'" -o bin/unquote .
+"""
 
 [tasks.fmt]
 description = "Format Go code with gofumpt"
