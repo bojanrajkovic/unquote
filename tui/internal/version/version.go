@@ -7,11 +7,13 @@ import (
 	"strings"
 )
 
-// Version and Branch are set via ldflags during build.
+// These variables are set via ldflags during build.
 // Example: -ldflags "-X 'github.com/bojanrajkovic/unquote/tui/internal/version.Version=v1.0.0'"
 var (
 	Version = "dev"
 	Branch  = ""
+	Commit  = ""
+	Date    = ""
 )
 
 // Info contains version and build information.
@@ -26,10 +28,13 @@ type Info struct {
 
 // Get returns the current build information by combining
 // ldflags-injected values with runtime/debug.BuildInfo.
+// Ldflags values take precedence over debug.BuildInfo.
 func Get() Info {
 	info := Info{
 		Version: Version,
 		Branch:  Branch,
+		Commit:  Commit,
+		Date:    Date,
 	}
 
 	bi, ok := debug.ReadBuildInfo()
@@ -42,9 +47,13 @@ func Get() Info {
 	for _, s := range bi.Settings {
 		switch s.Key {
 		case "vcs.revision":
-			info.Commit = s.Value
+			if info.Commit == "" {
+				info.Commit = s.Value
+			}
 		case "vcs.time":
-			info.Date = s.Value
+			if info.Date == "" {
+				info.Date = s.Value
+			}
 		case "vcs.modified":
 			info.Modified = s.Value == "true"
 		}

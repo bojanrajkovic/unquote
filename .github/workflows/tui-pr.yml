@@ -109,7 +109,8 @@ jobs:
           workdir: tui
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GORELEASER_CURRENT_TAG: v${{ steps.version.outputs.version }}-alpha.${{ steps.version.outputs.increment }}+${{ github.event.pull_request.head.sha }}
+          GORELEASER_CURRENT_TAG: v${{ steps.version.outputs.version }}-alpha.${{ steps.version.outputs.increment }}
+          BUILD_BRANCH: ${{ github.head_ref }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -133,7 +134,7 @@ jobs:
           body: |
             ## TUI Alpha Build
 
-            Successfully built alpha version `v${{ steps.version.outputs.version }}-alpha.${{ steps.version.outputs.increment }}+${{ github.event.pull_request.head.sha }}`
+            Successfully built alpha version `v${{ steps.version.outputs.version }}-alpha.${{ steps.version.outputs.increment }}`
 
             **Platforms built:**
             - Linux (amd64, arm64)

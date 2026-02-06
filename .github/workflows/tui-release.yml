@@ -122,3 +122,4 @@ jobs:
           workdir: tui
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILD_BRANCH: main

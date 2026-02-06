@@ -26,7 +26,9 @@ builds:
     ldflags:
       - -s -w
       - -X 'github.com/bojanrajkovic/unquote/tui/internal/version.Version={{.Version}}'
-      - -X 'github.com/bojanrajkovic/unquote/tui/internal/version.Branch={{.Branch}}'
+      - -X 'github.com/bojanrajkovic/unquote/tui/internal/version.Branch={{ if index .Env "BUILD_BRANCH" }}{{ index .Env "BUILD_BRANCH" }}{{ else }}{{ .Branch }}{{ end }}'
+      - -X 'github.com/bojanrajkovic/unquote/tui/internal/version.Commit={{.ShortCommit}}'
+      - -X 'github.com/bojanrajkovic/unquote/tui/internal/version.Date={{.Date}}'
 
 archives:
   - id: default
