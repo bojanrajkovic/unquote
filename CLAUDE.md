@@ -1,6 +1,6 @@
 # Unquote
 
-Last verified: 2026-02-04
+Last verified: 2026-02-05
 
 A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encrypted quotes by substituting letters.
 
@@ -31,6 +31,14 @@ A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encry
   - `packages/game-generator/` - Puzzle generation library
 - `tui/` - Terminal UI client (Go module)
 
+## Containerization
+
+- **Dockerfile**: `api/Dockerfile` -- multi-stage build (base, build, production)
+- **Registry**: GitHub Container Registry (GHCR) via `api-docker.yml` workflow
+- **Platforms**: linux/amd64 and linux/arm64 (native runners, no QEMU)
+- **Deploy strategy**: `pnpm deploy --filter=@unquote/api --prod` for minimal production image
+- **Workspace injection**: `injectWorkspacePackages: true` in pnpm-workspace.yaml (required for `pnpm deploy`)
+
 ## API Architecture
 
 - **Framework**: Fastify with TypeBox type provider
@@ -58,6 +66,7 @@ A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encry
 
 ### Endpoints
 
+- `GET /health` - Health check (returns `{ status: "ok" }`)
 - `GET /game/today` - Retrieve today's cryptoquip puzzle
 - `GET /game/:date` - Retrieve puzzle for a specific date (ISO format: YYYY-MM-DD)
 - `POST /game/:id/check` - Validate a solution attempt using opaque game ID

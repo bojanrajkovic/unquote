@@ -1,6 +1,8 @@
 packages:
   - "packages/*"
 
+injectWorkspacePackages: true
+
 catalogs:
   build:
     "@tsconfig/strictest": "^2.0.0"
