@@ -112,11 +112,46 @@ jobs:
           GORELEASER_CURRENT_TAG: v${{ steps.version.outputs.version }}-alpha.${{ steps.version.outputs.increment }}
           BUILD_BRANCH: ${{ github.head_ref }}
 
-      - name: Upload artifacts
+      - name: Upload Linux amd64
         uses: actions/upload-artifact@v4
         with:
-          name: tui-alpha-v${{ steps.version.outputs.version }}-alpha.${{ steps.version.outputs.increment }}
-          path: tui/dist/
+          name: unquote-linux-amd64
+          path: tui/dist/unquote_*_linux_amd64.tar.gz
+          retention-days: 7
+
+      - name: Upload Linux arm64
+        uses: actions/upload-artifact@v4
+        with:
+          name: unquote-linux-arm64
+          path: tui/dist/unquote_*_linux_arm64.tar.gz
+          retention-days: 7
+
+      - name: Upload macOS amd64
+        uses: actions/upload-artifact@v4
+        with:
+          name: unquote-macos-amd64
+          path: tui/dist/unquote_*_darwin_amd64.tar.gz
+          retention-days: 7
+
+      - name: Upload macOS arm64
+        uses: actions/upload-artifact@v4
+        with:
+          name: unquote-macos-arm64
+          path: tui/dist/unquote_*_darwin_arm64.tar.gz
+          retention-days: 7
+
+      - name: Upload Windows amd64
+        uses: actions/upload-artifact@v4
+        with:
+          name: unquote-windows-amd64
+          path: tui/dist/unquote_*_windows_amd64.zip
+          retention-days: 7
+
+      - name: Upload checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: checksums
+          path: tui/dist/checksums.txt
           retention-days: 7
 
       - name: Find existing comment
