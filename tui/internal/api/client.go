@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	defaultBaseURL = "http://localhost:3000"
+	defaultBaseURL = "https://unquote.gaur-kardashev.ts.net"
 	defaultTimeout = 5 * time.Second
 	envAPIURL      = "UNQUOTE_API_URL"
 )
