@@ -31,7 +31,7 @@ From `tui/` directory:
 ### api package
 - **Exposes**: `Client`, `NewClient()`, `NewClientWithURL(url)`
 - **Guarantees**: Wraps all API errors with context
-- **Expects**: API at `UNQUOTE_API_URL` env var (default: `http://localhost:3000`)
+- **Expects**: API at `UNQUOTE_API_URL` env var (default: `https://unquote.gaur-kardashev.ts.net`)
 
 ### puzzle package
 - **Exposes**: `Cell`, `BuildCells()`, cell navigation functions, `AssembleSolution()`
@@ -74,7 +74,7 @@ From `tui/` directory:
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `UNQUOTE_API_URL` | No | http://localhost:3000 | API base URL |
+| `UNQUOTE_API_URL` | No | https://unquote.gaur-kardashev.ts.net | API base URL |
 
 ## CI/CD Workflows
 
