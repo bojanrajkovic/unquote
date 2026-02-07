@@ -3,15 +3,27 @@ name: TUI - PR Validation & Build
 on:
   pull_request:
     types: [opened, edited, synchronize]
-    paths:
-      - 'tui/**'
-      - '.github/workflows/tui-*.yml'
 
 permissions:
   contents: read
   pull-requests: write
 
 jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      tui: ${{ steps.filter.outputs.tui }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            tui:
+              - 'tui/**'
+              - '.github/workflows/tui-*.yml'
+
   validate-title:
     name: Validate PR Title
     runs-on: ubuntu-latest
@@ -38,7 +50,9 @@ jobs:
           requireScope: false
 
   ci-checks:
-    name: CI Checks
+    name: TUI CI
+    needs: changes
+    if: needs.changes.outputs.tui == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -65,9 +79,10 @@ jobs:
         run: mise run :ci
 
   build-snapshot:
-    name: Build Snapshot
+    name: TUI Build
     runs-on: ubuntu-latest
-    needs: [validate-title, ci-checks]
+    needs: [changes, validate-title, ci-checks]
+    if: needs.changes.outputs.tui == 'true'
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
@@ -179,3 +194,25 @@ jobs:
 
             [Download artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
           edit-mode: replace
+
+  tui-result:
+    name: TUI Result
+    needs: [changes, ci-checks, build-snapshot]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check results
+        run: |
+          if [[ "${{ needs.changes.outputs.tui }}" != "true" ]]; then
+            echo "No TUI changes, skipping"
+            exit 0
+          fi
+          if [[ "${{ needs.ci-checks.result }}" != "success" ]]; then
+            echo "TUI CI failed: ${{ needs.ci-checks.result }}"
+            exit 1
+          fi
+          if [[ "${{ needs.build-snapshot.result }}" != "success" ]]; then
+            echo "TUI Build failed: ${{ needs.build-snapshot.result }}"
+            exit 1
+          fi
+          echo "All TUI checks passed"
