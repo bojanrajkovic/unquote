@@ -3,9 +3,6 @@ name: API - Docker PR
 on:
   pull_request:
     branches: [main]
-    paths:
-      - "api/**"
-      - ".github/workflows/api-docker-pr.yml"
 
 permissions:
   contents: read
@@ -16,8 +13,25 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            api:
+              - 'api/**'
+              - '.github/workflows/api-docker-pr.yml'
+
   validate:
     name: Validate Build
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -42,3 +56,21 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=api-linux/amd64
           cache-to: type=gha,scope=api-linux/amd64,mode=max
+
+  api-result:
+    name: API Result
+    needs: [changes, validate]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check results
+        run: |
+          if [[ "${{ needs.changes.outputs.api }}" != "true" ]]; then
+            echo "No API changes, skipping"
+            exit 0
+          fi
+          if [[ "${{ needs.validate.result }}" != "success" ]]; then
+            echo "API validation failed: ${{ needs.validate.result }}"
+            exit 1
+          fi
+          echo "All API checks passed"
