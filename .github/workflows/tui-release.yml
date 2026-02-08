@@ -123,4 +123,5 @@ jobs:
           workdir: tui
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GORELEASER_CURRENT_TAG: v${{ steps.version.outputs.version }}
           BUILD_BRANCH: main
