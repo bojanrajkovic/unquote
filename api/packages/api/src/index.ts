@@ -26,6 +26,7 @@ const buildServer = async (): Promise<FastifyInstance> => {
     logger: {
       level: process.env["LOG_LEVEL"] ?? "info",
     },
+    trustProxy: process.env["TRUST_PROXY"] === "true",
     ajv: {
       plugins: [oas3PluginAjv],
     },
@@ -41,8 +42,9 @@ const buildServer = async (): Promise<FastifyInstance> => {
     contentSecurityPolicy: false,
   });
 
+  const corsOrigin = fastify.config.CORS_ORIGIN;
   await fastify.register(cors, {
-    origin: true,
+    origin: corsOrigin === "*" ? true : corsOrigin.split(",").map((o) => o.trim()),
   });
 
   await fastify.register(underPressure, {
