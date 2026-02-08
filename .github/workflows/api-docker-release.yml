@@ -3,7 +3,12 @@ name: API - Docker Release
 on:
   push:
     branches: [main]
-    tags: ["api-v*"]
+  workflow_call:
+    inputs:
+      version:
+        description: "Semantic version to tag the image with (e.g. 1.2.3)"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -98,10 +103,10 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
-            type=sha,prefix=main-,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
-            type=match,pattern=api-v(\d+\.\d+\.\d+),group=1
-            type=match,pattern=api-v(\d+\.\d+),group=1
+            type=raw,value=latest,enable=${{ inputs.version == '' }}
+            type=sha,prefix=main-,enable=${{ inputs.version == '' }}
+            type=semver,pattern={{version}},value=${{ inputs.version }},enable=${{ inputs.version != '' }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ inputs.version }},enable=${{ inputs.version != '' }}
 
       - name: Create manifest list and push
         working-directory: /tmp/digests
