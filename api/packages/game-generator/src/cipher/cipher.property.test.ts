@@ -148,6 +148,24 @@ describe("cipher properties", () => {
     });
   });
 
+  describe("property: no self-mapping", () => {
+    it("no plaintext letter ever maps to itself", () => {
+      fc.assert(
+        fc.property(quoteArbitrary, fc.string(), (quote, seed) => {
+          const puzzle = generator.generatePuzzle(quote, seed);
+
+          for (const [plain, cipher] of Object.entries(puzzle.mapping)) {
+            if (plain === cipher.toLowerCase()) {
+              return false;
+            }
+          }
+
+          return true;
+        }),
+      );
+    });
+  });
+
   describe("property: determinism", () => {
     it("same seed always produces identical puzzle", () => {
       fc.assert(

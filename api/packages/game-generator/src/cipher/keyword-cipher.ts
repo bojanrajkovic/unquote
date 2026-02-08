@@ -38,16 +38,56 @@ function buildCipherAlphabet(keyword: string): string {
 }
 
 /**
+ * Eliminate self-mappings (where a letter maps to itself) by swapping
+ * with the next non-self-mapping letter. Maintains bijectivity.
+ */
+function eliminateSelfMappings(cipherAlphabet: string): string {
+  const chars = [...cipherAlphabet];
+
+  for (let i = 0; i < chars.length; i++) {
+    if (chars[i] === ALPHABET[i]) {
+      // Find the next letter to swap with that won't create a new self-mapping
+      let swapped = false;
+      for (let j = i + 1; j < chars.length; j++) {
+        // After swap: chars[i] would be chars[j], chars[j] would be chars[i] (which is ALPHABET[i])
+        // Ensure neither creates a self-mapping
+        if (chars[j] !== ALPHABET[i] && chars[i] !== ALPHABET[j]) {
+          const tmp = chars[i]!;
+          chars[i] = chars[j]!;
+          chars[j] = tmp;
+          swapped = true;
+          break;
+        }
+      }
+      if (!swapped) {
+        // Wrap around: search from the beginning
+        for (let j = 0; j < i; j++) {
+          if (chars[j] !== ALPHABET[i] && chars[i] !== ALPHABET[j]) {
+            const tmp = chars[i]!;
+            chars[i] = chars[j]!;
+            chars[j] = tmp;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  return chars.join("");
+}
+
+/**
  * Build a mapping from plaintext letters to ciphertext letters.
  */
 function buildCipherMapping(cipherAlphabet: string): CipherMapping {
+  const fixedAlphabet = eliminateSelfMappings(cipherAlphabet);
   const mapping: Record<string, string> = {};
 
   for (let i = 0; i < ALPHABET.length; i++) {
     const plain = ALPHABET[i];
-    const cipher = cipherAlphabet[i];
+    const cipher = fixedAlphabet[i];
     if (!plain || !cipher) {
-      throw new Error(`Invalid cipher alphabet: expected 26 letters, got ${cipherAlphabet.length}`);
+      throw new Error(`Invalid cipher alphabet: expected 26 letters, got ${fixedAlphabet.length}`);
     }
     mapping[plain.toLowerCase()] = cipher;
   }
