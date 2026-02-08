@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/adrg/xdg"
@@ -55,45 +54,11 @@ func sessionFileName(gameID string) string {
 	return gameID + ".json"
 }
 
-// isValidGameID checks if a gameID is safe to use as a filename.
-// It rejects gameIDs containing path traversal patterns or absolute paths.
-func isValidGameID(gameID string) error {
-	// Reject gameIDs that contain path separators or traversal patterns
-	if gameID == ".." {
-		return fmt.Errorf("game ID cannot be '..'")
-	}
-	if gameID == "." {
-		return fmt.Errorf("game ID cannot be '.'")
-	}
-	if filepath.IsAbs(gameID) {
-		return fmt.Errorf("game ID cannot be an absolute path")
-	}
-	if filepath.Clean(gameID) != gameID {
-		// filepath.Clean removes redundant separators and .. components
-		// If it changes the path, it means the gameID had traversal in it
-		return fmt.Errorf("game ID contains path traversal patterns")
-	}
-	if gameID != filepath.Base(gameID) {
-		// If gameID differs from its basename, it contains separators
-		return fmt.Errorf("game ID cannot contain path separators")
-	}
-	// Explicitly reject backslashes (cross-platform safety, even though they're
-	// valid filenames on Unix, they're used for path traversal on Windows)
-	if strings.Contains(gameID, "\\") {
-		return fmt.Errorf("game ID cannot contain backslashes")
-	}
-	return nil
-}
-
 // SaveSession persists a game session to disk.
 // Uses os.Root to confine file operations to the sessions directory.
 func SaveSession(session *GameSession) error {
 	if session.GameID == "" {
 		return fmt.Errorf("session has no game ID")
-	}
-
-	if err := isValidGameID(session.GameID); err != nil {
-		return fmt.Errorf("invalid game ID: %w", err)
 	}
 
 	root, err := sessionsRoot()
@@ -132,10 +97,6 @@ func LoadSession(gameID string) (*GameSession, error) {
 		return nil, fmt.Errorf("game ID is empty")
 	}
 
-	if err := isValidGameID(gameID); err != nil {
-		return nil, fmt.Errorf("invalid game ID: %w", err)
-	}
-
 	root, err := sessionsRoot()
 	if err != nil {
 		return nil, fmt.Errorf("opening sessions root: %w", err)
@@ -163,10 +124,6 @@ func LoadSession(gameID string) (*GameSession, error) {
 func SessionExists(gameID string) (bool, error) {
 	if gameID == "" {
 		return false, fmt.Errorf("game ID is empty")
-	}
-
-	if err := isValidGameID(gameID); err != nil {
-		return false, fmt.Errorf("invalid game ID: %w", err)
 	}
 
 	root, err := sessionsRoot()

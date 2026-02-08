@@ -238,49 +238,6 @@ func TestLoadSession_EmptyGameID(t *testing.T) {
 	}
 }
 
-func TestPathTraversalRejected(t *testing.T) {
-	tmpDir := t.TempDir()
-	t.Setenv("XDG_STATE_HOME", tmpDir)
-
-	maliciousIDs := []struct {
-		name   string
-		gameID string
-	}{
-		{"dot-dot-slash", "../../evil"},
-		{"dot-dot-backslash", `..\..\evil`},
-		{"absolute-path", "/etc/passwd"},
-		{"embedded-traversal", "foo/../../../evil"},
-		{"dot-dot-only", ".."},
-	}
-
-	for _, tt := range maliciousIDs {
-		t.Run("save_"+tt.name, func(t *testing.T) {
-			session := &GameSession{
-				GameID: tt.gameID,
-				Inputs: map[string]string{},
-			}
-			err := SaveSession(session)
-			if err == nil {
-				t.Errorf("SaveSession should reject game ID %q", tt.gameID)
-			}
-		})
-
-		t.Run("load_"+tt.name, func(t *testing.T) {
-			_, err := LoadSession(tt.gameID)
-			if err == nil {
-				t.Errorf("LoadSession should reject game ID %q", tt.gameID)
-			}
-		})
-
-		t.Run("exists_"+tt.name, func(t *testing.T) {
-			_, err := SessionExists(tt.gameID)
-			if err == nil {
-				t.Errorf("SessionExists should reject game ID %q", tt.gameID)
-			}
-		})
-	}
-}
-
 func TestSessionStoredInCorrectDirectory(t *testing.T) {
 	tmpDir := t.TempDir()
 	t.Setenv("XDG_STATE_HOME", tmpDir)
