@@ -72,7 +72,7 @@ const buildServer = async (): Promise<FastifyInstance> => {
     },
     publish:
       process.env["NODE_ENV"] === "production"
-        ? { ui: null }
+        ? { ui: null, json: true, yaml: true }
         : {
             ui: "scalar",
             scalarExtraOptions: {
