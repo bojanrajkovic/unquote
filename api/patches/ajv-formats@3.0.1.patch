@@ -1,0 +1,10 @@
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index 045a0960ae4fb9dfd92c78b788c8627e390ec929..cbb0fe91c7d7a833f8db62f1339d70c5888a495d 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -12,4 +12,4 @@ export interface FormatsPlugin extends Plugin<FormatsPluginOptions> {
+     get: (format: FormatName, mode?: FormatMode) => Format;
+ }
+ declare const formatsPlugin: FormatsPlugin;
+-export default formatsPlugin;
++export = formatsPlugin;

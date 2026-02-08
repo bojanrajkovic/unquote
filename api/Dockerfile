@@ -21,6 +21,7 @@ WORKDIR /workspace
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/api/package.json packages/api/
 COPY packages/game-generator/package.json packages/game-generator/
+COPY patches/ patches/
 
 # Install all dependencies (including devDependencies for building)
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile

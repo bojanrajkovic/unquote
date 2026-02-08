@@ -3,6 +3,7 @@ import Fastify, { type FastifyError, type FastifyInstance } from "fastify";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import type { Logger } from "pino";
 import fastifyEnv from "@fastify/env";
+import addFormats from "ajv-formats";
 import cors from "@fastify/cors";
 import fastifyOpenapi3, { oas3PluginAjv } from "@eropple/fastify-openapi3";
 import helmet from "@fastify/helmet";
@@ -37,6 +38,12 @@ const buildServer = async (): Promise<FastifyInstance> => {
   await fastify.register(fastifyEnv, {
     schema: EnvSchema,
     dotenv: process.env["NODE_ENV"] !== "production",
+    ajv: {
+      customOptions(ajvInstance) {
+        addFormats(ajvInstance, { mode: "fast", formats: ["uri"] });
+        return ajvInstance;
+      },
+    },
   });
 
   // CSP is not needed for a pure JSON API (no HTML responses in production)
