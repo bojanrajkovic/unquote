@@ -22,10 +22,17 @@ export type AppSingletonCradle = {
  * @param logger - Pino logger instance from Fastify
  * @returns Configured Awilix container with typed cradle
  */
-export function configureContainer(config: AppConfig, logger: Logger): AwilixContainer<AppSingletonCradle> {
+export async function configureContainer(
+  config: AppConfig,
+  logger: Logger,
+): Promise<AwilixContainer<AppSingletonCradle>> {
   const container = createContainer<AppSingletonCradle>({
     strict: true,
   });
+
+  // Construct and eagerly validate quotes file (fail-fast at startup)
+  const quoteSource = new JsonQuoteSource(config.QUOTES_FILE_PATH);
+  await quoteSource.ensureLoaded();
 
   container.register({
     // Configuration and logger as values (already instantiated)
@@ -33,7 +40,7 @@ export function configureContainer(config: AppConfig, logger: Logger): AwilixCon
     logger: asValue(logger),
 
     // QuoteSource loads quotes from the configured file path
-    quoteSource: asValue(new JsonQuoteSource(config.QUOTES_FILE_PATH)),
+    quoteSource: asValue(quoteSource),
 
     // GameGenerator depends on QuoteSource
     gameGenerator: asFunction(
