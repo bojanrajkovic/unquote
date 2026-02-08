@@ -37,17 +37,9 @@ const buildServer = async (): Promise<FastifyInstance> => {
     dotenv: process.env["NODE_ENV"] !== "production",
   });
 
+  // CSP is not needed for a pure JSON API (no HTML responses in production)
   await fastify.register(helmet, {
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
-        imgSrc: ["'self'", "data:", "https:"],
-        fontSrc: ["'self'", "https://cdn.jsdelivr.net", "data:"],
-        connectSrc: ["'self'"],
-      },
-    },
+    contentSecurityPolicy: false,
   });
 
   await fastify.register(cors, {
@@ -71,21 +63,25 @@ const buildServer = async (): Promise<FastifyInstance> => {
     timeWindow: "1 minute",
   });
 
-  // Register OpenAPI plugin BEFORE routes so it can discover them
+  // Register OpenAPI plugin BEFORE routes so it can discover them.
+  // Disable docs UI in production — no HTML served means no CSP needed.
   await fastify.register(fastifyOpenapi3, {
     openapiInfo: {
       title: "Unquote API",
       version: "0.1.0",
     },
-    publish: {
-      ui: "scalar",
-      scalarExtraOptions: {
-        theme: "solarized",
-        url: "/openapi.json",
-      },
-      json: true,
-      yaml: true,
-    },
+    publish:
+      process.env["NODE_ENV"] === "production"
+        ? { ui: null }
+        : {
+            ui: "scalar",
+            scalarExtraOptions: {
+              theme: "solarized",
+              url: "/openapi.json",
+            },
+            json: true,
+            yaml: true,
+          },
   });
 
   // Sanitize 5xx error responses to avoid leaking internals
