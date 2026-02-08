@@ -25,49 +25,62 @@ type Client struct {
 }
 
 // NewClient creates a new API client with configuration from environment
-func NewClient() *Client {
+func NewClient(insecure bool) (*Client, error) {
 	baseURL := os.Getenv(envAPIURL)
 	if baseURL == "" {
 		baseURL = defaultBaseURL
 	}
 
-	warnIfInsecureURL(baseURL)
+	if err := validateURL(baseURL, insecure); err != nil {
+		return nil, err
+	}
 
 	return &Client{
 		baseURL: baseURL,
 		httpClient: &http.Client{
 			Timeout: defaultTimeout,
+			CheckRedirect: func(*http.Request, []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
 		},
-	}
+	}, nil
 }
 
 // NewClientWithURL creates a new API client with a custom base URL
-func NewClientWithURL(baseURL string) *Client {
-	warnIfInsecureURL(baseURL)
+func NewClientWithURL(baseURL string, insecure bool) (*Client, error) {
+	if err := validateURL(baseURL, insecure); err != nil {
+		return nil, err
+	}
 
 	return &Client{
 		baseURL: baseURL,
 		httpClient: &http.Client{
 			Timeout: defaultTimeout,
+			CheckRedirect: func(*http.Request, []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
 		},
-	}
+	}, nil
 }
 
-// warnIfInsecureURL prints a warning to stderr if the URL uses HTTP
-// with a non-localhost host.
-func warnIfInsecureURL(rawURL string) {
+// validateURL checks that the URL is secure unless insecure is true.
+// Returns an error if insecure is false and the URL uses HTTP with a non-localhost host.
+func validateURL(rawURL string, insecure bool) error {
 	u, err := url.Parse(rawURL)
 	if err != nil {
-		return
+		return fmt.Errorf("invalid URL: %w", err)
 	}
 	if u.Scheme != "http" {
-		return
+		return nil
+	}
+	if insecure {
+		return nil
 	}
 	host := u.Hostname()
 	if host == "localhost" || host == "127.0.0.1" || host == "::1" {
-		return
+		return nil
 	}
-	fmt.Fprintf(os.Stderr, "WARNING: API URL %q uses insecure HTTP for non-localhost host. Consider using HTTPS.\n", rawURL)
+	return fmt.Errorf("insecure HTTP connection to %q is not allowed (use --insecure to override)", host)
 }
 
 // FetchTodaysPuzzle retrieves the puzzle for today

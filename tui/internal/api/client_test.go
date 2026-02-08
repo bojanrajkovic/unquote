@@ -32,7 +32,10 @@ func TestFetchTodaysPuzzle(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClientWithURL(server.URL)
+	client, err := NewClientWithURL(server.URL, true)
+	if err != nil {
+		t.Fatalf("unexpected error creating client: %v", err)
+	}
 	puzzle, err := client.FetchTodaysPuzzle()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -56,8 +59,11 @@ func TestFetchTodaysPuzzle_ServerError(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClientWithURL(server.URL)
-	_, err := client.FetchTodaysPuzzle()
+	client, err := NewClientWithURL(server.URL, true)
+	if err != nil {
+		t.Fatalf("unexpected error creating client: %v", err)
+	}
+	_, err = client.FetchTodaysPuzzle()
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
@@ -83,7 +89,10 @@ func TestFetchPuzzleByDate(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClientWithURL(server.URL)
+	client, err := NewClientWithURL(server.URL, true)
+	if err != nil {
+		t.Fatalf("unexpected error creating client: %v", err)
+	}
 	puzzle, err := client.FetchPuzzleByDate("2026-01-15")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -119,7 +128,10 @@ func TestCheckSolution_Correct(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClientWithURL(server.URL)
+	client, err := NewClientWithURL(server.URL, true)
+	if err != nil {
+		t.Fatalf("unexpected error creating client: %v", err)
+	}
 	result, err := client.CheckSolution("test-id", "HELLO WORLD")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -137,7 +149,10 @@ func TestCheckSolution_Incorrect(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClientWithURL(server.URL)
+	client, err := NewClientWithURL(server.URL, true)
+	if err != nil {
+		t.Fatalf("unexpected error creating client: %v", err)
+	}
 	result, err := client.CheckSolution("test-id", "WRONG ANSWER")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -155,16 +170,98 @@ func TestCheckSolution_NotFound(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClientWithURL(server.URL)
-	_, err := client.CheckSolution("invalid-id", "TEST")
+	client, err := NewClientWithURL(server.URL, true)
+	if err != nil {
+		t.Fatalf("unexpected error creating client: %v", err)
+	}
+	_, err = client.CheckSolution("invalid-id", "TEST")
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
 }
 
 func TestNewClient_DefaultURL(t *testing.T) {
-	client := NewClient()
+	// Default URL is HTTPS, so insecure=false should work
+	client, err := NewClient(false)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	if client.baseURL != defaultBaseURL {
 		t.Errorf("expected default URL %q, got %q", defaultBaseURL, client.baseURL)
+	}
+}
+
+func TestNewClientWithURL_RejectsInsecureHTTP(t *testing.T) {
+	// HTTP to non-localhost should fail when insecure=false
+	_, err := NewClientWithURL("http://example.com", false)
+	if err == nil {
+		t.Fatal("expected error for insecure HTTP to non-localhost")
+	}
+}
+
+func TestNewClientWithURL_AllowsInsecureHTTPWithFlag(t *testing.T) {
+	// HTTP to non-localhost should succeed when insecure=true
+	client, err := NewClientWithURL("http://example.com", true)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if client.baseURL != "http://example.com" {
+		t.Errorf("expected base URL %q, got %q", "http://example.com", client.baseURL)
+	}
+}
+
+func TestNewClientWithURL_AllowsLocalhostHTTP(t *testing.T) {
+	tests := []struct {
+		name string
+		url  string
+	}{
+		{"localhost", "http://localhost:3000"},
+		{"127.0.0.1", "http://127.0.0.1:3000"},
+		{"ipv6-loopback", "http://[::1]:3000"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client, err := NewClientWithURL(tt.url, false)
+			if err != nil {
+				t.Fatalf("localhost HTTP should be allowed: %v", err)
+			}
+			if client.baseURL != tt.url {
+				t.Errorf("expected base URL %q, got %q", tt.url, client.baseURL)
+			}
+		})
+	}
+}
+
+func TestNewClientWithURL_AllowsHTTPS(t *testing.T) {
+	client, err := NewClientWithURL("https://api.example.com", false)
+	if err != nil {
+		t.Fatalf("HTTPS should always be allowed: %v", err)
+	}
+	if client.baseURL != "https://api.example.com" {
+		t.Errorf("expected base URL %q, got %q", "https://api.example.com", client.baseURL)
+	}
+}
+
+func TestClient_DoesNotFollowRedirects(t *testing.T) {
+	redirectTarget := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"id":"spoofed","date":"2026-01-01","encrypted_text":"SPOOFED","author":"Evil","difficulty":0,"hints":[]}`))
+	}))
+	defer redirectTarget.Close()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, redirectTarget.URL+"/game/today", http.StatusFound)
+	}))
+	defer server.Close()
+
+	client, err := NewClientWithURL(server.URL, true)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// FetchTodaysPuzzle should get the redirect response (302), not follow it
+	_, err = client.FetchTodaysPuzzle()
+	if err == nil {
+		t.Fatal("expected error due to non-200 redirect response, got nil")
 	}
 }

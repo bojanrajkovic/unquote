@@ -57,13 +57,12 @@ const buildServer = async (): Promise<FastifyInstance> => {
   await fastify.register(sensible);
 
   // Configure and register DI container
-  const container = configureContainer(fastify.config, fastify.log as Logger);
+  const container = await configureContainer(fastify.config, fastify.log as Logger);
   await fastify.register(registerDependencyInjection, { container });
 
   await fastify.register(rateLimit, {
-    global: true,
-    max: 100,
-    timeWindow: "1 minute",
+    max: fastify.config.RATE_LIMIT_MAX,
+    timeWindow: fastify.config.RATE_LIMIT_WINDOW,
   });
 
   // Register OpenAPI plugin BEFORE routes so it can discover them.

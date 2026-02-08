@@ -13,6 +13,10 @@ export const defaultTestConfig: AppConfig = {
   LOG_LEVEL: "silent",
   QUOTES_FILE_PATH: "/tmp/test-quotes.json",
   OTEL_EXPORTER_OTLP_ENDPOINT: undefined,
+  CORS_ORIGIN: "*",
+  TRUST_PROXY: false,
+  RATE_LIMIT_MAX: 100,
+  RATE_LIMIT_WINDOW: "1 minute",
 };
 
 /**

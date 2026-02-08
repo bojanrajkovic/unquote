@@ -37,6 +37,15 @@ export const EnvSchema = Type.Object({
   TRUST_PROXY: Type.Boolean({
     default: false,
   }),
+
+  // Rate limiting
+  RATE_LIMIT_MAX: Type.Number({
+    default: 100,
+    minimum: 1,
+  }),
+  RATE_LIMIT_WINDOW: Type.String({
+    default: "1 minute",
+  }),
 });
 
 /**

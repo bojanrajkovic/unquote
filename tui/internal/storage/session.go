@@ -23,24 +23,49 @@ type GameSession struct {
 	Solved         bool              `json:"solved"`
 }
 
-// sessionPath returns the full path for a game session file.
-// Uses xdg.StateFile which creates directories as needed.
-func sessionPath(gameID string) (string, error) {
-	relPath := filepath.Join(appName, "sessions", gameID+".json")
-	return xdg.StateFile(relPath)
+// sessionsDir returns the absolute path to the sessions directory (~/.local/state/unquote/sessions/).
+// It uses xdg.StateFile to ensure the directory is created.
+func sessionsDir() (string, error) {
+	// Create a probe file to ensure directory exists, then return the directory
+	probePath := filepath.Join(appName, "sessions", ".keep")
+	path, err := xdg.StateFile(probePath)
+	if err != nil {
+		return "", fmt.Errorf("creating sessions directory: %w", err)
+	}
+	return filepath.Dir(path), nil
+}
+
+// sessionsRoot opens an os.Root handle on the sessions directory.
+// The caller must defer root.Close().
+func sessionsRoot() (*os.Root, error) {
+	dir, err := sessionsDir()
+	if err != nil {
+		return nil, fmt.Errorf("getting sessions directory: %w", err)
+	}
+	root, err := os.OpenRoot(dir)
+	if err != nil {
+		return nil, fmt.Errorf("opening root: %w", err)
+	}
+	return root, nil
+}
+
+// sessionFileName returns just the filename for a session (gameID + ".json").
+func sessionFileName(gameID string) string {
+	return gameID + ".json"
 }
 
 // SaveSession persists a game session to disk.
-// Creates the session directory if it doesn't exist.
+// Uses os.Root to confine file operations to the sessions directory.
 func SaveSession(session *GameSession) error {
 	if session.GameID == "" {
 		return fmt.Errorf("session has no game ID")
 	}
 
-	path, err := sessionPath(session.GameID)
+	root, err := sessionsRoot()
 	if err != nil {
-		return fmt.Errorf("getting session path: %w", err)
+		return fmt.Errorf("opening sessions root: %w", err)
 	}
+	defer root.Close()
 
 	session.SavedAt = time.Now()
 
@@ -49,14 +74,16 @@ func SaveSession(session *GameSession) error {
 		return fmt.Errorf("marshaling session: %w", err)
 	}
 
+	fileName := sessionFileName(session.GameID)
+	tmpName := fileName + ".tmp"
+
 	// Write to temp file then rename for atomicity
-	tmpPath := path + ".tmp"
-	if err := os.WriteFile(tmpPath, data, 0o600); err != nil {
+	if err := root.WriteFile(tmpName, data, 0o600); err != nil {
 		return fmt.Errorf("writing session file: %w", err)
 	}
 
-	if err := os.Rename(tmpPath, path); err != nil {
-		_ = os.Remove(tmpPath) // cleanup on failure
+	if err := root.Rename(tmpName, fileName); err != nil {
+		_ = root.Remove(tmpName) // cleanup on failure
 		return fmt.Errorf("renaming session file: %w", err)
 	}
 
@@ -70,12 +97,14 @@ func LoadSession(gameID string) (*GameSession, error) {
 		return nil, fmt.Errorf("game ID is empty")
 	}
 
-	path, err := sessionPath(gameID)
+	root, err := sessionsRoot()
 	if err != nil {
-		return nil, fmt.Errorf("getting session path: %w", err)
+		return nil, fmt.Errorf("opening sessions root: %w", err)
 	}
+	defer root.Close()
 
-	data, err := os.ReadFile(path)
+	fileName := sessionFileName(gameID)
+	data, err := root.ReadFile(fileName)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil // no session exists
@@ -97,12 +126,14 @@ func SessionExists(gameID string) (bool, error) {
 		return false, fmt.Errorf("game ID is empty")
 	}
 
-	path, err := sessionPath(gameID)
+	root, err := sessionsRoot()
 	if err != nil {
-		return false, fmt.Errorf("getting session path: %w", err)
+		return false, fmt.Errorf("opening sessions root: %w", err)
 	}
+	defer root.Close()
 
-	_, err = os.Stat(path)
+	fileName := sessionFileName(gameID)
+	_, err = root.Stat(fileName)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return false, nil

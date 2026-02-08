@@ -113,6 +113,47 @@ describe("JsonQuoteSource", () => {
     });
   });
 
+  describe("ensureLoaded", () => {
+    it("succeeds with valid quotes file", async () => {
+      const freshSource = new JsonQuoteSource(quotesPath);
+      // Should not throw
+      await expect(freshSource.ensureLoaded()).resolves.toBeUndefined();
+    });
+
+    it("throws with missing file", async () => {
+      const badSource = new JsonQuoteSource("/nonexistent/path/quotes.json");
+      await expect(badSource.ensureLoaded()).rejects.toThrow("Quote file not found or not readable");
+    });
+
+    it("throws with invalid JSON file", async () => {
+      let tempDir: string;
+      const tempFiles: string[] = [];
+
+      tempDir = await mkdtemp(join(tmpdir(), "quote-test-"));
+
+      async function createTempQuoteFile(content: unknown): Promise<string> {
+        const filePath = join(tempDir, `quotes-${Date.now()}.json`);
+        await writeFile(filePath, JSON.stringify(content));
+        tempFiles.push(filePath);
+        return filePath;
+      }
+
+      const filePath = await createTempQuoteFile({ not: "an array" });
+      const badSource = new JsonQuoteSource(filePath);
+
+      await expect(badSource.ensureLoaded()).rejects.toThrow("Invalid quotes format");
+
+      // Cleanup
+      for (const file of tempFiles) {
+        try {
+          await unlink(file);
+        } catch {
+          // Ignore cleanup errors
+        }
+      }
+    });
+  });
+
   describe("validation errors", () => {
     let tempDir: string;
     const tempFiles: string[] = [];

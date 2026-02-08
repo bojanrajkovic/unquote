@@ -22,6 +22,14 @@ export class JsonQuoteSource implements QuoteSource {
   constructor(private readonly filePath: string) {}
 
   /**
+   * Eagerly load and validate the quotes file.
+   * Call at startup to fail fast on missing/invalid file.
+   */
+  async ensureLoaded(): Promise<void> {
+    await this.loadQuotes();
+  }
+
+  /**
    * Validate that the file exists and is readable.
    * Called lazily on first access to allow async validation.
    */

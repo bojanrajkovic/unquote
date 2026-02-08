@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/bojanrajkovic/unquote/tui/internal/api"
@@ -24,6 +25,11 @@ const (
 	StateError
 )
 
+// Options configures the application behavior.
+type Options struct {
+	Insecure bool
+}
+
 // Model holds the application state
 type Model struct {
 	startTime      time.Time
@@ -38,14 +44,20 @@ type Model struct {
 	height         int
 	elapsedAtPause time.Duration
 	sizeReady      bool
+	opts           Options
 }
 
 // New creates a new Model with initial state
-func New() Model {
+func New(opts Options) (Model, error) {
+	client, err := api.NewClient(opts.Insecure)
+	if err != nil {
+		return Model{}, fmt.Errorf("creating API client: %w", err)
+	}
 	return Model{
 		state:  StateLoading,
-		client: api.NewClient(),
-	}
+		client: client,
+		opts:   opts,
+	}, nil
 }
 
 // NewWithClient creates a new Model with a custom API client (for testing)

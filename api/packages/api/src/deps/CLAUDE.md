@@ -1,6 +1,6 @@
 # Dependency Injection
 
-Last verified: 2026-02-03
+Last verified: 2026-02-08
 
 ## Purpose
 
@@ -8,8 +8,8 @@ Manages application dependencies with lifetime-aware scoping. Singleton services
 
 ## Contracts
 
-- **Exposes**: `configureContainer()`, `configureRequestScope()`, `registerDependencyInjection` plugin, `AppSingletonCradle`, `AppRequestCradle` types
-- **Guarantees**: Fastify type extensions make `fastify.deps` and `request.deps` typed. Request scopes are created in `onRequest` and disposed in `onResponse`.
+- **Exposes**: `configureContainer()` (async), `configureRequestScope()`, `registerDependencyInjection` plugin, `AppSingletonCradle`, `AppRequestCradle` types
+- **Guarantees**: Fastify type extensions make `fastify.deps` and `request.deps` typed. Request scopes are created in `onRequest` and disposed in `onResponse`. Quote source is eagerly loaded and validated at startup (fail-fast).
 - **Expects**: Valid `AppConfig` and Pino logger at container creation. Plugin registered after `@fastify/env`.
 
 ## Dependencies
