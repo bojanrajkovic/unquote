@@ -98,6 +98,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Create temporary unprefixed tag for GoReleaser
+        run: git tag "v${{ steps.version.outputs.version }}"
+
       - name: Setup mise
         uses: jdx/mise-action@v3
         with:
@@ -125,3 +128,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GORELEASER_CURRENT_TAG: v${{ steps.version.outputs.version }}
           BUILD_BRANCH: main
+
+      - name: Clean up temporary tag
+        if: always()
+        run: git tag -d "v${{ steps.version.outputs.version }}" || true
