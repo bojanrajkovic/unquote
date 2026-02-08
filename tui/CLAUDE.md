@@ -1,6 +1,6 @@
 # TUI
 
-Last verified: 2026-02-04
+Last verified: 2026-02-08
 
 Terminal UI client for playing cryptoquip puzzles.
 

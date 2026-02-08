@@ -1,6 +1,6 @@
 # Game Generator
 
-Last verified: 2026-02-03
+Last verified: 2026-02-08
 
 ## Purpose
 
@@ -8,7 +8,7 @@ Transforms quotes into cryptoquip puzzles with deterministic daily generation. E
 
 ## Contracts
 
-- **Exposes**: `Quote`, `Puzzle`, `Hint`, `CipherMapping` types; `QuoteSource`, `GameGenerator` interfaces; `JsonQuoteSource`, `KeywordCipherGenerator` implementations; `validateSolution` function
+- **Exposes**: `Quote`, `Puzzle`, `Hint`, `CipherMapping` types; `QuoteSource`, `GameGenerator` interfaces; `JsonQuoteSource` (with `ensureLoaded()` for eager startup validation), `KeywordCipherGenerator` implementations; `validateSolution` function
 - **Guarantees**: Same seed produces identical cipher mapping. Daily puzzles are deterministic by date. Cipher mappings are bijective (no letter maps to itself or shares a mapping).
 - **Expects**: Valid Quote objects with id, text, author, category, difficulty. Luxon DateTime for daily puzzle generation.
 

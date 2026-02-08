@@ -1,6 +1,6 @@
 # Unquote
 
-Last verified: 2026-02-05
+Last verified: 2026-02-08
 
 A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encrypted quotes by substituting letters.
 
@@ -43,7 +43,7 @@ A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encry
 
 - **Framework**: Fastify with TypeBox type provider
 - **Documentation**: OpenAPI 3 via `@eropple/fastify-openapi3`
-- **Security**: helmet, cors, rate limiting (100 req/min), under-pressure
+- **Security**: helmet, cors, rate limiting (per-IP, configurable via env vars), under-pressure
 - **Configuration**: `@fastify/env` with TypeBox schema validation (fail-fast on missing required vars)
 - **DI**: Awilix with singleton + request scopes (see `src/deps/CLAUDE.md`)
 - **Observability**: OpenTelemetry auto-instrumentation (traces, Pino log correlation)
@@ -58,6 +58,8 @@ A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encry
 | `LOG_LEVEL` | No | info | Pino log level |
 | `QUOTES_FILE_PATH` | Yes | - | Path to quotes JSON file |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | No | - | OpenTelemetry collector endpoint |
+| `RATE_LIMIT_MAX` | No | 100 | Max requests per window per IP |
+| `RATE_LIMIT_WINDOW` | No | 1 minute | Rate limit time window |
 
 ### Testing
 
@@ -85,6 +87,7 @@ A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encry
 - `internal/api/` - API client for REST communication
 - `internal/app/` - Bubble Tea model, update loop, and views
 - `internal/puzzle/` - Domain logic (cells, navigation, solution assembly)
+- `internal/storage/` - Session persistence (XDG state directory)
 - `internal/ui/` - Styling and text wrapping utilities
 - `internal/version/` - Build-time version info (ldflags injection)
 
