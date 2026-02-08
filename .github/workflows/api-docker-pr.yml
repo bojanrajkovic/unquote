@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
   pull-requests: read
 
 env:
@@ -20,8 +19,10 @@ jobs:
     outputs:
       api: ${{ steps.filter.outputs.api }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         id: filter
         with:
           filters: |
@@ -36,21 +37,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.9.0
 
       - name: Extract metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.9.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=pr
 
       - name: Build (validation only)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.9.0
         with:
           context: ./api
           push: false
@@ -66,12 +69,15 @@ jobs:
     steps:
       - name: Check results
         run: |
-          if [[ "${{ needs.changes.outputs.api }}" != "true" ]]; then
+          if [[ "${NEEDS_CHANGES_OUTPUTS_API}" != "true" ]]; then
             echo "No API changes, skipping"
             exit 0
           fi
-          if [[ "${{ needs.validate.result }}" != "success" ]]; then
-            echo "API validation failed: ${{ needs.validate.result }}"
+          if [[ "${NEEDS_VALIDATE_RESULT}" != "success" ]]; then
+            echo "API validation failed: ${NEEDS_VALIDATE_RESULT}"
             exit 1
           fi
           echo "All API checks passed"
+        env:
+          NEEDS_CHANGES_OUTPUTS_API: ${{ needs.changes.outputs.api }}
+          NEEDS_VALIDATE_RESULT: ${{ needs.validate.result }}

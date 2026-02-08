@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
   changes:
@@ -15,8 +14,10 @@ jobs:
     outputs:
       tui: ${{ steps.filter.outputs.tui }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         id: filter
         with:
           filters: |
@@ -26,10 +27,12 @@ jobs:
 
   validate-title:
     name: Validate PR Title
+    permissions:
+      pull-requests: read
     runs-on: ubuntu-latest
     steps:
       - name: Validate conventional commit format
-        uses: amannn/action-semantic-pull-request@v6
+        uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -57,16 +60,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
 
       - name: Setup mise
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8 # v3.6.1
         with:
           cache: true
           experimental: true
 
       - name: Cache Go modules
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: |
             ~/go/pkg/mod
@@ -81,6 +86,9 @@ jobs:
 
   build-snapshot:
     name: TUI Build
+    permissions:
+      contents: read
+      pull-requests: write
     runs-on: ubuntu-latest
     needs: [changes, validate-title, ci-checks]
     if: needs.changes.outputs.tui == 'true'
@@ -88,27 +96,28 @@ jobs:
       version: ${{ steps.version.outputs.version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
           fetch-tags: true
+          persist-credentials: false
 
       - name: Calculate version
         id: version
-        uses: PaulHatch/semantic-version@v6.0.0
+        uses: PaulHatch/semantic-version@7bf8143b3b9009e904cac85017170bdcd6ce28fb # v6.0.0
         with:
           tag_prefix: "tui-v"
           change_path: "tui/"
           version_format: "${major}.${minor}.${patch}"
 
       - name: Setup mise
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8 # v3.6.1
         with:
-          cache: true
+          cache: false
           experimental: true
 
       - name: Cache Go modules
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: |
             ~/go/pkg/mod
@@ -116,9 +125,10 @@ jobs:
           key: go-${{ runner.os }}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             go-${{ runner.os }}-
+          lookup-only: true
 
       - name: Build snapshot
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6.4.0
         with:
           distribution: goreleaser
           version: "~> v2"
@@ -130,56 +140,56 @@ jobs:
           BUILD_BRANCH: ${{ github.head_ref }}
 
       - name: Upload Linux amd64
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: unquote-linux-amd64
           path: tui/dist/unquote_*_linux_amd64.tar.gz
           retention-days: 7
 
       - name: Upload Linux arm64
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: unquote-linux-arm64
           path: tui/dist/unquote_*_linux_arm64.tar.gz
           retention-days: 7
 
       - name: Upload macOS amd64
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: unquote-macos-amd64
           path: tui/dist/unquote_*_darwin_amd64.tar.gz
           retention-days: 7
 
       - name: Upload macOS arm64
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: unquote-macos-arm64
           path: tui/dist/unquote_*_darwin_arm64.tar.gz
           retention-days: 7
 
       - name: Upload Windows amd64
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: unquote-windows-amd64
           path: tui/dist/unquote_*_windows_amd64.zip
           retention-days: 7
 
       - name: Upload checksums
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: checksums
           path: tui/dist/checksums.txt
           retention-days: 7
 
       - name: Find existing comment
-        uses: peter-evans/find-comment@v3
+        uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
         id: find-comment
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body-includes: "## TUI Alpha Build"
 
       - name: Create or update PR comment
-        uses: peter-evans/create-or-update-comment@v5
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
@@ -204,16 +214,20 @@ jobs:
     steps:
       - name: Check results
         run: |
-          if [[ "${{ needs.changes.outputs.tui }}" != "true" ]]; then
+          if [[ "${NEEDS_CHANGES_OUTPUTS_TUI}" != "true" ]]; then
             echo "No TUI changes, skipping"
             exit 0
           fi
-          if [[ "${{ needs.ci-checks.result }}" != "success" ]]; then
-            echo "TUI CI failed: ${{ needs.ci-checks.result }}"
+          if [[ "${NEEDS_CI_CHECKS_RESULT}" != "success" ]]; then
+            echo "TUI CI failed: ${NEEDS_CI_CHECKS_RESULT}"
             exit 1
           fi
-          if [[ "${{ needs.build-snapshot.result }}" != "success" ]]; then
-            echo "TUI Build failed: ${{ needs.build-snapshot.result }}"
+          if [[ "${NEEDS_BUILD_SNAPSHOT_RESULT}" != "success" ]]; then
+            echo "TUI Build failed: ${NEEDS_BUILD_SNAPSHOT_RESULT}"
             exit 1
           fi
           echo "All TUI checks passed"
+        env:
+          NEEDS_CHANGES_OUTPUTS_TUI: ${{ needs.changes.outputs.tui }}
+          NEEDS_CI_CHECKS_RESULT: ${{ needs.ci-checks.result }}
+          NEEDS_BUILD_SNAPSHOT_RESULT: ${{ needs.build-snapshot.result }}
