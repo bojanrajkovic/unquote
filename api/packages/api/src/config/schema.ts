@@ -26,7 +26,7 @@ export const EnvSchema = Type.Object({
   }),
 
   // Optional: OpenTelemetry OTLP endpoint
-  OTEL_EXPORTER_OTLP_ENDPOINT: Type.Optional(Type.String()),
+  OTEL_EXPORTER_OTLP_ENDPOINT: Type.Optional(Type.String({ format: "uri" })),
 });
 
 /**

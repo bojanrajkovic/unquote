@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/consistent-type-specifier-style
-import Fastify, { type FastifyInstance } from "fastify";
+import Fastify, { type FastifyError, type FastifyInstance } from "fastify";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import type { Logger } from "pino";
 import fastifyEnv from "@fastify/env";
@@ -38,7 +38,16 @@ const buildServer = async (): Promise<FastifyInstance> => {
   });
 
   await fastify.register(helmet, {
-    contentSecurityPolicy: false,
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+        imgSrc: ["'self'", "data:", "https:"],
+        fontSrc: ["'self'", "https://cdn.jsdelivr.net", "data:"],
+        connectSrc: ["'self'"],
+      },
+    },
   });
 
   await fastify.register(cors, {
@@ -77,6 +86,26 @@ const buildServer = async (): Promise<FastifyInstance> => {
       json: true,
       yaml: true,
     },
+  });
+
+  // Sanitize 5xx error responses to avoid leaking internals
+  fastify.setErrorHandler((error: FastifyError, _request, reply) => {
+    const statusCode = error.statusCode ?? 500;
+
+    if (statusCode >= 500) {
+      fastify.log.error(error);
+      return reply.status(statusCode).send({
+        statusCode,
+        error: "Internal Server Error",
+        message: "An unexpected error occurred",
+      });
+    }
+
+    return reply.status(statusCode).send({
+      statusCode,
+      error: error.name,
+      message: error.message,
+    });
   });
 
   // Register game routes with /game prefix
