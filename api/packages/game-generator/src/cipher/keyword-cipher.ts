@@ -66,9 +66,15 @@ function eliminateSelfMappings(cipherAlphabet: string): string {
             const tmp = chars[i]!;
             chars[i] = chars[j]!;
             chars[j] = tmp;
+            swapped = true;
             break;
           }
         }
+      }
+      if (!swapped) {
+        throw new Error(
+          `Unable to eliminate self-mapping for letter ${ALPHABET[i]} at position ${i}`,
+        );
       }
     }
   }
