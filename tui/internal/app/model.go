@@ -24,6 +24,11 @@ const (
 	StateError
 )
 
+// Options configures the application behavior.
+type Options struct {
+	Insecure bool
+}
+
 // Model holds the application state
 type Model struct {
 	startTime      time.Time
@@ -38,13 +43,15 @@ type Model struct {
 	height         int
 	elapsedAtPause time.Duration
 	sizeReady      bool
+	opts           Options
 }
 
 // New creates a new Model with initial state
-func New() Model {
+func New(opts Options) Model {
 	return Model{
 		state:  StateLoading,
 		client: api.NewClient(),
+		opts:   opts,
 	}
 }
 

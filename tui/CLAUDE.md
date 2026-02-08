@@ -39,12 +39,13 @@ From `tui/` directory:
 - **Invariants**: `Cell.IsLetter` is true only for unicode letters; punctuation and spaces are non-editable
 
 ### app package
-- **Exposes**: `Model`, `New()`, `NewWithClient(client)` for testing
+- **Exposes**: `Model`, `Options`, `New(opts Options)`, `NewWithClient(client)` for testing
 - **States**: Loading -> Playing -> (Checking -> Playing | Solved) or Error
 - **Timer**: `Model.Elapsed()` returns total time; timer runs while Playing, pauses on Solved/Checking
 - **Persistence**: Session auto-restored on startup; auto-saved on input changes and solve
 - **Mouse**: Left-click on letter cells navigates cursor; non-letter cells ignore clicks
 - **Invariants**: Terminal size validated before rendering; minimum 40x10
+- **Options.Insecure**: Boolean flag for allowing insecure HTTP connections (used in Phase 3)
 
 ### storage package
 - **Exposes**: `GameSession`, `SaveSession()`, `LoadSession()`, `SessionExists()`
