@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: read # checkout source code
+  pull-requests: read # paths-filter reads PR diff via API
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
