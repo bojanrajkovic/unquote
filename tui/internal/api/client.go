@@ -6,14 +6,16 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 )
 
 const (
-	defaultBaseURL = "http://localhost:3000"
-	defaultTimeout = 5 * time.Second
-	envAPIURL      = "UNQUOTE_API_URL"
+	defaultBaseURL   = "http://localhost:3000"
+	defaultTimeout   = 5 * time.Second
+	envAPIURL        = "UNQUOTE_API_URL"
+	maxResponseBytes = 10 * 1024 * 1024 // 10MB
 )
 
 // Client handles communication with the Unquote API
@@ -29,6 +31,8 @@ func NewClient() *Client {
 		baseURL = defaultBaseURL
 	}
 
+	warnIfInsecureURL(baseURL)
+
 	return &Client{
 		baseURL: baseURL,
 		httpClient: &http.Client{
@@ -39,12 +43,31 @@ func NewClient() *Client {
 
 // NewClientWithURL creates a new API client with a custom base URL
 func NewClientWithURL(baseURL string) *Client {
+	warnIfInsecureURL(baseURL)
+
 	return &Client{
 		baseURL: baseURL,
 		httpClient: &http.Client{
 			Timeout: defaultTimeout,
 		},
 	}
+}
+
+// warnIfInsecureURL prints a warning to stderr if the URL uses HTTP
+// with a non-localhost host.
+func warnIfInsecureURL(rawURL string) {
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return
+	}
+	if u.Scheme != "http" {
+		return
+	}
+	host := u.Hostname()
+	if host == "localhost" || host == "127.0.0.1" || host == "::1" {
+		return
+	}
+	fmt.Fprintf(os.Stderr, "WARNING: API URL %q uses insecure HTTP for non-localhost host. Consider using HTTPS.\n", rawURL)
 }
 
 // FetchTodaysPuzzle retrieves the puzzle for today
@@ -63,7 +86,7 @@ func (c *Client) FetchTodaysPuzzle() (*Puzzle, error) {
 	}
 
 	var puzzle Puzzle
-	if err := json.NewDecoder(resp.Body).Decode(&puzzle); err != nil {
+	if err := json.NewDecoder(io.LimitReader(resp.Body, maxResponseBytes)).Decode(&puzzle); err != nil {
 		return nil, fmt.Errorf("failed to parse puzzle response: %w", err)
 	}
 
@@ -86,7 +109,7 @@ func (c *Client) FetchPuzzleByDate(date string) (*Puzzle, error) {
 	}
 
 	var puzzle Puzzle
-	if err := json.NewDecoder(resp.Body).Decode(&puzzle); err != nil {
+	if err := json.NewDecoder(io.LimitReader(resp.Body, maxResponseBytes)).Decode(&puzzle); err != nil {
 		return nil, fmt.Errorf("failed to parse puzzle response: %w", err)
 	}
 
@@ -125,7 +148,7 @@ func (c *Client) CheckSolution(gameID, solution string) (*CheckResponse, error) 
 	}
 
 	var result CheckResponse
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	if err := json.NewDecoder(io.LimitReader(resp.Body, maxResponseBytes)).Decode(&result); err != nil {
 		return nil, fmt.Errorf("failed to parse check response: %w", err)
 	}
 
