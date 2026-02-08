@@ -5,8 +5,12 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
-  pull-requests: read
+  contents: read # checkout source code
+  pull-requests: read # paths-filter reads PR diff
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 env:
   REGISTRY: ghcr.io

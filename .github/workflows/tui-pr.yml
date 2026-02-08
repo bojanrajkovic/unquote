@@ -5,7 +5,11 @@ on:
     types: [opened, edited, synchronize]
 
 permissions:
-  contents: read
+  contents: read # checkout source code
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   changes:
@@ -28,7 +32,7 @@ jobs:
   validate-title:
     name: Validate PR Title
     permissions:
-      pull-requests: read
+      pull-requests: read # read PR title for conventional commit validation
     runs-on: ubuntu-latest
     steps:
       - name: Validate conventional commit format
@@ -87,8 +91,8 @@ jobs:
   build-snapshot:
     name: TUI Build
     permissions:
-      contents: read
-      pull-requests: write
+      contents: read # checkout source code
+      pull-requests: write # post build status comment on PR
     runs-on: ubuntu-latest
     needs: [changes, validate-title, ci-checks]
     if: needs.changes.outputs.tui == 'true'
