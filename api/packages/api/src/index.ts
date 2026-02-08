@@ -29,6 +29,7 @@ const buildServer = async (): Promise<FastifyInstance> => {
     ajv: {
       plugins: [oas3PluginAjv],
     },
+    bodyLimit: 1_048_576,
   }).withTypeProvider<TypeBoxTypeProvider>();
 
   // Register environment configuration first (validates and populates fastify.config)
