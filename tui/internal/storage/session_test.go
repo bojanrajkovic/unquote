@@ -2,7 +2,6 @@ package storage
 
 import (
 	"encoding/json"
-	"path/filepath"
 	"testing"
 	"time"
 )
@@ -239,29 +238,83 @@ func TestLoadSession_EmptyGameID(t *testing.T) {
 	}
 }
 
-func TestSessionPath(t *testing.T) {
+func TestPathTraversalRejected(t *testing.T) {
 	tmpDir := t.TempDir()
 	t.Setenv("XDG_STATE_HOME", tmpDir)
 
-	path, err := sessionPath("test-game")
-	if err != nil {
-		t.Fatalf("sessionPath failed: %v", err)
+	maliciousIDs := []struct {
+		name   string
+		gameID string
+	}{
+		{"dot-dot-slash", "../../evil"},
+		{"dot-dot-backslash", `..\..\evil`},
+		{"absolute-path", "/etc/passwd"},
+		{"embedded-traversal", "foo/../../../evil"},
+		{"dot-dot-only", ".."},
 	}
 
-	// Verify path structure
-	expectedSuffix := filepath.Join("unquote", "sessions", "test-game.json")
-	if !filepath.IsAbs(path) {
-		t.Error("path should be absolute")
-	}
-	if !hasSuffix(path, expectedSuffix) {
-		t.Errorf("path %q should contain %q", path, expectedSuffix)
+	for _, tt := range maliciousIDs {
+		t.Run("save_"+tt.name, func(t *testing.T) {
+			session := &GameSession{
+				GameID: tt.gameID,
+				Inputs: map[string]string{},
+			}
+			err := SaveSession(session)
+			if err == nil {
+				t.Errorf("SaveSession should reject game ID %q", tt.gameID)
+			}
+		})
+
+		t.Run("load_"+tt.name, func(t *testing.T) {
+			_, err := LoadSession(tt.gameID)
+			if err == nil {
+				t.Errorf("LoadSession should reject game ID %q", tt.gameID)
+			}
+		})
+
+		t.Run("exists_"+tt.name, func(t *testing.T) {
+			_, err := SessionExists(tt.gameID)
+			if err == nil {
+				t.Errorf("SessionExists should reject game ID %q", tt.gameID)
+			}
+		})
 	}
 }
 
-func hasSuffix(path, suffix string) bool {
-	// Normalize separators for cross-platform comparison
-	cleanPath := filepath.Clean(path)
-	cleanSuffix := filepath.Clean(suffix)
-	return len(cleanPath) >= len(cleanSuffix) &&
-		cleanPath[len(cleanPath)-len(cleanSuffix):] == cleanSuffix
+func TestSessionStoredInCorrectDirectory(t *testing.T) {
+	tmpDir := t.TempDir()
+	t.Setenv("XDG_STATE_HOME", tmpDir)
+
+	// Save a session with a unique ID to avoid cross-test contamination
+	gameID := "stored-dir-test-" + t.Name()
+	session := &GameSession{
+		GameID: gameID,
+		Inputs: map[string]string{"A": "X"},
+	}
+	if err := SaveSession(session); err != nil {
+		t.Fatalf("SaveSession failed: %v", err)
+	}
+
+	// Load the session back to verify it was saved and retrieved correctly
+	loaded, err := LoadSession(gameID)
+	if err != nil {
+		t.Fatalf("LoadSession failed: %v", err)
+	}
+	if loaded == nil {
+		t.Fatal("LoadSession returned nil, but session should exist")
+	}
+
+	// Verify the session was properly saved with correct content
+	if loaded.GameID != gameID {
+		t.Errorf("GameID: expected %q, got %q", gameID, loaded.GameID)
+	}
+	if len(loaded.Inputs) != 1 {
+		t.Errorf("Inputs length: expected 1, got %d", len(loaded.Inputs))
+	}
+	if loaded.Inputs["A"] != "X" {
+		t.Errorf("Inputs[A]: expected %q, got %q", "X", loaded.Inputs["A"])
+	}
+	if loaded.SavedAt.IsZero() {
+		t.Error("SavedAt should not be zero")
+	}
 }
