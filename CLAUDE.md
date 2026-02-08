@@ -121,6 +121,7 @@ Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 - Describe WHAT changed and WHY, not HOW
 - Use imperative mood ("add" not "added")
 - Keep first line under 72 characters
+- **TUI commits must use the `tui` scope** (or a subscope like `tui/app`). The TUI release changelog filters by `(tui` prefix to exclude unrelated commits.
 
 ### Examples
 
