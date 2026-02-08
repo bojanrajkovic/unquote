@@ -75,7 +75,7 @@ A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encry
 
 - **Framework**: Bubble Tea (Elm architecture for Go)
 - **Styling**: Lip Gloss
-- **Configuration**: `UNQUOTE_API_URL` env var (default: `http://localhost:3000`)
+- **Configuration**: `UNQUOTE_API_URL` env var (default: `https://unquote.gaur-kardashev.ts.net`)
 
 ### TUI Development (run from `tui/`)
 - `go build -o bin/unquote ./main.go` - Build binary

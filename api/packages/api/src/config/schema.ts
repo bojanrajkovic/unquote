@@ -27,6 +27,16 @@ export const EnvSchema = Type.Object({
 
   // Optional: OpenTelemetry OTLP endpoint
   OTEL_EXPORTER_OTLP_ENDPOINT: Type.Optional(Type.String({ format: "uri" })),
+
+  // CORS allowed origins (comma-separated list, or "*" for all)
+  CORS_ORIGIN: Type.String({
+    default: "*",
+  }),
+
+  // Trust proxy headers (X-Forwarded-For, etc.)
+  TRUST_PROXY: Type.Boolean({
+    default: false,
+  }),
 });
 
 /**

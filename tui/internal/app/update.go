@@ -10,6 +10,7 @@ import (
 	zone "github.com/lrstanley/bubblezone"
 
 	"github.com/bojanrajkovic/unquote/tui/internal/puzzle"
+	"github.com/bojanrajkovic/unquote/tui/internal/ui"
 )
 
 // Init is called when the program starts
@@ -235,6 +236,14 @@ func (m Model) handleSolutionChecked(msg solutionCheckedMsg) (tea.Model, tea.Cmd
 }
 
 func (m Model) handlePuzzleFetched(msg puzzleFetchedMsg) (tea.Model, tea.Cmd) {
+	// Sanitize API response fields to prevent terminal escape sequence injection
+	msg.puzzle.Author = ui.SanitizeString(msg.puzzle.Author)
+	msg.puzzle.EncryptedText = ui.SanitizeString(msg.puzzle.EncryptedText)
+	for i := range msg.puzzle.Hints {
+		msg.puzzle.Hints[i].CipherLetter = ui.SanitizeString(msg.puzzle.Hints[i].CipherLetter)
+		msg.puzzle.Hints[i].PlainLetter = ui.SanitizeString(msg.puzzle.Hints[i].PlainLetter)
+	}
+
 	m.puzzle = msg.puzzle
 	m.cells = puzzle.BuildCells(msg.puzzle.EncryptedText)
 	m.cursorPos = puzzle.FirstLetterCell(m.cells)
