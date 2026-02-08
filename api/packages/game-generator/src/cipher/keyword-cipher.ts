@@ -41,6 +41,12 @@ function buildCipherAlphabet(keyword: string): string {
  * Eliminate self-mappings (where a letter maps to itself) by swapping
  * with the next non-self-mapping letter. Maintains bijectivity.
  */
+function swapChars(chars: string[], i: number, j: number): void {
+  const tmp = chars[i] ?? "";
+  chars[i] = chars[j] ?? "";
+  chars[j] = tmp;
+}
+
 function eliminateSelfMappings(cipherAlphabet: string): string {
   const chars = [...cipherAlphabet];
 
@@ -52,9 +58,7 @@ function eliminateSelfMappings(cipherAlphabet: string): string {
         // After swap: chars[i] would be chars[j], chars[j] would be chars[i] (which is ALPHABET[i])
         // Ensure neither creates a self-mapping
         if (chars[j] !== ALPHABET[i] && chars[i] !== ALPHABET[j]) {
-          const tmp = chars[i]!;
-          chars[i] = chars[j]!;
-          chars[j] = tmp;
+          swapChars(chars, i, j);
           swapped = true;
           break;
         }
@@ -63,18 +67,14 @@ function eliminateSelfMappings(cipherAlphabet: string): string {
         // Wrap around: search from the beginning
         for (let j = 0; j < i; j++) {
           if (chars[j] !== ALPHABET[i] && chars[i] !== ALPHABET[j]) {
-            const tmp = chars[i]!;
-            chars[i] = chars[j]!;
-            chars[j] = tmp;
+            swapChars(chars, i, j);
             swapped = true;
             break;
           }
         }
       }
       if (!swapped) {
-        throw new Error(
-          `Unable to eliminate self-mapping for letter ${ALPHABET[i]} at position ${i}`,
-        );
+        throw new Error(`Unable to eliminate self-mapping for letter ${ALPHABET[i]} at position ${i}`);
       }
     }
   }
