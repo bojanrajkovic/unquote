@@ -8,10 +8,8 @@
     "baseUrl": ".",
     "declaration": true,
     "declarationMap": true,
-    "verbatimModuleSyntax": true,
     "resolveJsonModule": true,
-    "outDir": "dist",
-    "lib": ["ES2024"]
+    "outDir": "dist"
   },
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }
