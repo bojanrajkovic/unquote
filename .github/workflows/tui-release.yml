@@ -25,17 +25,23 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check commit type
+      - name: Check commit type and changed paths
         id: check
         run: |
           COMMIT_MSG=$(git log -1 --pretty=%B)
           echo "Commit message: $COMMIT_MSG"
-          if [[ $COMMIT_MSG =~ ^(feat|fix)(\(.+\))?!?: ]]; then
-            echo "should_release=true" >> $GITHUB_OUTPUT
-            echo "Release-triggering commit detected"
-          else
+          if ! [[ $COMMIT_MSG =~ ^(feat|fix)(\(.+\))?!?: ]]; then
             echo "should_release=false" >> $GITHUB_OUTPUT
             echo "Commit type does not trigger release (not feat/fix)"
+            exit 0
+          fi
+          # Ensure actual tui/ source files changed, not just workflow files
+          if git diff --name-only HEAD~1 HEAD -- 'tui/' | grep -qv '^\.' ; then
+            echo "should_release=true" >> $GITHUB_OUTPUT
+            echo "Release-triggering commit with tui/ changes detected"
+          else
+            echo "should_release=false" >> $GITHUB_OUTPUT
+            echo "No tui/ source changes, skipping release"
           fi
 
   ci-checks:
