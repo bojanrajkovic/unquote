@@ -11,6 +11,7 @@ lefthook = "latest"
 "aqua:mvdan/gofumpt" = "0.7.0"
 "aqua:goreleaser/goreleaser" = "2.8.2"
 "npm:@anthropic-ai/claude-code" = "2.1.33"
+"aqua:zizmorcore/zizmor" = "latest"
 
 [monorepo]
 config_roots = ["api", "tui"]
