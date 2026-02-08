@@ -15,7 +15,7 @@ const (
 	defaultBaseURL   = "http://localhost:3000"
 	defaultTimeout   = 5 * time.Second
 	envAPIURL        = "UNQUOTE_API_URL"
-	maxResponseBytes = 10 * 1024 * 1024 // 10MB
+	maxResponseBytes = 128 * 1024 // 128KB
 )
 
 // Client handles communication with the Unquote API
