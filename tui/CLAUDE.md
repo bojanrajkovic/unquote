@@ -29,8 +29,8 @@ From `tui/` directory:
 ## Contracts
 
 ### api package
-- **Exposes**: `Client`, `NewClient()`, `NewClientWithURL(url)`
-- **Guarantees**: Wraps all API errors with context
+- **Exposes**: `Client`, `NewClient(insecure bool) (*Client, error)`, `NewClientWithURL(url string, insecure bool) (*Client, error)`
+- **Guarantees**: Wraps all API errors with context. Rejects HTTP to non-localhost unless insecure=true. Blocks HTTP redirects unconditionally.
 - **Expects**: API at `UNQUOTE_API_URL` env var (default: `https://unquote.gaur-kardashev.ts.net`)
 
 ### puzzle package

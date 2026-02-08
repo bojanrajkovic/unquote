@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/bojanrajkovic/unquote/tui/internal/api"
@@ -47,12 +48,16 @@ type Model struct {
 }
 
 // New creates a new Model with initial state
-func New(opts Options) Model {
+func New(opts Options) (Model, error) {
+	client, err := api.NewClient(opts.Insecure)
+	if err != nil {
+		return Model{}, fmt.Errorf("creating API client: %w", err)
+	}
 	return Model{
 		state:  StateLoading,
-		client: api.NewClient(),
+		client: client,
 		opts:   opts,
-	}
+	}, nil
 }
 
 // NewWithClient creates a new Model with a custom API client (for testing)

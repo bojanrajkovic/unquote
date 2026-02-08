@@ -36,7 +36,13 @@ func main() {
 	opts := app.Options{
 		Insecure: *insecure,
 	}
-	p := tea.NewProgram(app.New(opts), tea.WithAltScreen(), tea.WithMouseCellMotion())
+	model, err := app.New(opts)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	p := tea.NewProgram(model, tea.WithAltScreen(), tea.WithMouseCellMotion())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Error running program: %v\n", err)
 		os.Exit(1)

@@ -25,7 +25,10 @@ func TestNewWithOptions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			model := New(tt.opts)
+			model, err := New(tt.opts)
+			if err != nil {
+				t.Fatalf("New() error = %v, want nil", err)
+			}
 			if model.state != StateLoading {
 				t.Errorf("New() state = %v, want %v", model.state, StateLoading)
 			}
