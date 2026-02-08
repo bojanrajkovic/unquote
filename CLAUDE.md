@@ -112,9 +112,10 @@ Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 ### Scopes
 
-- `api` - API server changes
+- `api` - API server changes (subscopes allowed, e.g. `api/routes`)
 - `game-generator` - Puzzle generation library changes
-- `tui` - TUI changes
+- `tui` - TUI changes (subscopes allowed, e.g. `tui/app`)
+- `ci` - CI/CD workflow changes
 
 ### Guidelines
 

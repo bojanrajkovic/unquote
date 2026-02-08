@@ -11,12 +11,7 @@ export default {
     'type-case': [2, 'always', 'lower-case'],
     'type-empty': [2, 'never'],
 
-    // Scope rules
-    'scope-enum': [
-      2,
-      'always',
-      ['api', 'tui', 'game-generator', 'tools'],
-    ],
+    // Scope rules (scope-enum disabled; PR title validation handles allowed scopes)
     'scope-case': [2, 'always', 'lower-case'],
 
     // Subject rules
