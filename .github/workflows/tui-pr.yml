@@ -44,9 +44,10 @@ jobs:
             ci
             chore
           scopes: |
-            tui
-            api
-            game-generator
+            tui(/.*)?
+            api(/.*)?
+            game-generator(/.*)?
+            ci
           requireScope: false
 
   ci-checks:

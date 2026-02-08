@@ -53,16 +53,16 @@ changelog:
   use: git
   filters:
     include:
-      - "^feat"
-      - "^fix"
+      - "^feat\\(tui"
+      - "^fix\\(tui"
     exclude:
       - "^Merge"
   groups:
     - title: Features
-      regexp: "^feat"
+      regexp: "^feat\\(tui"
       order: 0
     - title: Bug Fixes
-      regexp: "^fix"
+      regexp: "^fix\\(tui"
       order: 1
 
 release:

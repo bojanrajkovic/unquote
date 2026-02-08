@@ -112,15 +112,17 @@ Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 ### Scopes
 
-- `api` - API server changes
+- `api` - API server changes (subscopes allowed, e.g. `api/routes`)
 - `game-generator` - Puzzle generation library changes
-- `tui` - TUI changes
+- `tui` - TUI changes (subscopes allowed, e.g. `tui/app`)
+- `ci` - CI/CD workflow changes
 
 ### Guidelines
 
 - Describe WHAT changed and WHY, not HOW
 - Use imperative mood ("add" not "added")
 - Keep first line under 72 characters
+- **TUI commits must use the `tui` scope** (or a subscope like `tui/app`). The TUI release changelog filters by `(tui` prefix to exclude unrelated commits.
 
 ### Examples
 
