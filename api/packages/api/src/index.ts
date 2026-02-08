@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/consistent-type-specifier-style
-import Fastify, { type FastifyInstance } from "fastify";
+import Fastify, { type FastifyError, type FastifyInstance } from "fastify";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import type { Logger } from "pino";
 import fastifyEnv from "@fastify/env";
@@ -39,6 +39,7 @@ const buildServer = async (): Promise<FastifyInstance> => {
     dotenv: process.env["NODE_ENV"] !== "production",
   });
 
+  // CSP is not needed for a pure JSON API (no HTML responses in production)
   await fastify.register(helmet, {
     contentSecurityPolicy: false,
   });
@@ -65,21 +66,45 @@ const buildServer = async (): Promise<FastifyInstance> => {
     timeWindow: "1 minute",
   });
 
-  // Register OpenAPI plugin BEFORE routes so it can discover them
+  // Register OpenAPI plugin BEFORE routes so it can discover them.
+  // Disable docs UI in production — no HTML served means no CSP needed.
   await fastify.register(fastifyOpenapi3, {
     openapiInfo: {
       title: "Unquote API",
       version: "0.1.0",
     },
-    publish: {
-      ui: "scalar",
-      scalarExtraOptions: {
-        theme: "solarized",
-        url: "/openapi.json",
-      },
-      json: true,
-      yaml: true,
-    },
+    publish:
+      process.env["NODE_ENV"] === "production"
+        ? { ui: null, json: true, yaml: true }
+        : {
+            ui: "scalar",
+            scalarExtraOptions: {
+              theme: "solarized",
+              url: "/openapi.json",
+            },
+            json: true,
+            yaml: true,
+          },
+  });
+
+  // Sanitize 5xx error responses to avoid leaking internals
+  fastify.setErrorHandler((error: FastifyError, _request, reply) => {
+    const statusCode = error.statusCode ?? 500;
+
+    if (statusCode >= 500) {
+      fastify.log.error(error);
+      return reply.status(statusCode).send({
+        statusCode,
+        error: "Internal Server Error",
+        message: "An unexpected error occurred",
+      });
+    }
+
+    return reply.status(statusCode).send({
+      statusCode,
+      error: error.name,
+      message: error.message,
+    });
   });
 
   // Register game routes with /game prefix

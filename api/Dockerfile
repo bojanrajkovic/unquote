@@ -3,7 +3,8 @@
 # ──────────────────────────────────────────────
 # Stage 1: Base — shared Node.js + pnpm setup
 # ──────────────────────────────────────────────
-FROM node:24-slim AS base
+# Pin to digest for reproducible builds. Update periodically.
+FROM node:24-slim@sha256:4660b1ca8b28d6d1906fd644abe34b2ed81d15434d26d845ef0aced307cf4b6f AS base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"

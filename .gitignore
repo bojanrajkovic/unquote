@@ -12,6 +12,10 @@ dist/
 # Implementation plans (working docs)
 docs/implementation-plans/
 
+# Environment files
+.env*
+!.env.example
+
 # Go
 bin/
 tui/unquote-tui
