@@ -40,8 +40,8 @@ catalogs:
       specifier: ^1.0.0
       version: 1.0.2
     '@fastify/cors':
-      specifier: ^10.0.0
-      version: 10.1.0
+      specifier: ^11.0.0
+      version: 11.2.0
     '@fastify/env':
       specifier: ^5.0.0
       version: 5.0.3
@@ -151,7 +151,7 @@ importers:
         version: 1.0.2(@scalar/fastify-api-reference@1.44.1)(ajv@8.17.1)(fastify@5.7.4)(openapi-types@12.1.3)(typebox@1.0.81)
       '@fastify/cors':
         specifier: catalog:prod
-        version: 10.1.0
+        version: 11.2.0
       '@fastify/env':
         specifier: catalog:prod
         version: 5.0.3
@@ -506,8 +506,8 @@ packages:
   '@fastify/ajv-compiler@4.0.5':
     resolution: {integrity: sha512-KoWKW+MhvfTRWL4qrhUwAAZoaChluo0m0vbiJlGMt2GXvL4LVPQEjt8kSpHI3IBq5Rez8fg+XeH3cneztq+C7A==}
 
-  '@fastify/cors@10.1.0':
-    resolution: {integrity: sha512-MZyBCBJtII60CU9Xme/iE4aEy8G7QpzGR8zkdXZkDFt7ElEMachbE61tfhAG/bvSaULlqlf0huMT12T7iqEmdQ==}
+  '@fastify/cors@11.2.0':
+    resolution: {integrity: sha512-LbLHBuSAdGdSFZYTLVA3+Ch2t+sA6nq3Ejc6XLAKiQ6ViS2qFnvicpj0htsx03FyYeLs04HfRNBsz/a8SvbcUw==}
 
   '@fastify/env@5.0.3':
     resolution: {integrity: sha512-VqXKcw+keaZaCry9dDtphDQy6l+B1UOodk4q57NdIK/tjZsPMYEBTXjEDiZCAiD9KaGJXbJOMgYdgejU1iD0jA==}
@@ -1938,9 +1938,6 @@ packages:
     resolution: {integrity: sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==}
     engines: {node: '>=16 || 14 >=14.17'}
 
-  mnemonist@0.40.0:
-    resolution: {integrity: sha512-kdd8AFNig2AD5Rkih7EPCXhu/iMvwevQFX/uEiGhZyPZi7fHqOoF4V4kHLpCfysxXMgQ4B52kdPMCwARshKvEg==}
-
   module-details-from-path@1.0.4:
     resolution: {integrity: sha512-EGWKgxALGMgzvxYF1UyGTy0HXX/2vHLkw6+NvDKW2jypWbHpjQuj4UMcqQWXHERJhVGKikolT06G3bcKe4fi7w==}
 
@@ -1968,9 +1965,6 @@ packages:
     peerDependenciesMeta:
       encoding:
         optional: true
-
-  obliterator@2.0.5:
-    resolution: {integrity: sha512-42CPE9AhahZRsMNslczq0ctAEtqk8Eka26QofnqC346BZdHDySk3LWka23LI7ULIw11NmltpiLagIq8gBozxTw==}
 
   on-exit-leak-free@2.1.2:
     resolution: {integrity: sha512-0eJJY6hXLGf1udHwfNftBqH+g73EU4B504nZeKpz1sYRKafAghwxEJunB2O7rDZkL4PGfsMVnTXZ2EjibbqcsA==}
@@ -2616,10 +2610,10 @@ snapshots:
       ajv-formats: 3.0.1(patch_hash=5e2c1c896124c3f00a28269fcd286b8e2b62b5d4cfdb7c541d42dfb558017ab8)(ajv@8.17.1)
       fast-uri: 3.1.0
 
-  '@fastify/cors@10.1.0':
+  '@fastify/cors@11.2.0':
     dependencies:
       fastify-plugin: 5.1.0
-      mnemonist: 0.40.0
+      toad-cache: 3.7.0
 
   '@fastify/env@5.0.3':
     dependencies:
@@ -4248,10 +4242,6 @@ snapshots:
 
   minipass@7.1.2: {}
 
-  mnemonist@0.40.0:
-    dependencies:
-      obliterator: 2.0.5
-
   module-details-from-path@1.0.4: {}
 
   ms@2.1.3: {}
@@ -4268,8 +4258,6 @@ snapshots:
   node-fetch@2.7.0:
     dependencies:
       whatwg-url: 5.0.0
-
-  obliterator@2.0.5: {}
 
   on-exit-leak-free@2.1.2: {}
 
