@@ -113,8 +113,6 @@ jobs:
         with:
           tag_prefix: "v"
           change_path: "tui/"
-          major_pattern: "/^\\w+(\\(.*\\))?!:/"
-          minor_pattern: "/^feat(\\(.*\\))?:/"
           version_format: "${major}.${minor}.${patch}"
 
       - name: Setup mise
