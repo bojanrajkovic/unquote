@@ -109,7 +109,7 @@ jobs:
 
       - name: Calculate version
         id: version
-        uses: PaulHatch/semantic-version@7bf8143b3b9009e904cac85017170bdcd6ce28fb # v6.0.0
+        uses: PaulHatch/semantic-version@f29500c9d60a99ed5168e39ee367e0976884c46e # v6.0.1
         with:
           tag_prefix: "v"
           change_path: "tui/"
