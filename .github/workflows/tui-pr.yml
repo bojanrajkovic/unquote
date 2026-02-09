@@ -111,7 +111,7 @@ jobs:
         id: version
         uses: PaulHatch/semantic-version@7bf8143b3b9009e904cac85017170bdcd6ce28fb # v6.0.0
         with:
-          tag_prefix: "tui-v"
+          tag_prefix: "v"
           change_path: "tui/"
           version_format: "${major}.${minor}.${patch}"
 

@@ -103,7 +103,7 @@ jobs:
         id: version
         uses: PaulHatch/semantic-version@7bf8143b3b9009e904cac85017170bdcd6ce28fb # v6.0.0
         with:
-          tag_prefix: "tui-v"
+          tag_prefix: "v"
           change_path: "tui/"
           version_format: "${major}.${minor}.${patch}"
 
@@ -112,23 +112,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          TAG="tui-v${STEPS_VERSION_OUTPUTS_VERSION}"
+          TAG="v${STEPS_VERSION_OUTPUTS_VERSION}"
           echo "Creating tag: $TAG"
           git tag -a "$TAG" -m "Release $TAG"
           git push origin "$TAG"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          STEPS_VERSION_OUTPUTS_VERSION: ${{ steps.version.outputs.version }}
-
-      - name: Find previous TUI tag
-        id: prev_tag
-        run: |
-          PREV=$(git tag --list 'tui-v*' --sort=-version:refname | sed -n '2p')
-          echo "tag=${PREV:-}" >> $GITHUB_OUTPUT
-
-      - name: Create temporary unprefixed tag for GoReleaser
-        run: git tag "v${STEPS_VERSION_OUTPUTS_VERSION}"
-        env:
           STEPS_VERSION_OUTPUTS_VERSION: ${{ steps.version.outputs.version }}
 
       - name: Setup mise
@@ -157,12 +146,4 @@ jobs:
           workdir: tui
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GORELEASER_CURRENT_TAG: v${{ steps.version.outputs.version }}
-          GORELEASER_PREVIOUS_TAG: ${{ steps.prev_tag.outputs.tag }}
           BUILD_BRANCH: main
-
-      - name: Clean up temporary tag
-        if: always()
-        run: git tag -d "v${STEPS_VERSION_OUTPUTS_VERSION}" || true
-        env:
-          STEPS_VERSION_OUTPUTS_VERSION: ${{ steps.version.outputs.version }}
