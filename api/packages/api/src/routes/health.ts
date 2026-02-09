@@ -24,6 +24,7 @@ export const healthRoutes: FastifyPluginAsync = async (fastify) => {
   }>({
     method: "GET",
     url: "/",
+    logLevel: "warn",
     schema: {
       response: {
         200: HealthResponseSchema,
