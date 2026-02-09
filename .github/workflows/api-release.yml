@@ -118,6 +118,8 @@ jobs:
         with:
           tag_prefix: "api-v"
           change_path: "api/"
+          major_pattern: "/^\\w+(\\(.*\\))?!:/"
+          minor_pattern: "/^feat(\\(.*\\))?:/"
           version_format: "${major}.${minor}.${patch}"
 
       - name: Create and push tag
