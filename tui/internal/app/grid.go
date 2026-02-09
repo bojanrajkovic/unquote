@@ -103,3 +103,31 @@ func (m Model) renderCipherCell(cell puzzle.Cell) string {
 
 	return ui.CipherStyle.Render(string(cell.Char))
 }
+
+// findDuplicateInputs scans cells and returns the set of plaintext input
+// letters that are assigned to two or more distinct cipher letters. This
+// identifies conflicting assignments the player should be warned about.
+func findDuplicateInputs(cells []puzzle.Cell) map[rune]bool {
+	// Map each plaintext input to the set of cipher letters it's assigned to
+	inputToCiphers := make(map[rune]map[rune]bool)
+
+	for _, cell := range cells {
+		if !cell.IsLetter || cell.Input == 0 {
+			continue
+		}
+		if inputToCiphers[cell.Input] == nil {
+			inputToCiphers[cell.Input] = make(map[rune]bool)
+		}
+		inputToCiphers[cell.Input][cell.Char] = true
+	}
+
+	// Any input mapped to 2+ distinct cipher letters is a duplicate
+	duplicates := make(map[rune]bool)
+	for input, ciphers := range inputToCiphers {
+		if len(ciphers) >= 2 {
+			duplicates[input] = true
+		}
+	}
+
+	return duplicates
+}

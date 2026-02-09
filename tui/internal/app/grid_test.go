@@ -375,3 +375,106 @@ func TestRenderInputCellStylePrecedence(t *testing.T) {
 		})
 	}
 }
+
+//nolint:govet
+func TestFindDuplicateInputs(t *testing.T) {
+	tests := []struct {
+		name     string
+		cells    []puzzle.Cell
+		expected map[rune]bool
+	}{
+		{
+			name:     "no cells",
+			cells:    []puzzle.Cell{},
+			expected: map[rune]bool{},
+		},
+		{
+			name: "no inputs",
+			cells: []puzzle.Cell{
+				{Index: 0, Char: 'A', Input: 0, IsLetter: true},
+				{Index: 1, Char: 'B', Input: 0, IsLetter: true},
+			},
+			expected: map[rune]bool{},
+		},
+		{
+			name: "all unique inputs",
+			cells: []puzzle.Cell{
+				{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
+				{Index: 1, Char: 'B', Input: 'Y', IsLetter: true},
+				{Index: 2, Char: 'C', Input: 'Z', IsLetter: true},
+			},
+			expected: map[rune]bool{},
+		},
+		{
+			name: "same input for same cipher letter is not a duplicate",
+			cells: []puzzle.Cell{
+				{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
+				{Index: 1, Char: 'A', Input: 'X', IsLetter: true},
+			},
+			expected: map[rune]bool{},
+		},
+		{
+			name: "same input for different cipher letters is a duplicate",
+			cells: []puzzle.Cell{
+				{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
+				{Index: 1, Char: 'B', Input: 'X', IsLetter: true},
+			},
+			expected: map[rune]bool{'X': true},
+		},
+		{
+			name: "multiple duplicate inputs",
+			cells: []puzzle.Cell{
+				{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
+				{Index: 1, Char: 'B', Input: 'X', IsLetter: true},
+				{Index: 2, Char: 'C', Input: 'Y', IsLetter: true},
+				{Index: 3, Char: 'D', Input: 'Y', IsLetter: true},
+				{Index: 4, Char: 'E', Input: 'Z', IsLetter: true},
+			},
+			expected: map[rune]bool{'X': true, 'Y': true},
+		},
+		{
+			name: "non-letter cells ignored",
+			cells: []puzzle.Cell{
+				{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
+				{Index: 1, Char: ' ', Input: 0, IsLetter: false},
+				{Index: 2, Char: 'B', Input: 'X', IsLetter: true},
+			},
+			expected: map[rune]bool{'X': true},
+		},
+		{
+			name: "three cipher letters with same input",
+			cells: []puzzle.Cell{
+				{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
+				{Index: 1, Char: 'B', Input: 'X', IsLetter: true},
+				{Index: 2, Char: 'C', Input: 'X', IsLetter: true},
+			},
+			expected: map[rune]bool{'X': true},
+		},
+		{
+			name: "partial inputs - only filled cells considered",
+			cells: []puzzle.Cell{
+				{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
+				{Index: 1, Char: 'B', Input: 0, IsLetter: true},
+				{Index: 2, Char: 'C', Input: 'X', IsLetter: true},
+			},
+			expected: map[rune]bool{'X': true},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := findDuplicateInputs(tt.cells)
+
+			if len(result) != len(tt.expected) {
+				t.Fatalf("findDuplicateInputs() returned %d entries, want %d. Got: %v, Want: %v",
+					len(result), len(tt.expected), result, tt.expected)
+			}
+
+			for key := range tt.expected {
+				if !result[key] {
+					t.Errorf("findDuplicateInputs() missing expected key %q in result %v", string(key), result)
+				}
+			}
+		})
+	}
+}
