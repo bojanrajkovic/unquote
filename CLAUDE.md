@@ -4,6 +4,8 @@ Last verified: 2026-02-08
 
 A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encrypted quotes by substituting letters.
 
+For detailed architecture, module guide, data flows, and navigation guide, see [docs/CODEBASE_MAP.md](docs/CODEBASE_MAP.md).
+
 ## Tech Stack
 
 - **API**: Node.js 24+ / Fastify 5 / TypeScript (pnpm 10 monorepo)
