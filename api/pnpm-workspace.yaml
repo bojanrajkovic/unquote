@@ -11,7 +11,7 @@ catalogs:
     tsx: ^4.19.0
     typescript: ^5.8.0
   lint:
-    oxfmt: ^0.27.0
+    oxfmt: ^0.28.0
     oxlint: ^1.42.0
   prod:
     '@eropple/fastify-openapi3': ^1.0.0
