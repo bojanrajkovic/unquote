@@ -9,7 +9,7 @@ lefthook = "latest"
 # TUI tools
 "aqua:golangci/golangci-lint" = "2.8.0"
 "aqua:mvdan/gofumpt" = "0.9.2"
-"aqua:goreleaser/goreleaser" = "2.8.2"
+"aqua:goreleaser/goreleaser" = "2.13.3"
 "npm:@anthropic-ai/claude-code" = "2.1.37"
 "aqua:zizmorcore/zizmor" = "latest"
 
