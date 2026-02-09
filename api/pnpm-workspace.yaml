@@ -38,11 +38,11 @@ catalogs:
     sqids: ^0.3.0
     typebox: ^1.0.13
   testing:
-    '@vitest/coverage-v8': ^3.0.0
+    '@vitest/coverage-v8': ^4.0.0
     ajv: ^8.0.0
     fast-check: ^3.0.0
     nanoid: ^5.1.6
-    vitest: ^3.0.0
+    vitest: ^4.0.0
 
 injectWorkspacePackages: true
 
