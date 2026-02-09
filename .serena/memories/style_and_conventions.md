@@ -8,6 +8,9 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 <type>(<scope>): <description>
 ```
 
+- commitlint enforces **lowercase subject** after type/scope prefix
+- lefthook runs pre-commit and commit-msg hooks
+
 ### Types
 - `feat` - New user-facing feature
 - `fix` - User-facing bug fix
@@ -20,28 +23,31 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 - `chore` - Other changes
 
 ### Scopes
-- `api` - API server changes
+- `api` - API server changes (subscopes allowed, e.g. `api/routes`)
 - `game-generator` - Puzzle generation library changes
-- `tui` - TUI changes
+- `tui` - TUI changes (subscopes allowed, e.g. `tui/app`)
+- `ci` - CI/CD workflow changes
 
 ### Guidelines
 - Describe WHAT changed and WHY, not HOW
 - Use imperative mood ("add" not "added")
 - Keep first line under 72 characters
+- **TUI commits must use the `tui` scope** (or subscope). The TUI release changelog filters by `(tui` prefix.
 
 ### Examples
 ```
 feat(api): add endpoint to retrieve daily puzzle
 fix(tui): correct letter substitution display on narrow terminals
 build(api): upgrade express to v5
-test(game-generator): add property tests for cipher bijection
+ci: remove custom semantic-version pattern workarounds
 ```
 
 ## TypeScript (API)
 
-- **Validation**: Use TypeBox schemas, not manual typeof checks
+- **Validation**: Use TypeBox schemas (import from `"typebox"`, not `"@sinclair/typebox"`)
 - **IDs**: Use nanoid-style random strings, not sequential numbers
-- **No FCIS comments**: The Functional Core/Imperative Shell pattern is implicit, don't document in code
+- **Dates**: Use Luxon DateTime, not JS Date
+- **No FCIS comments**: The Functional Core/Imperative Shell pattern is implicit
 
 ## Go (TUI)
 
@@ -49,6 +55,7 @@ test(game-generator): add property tests for cipher bijection
 - **No FCIS comments**: Pattern is implicit, don't document in code
 - **Testing**: Use `NewWithClient()` for testing without live API
 - **Value receivers**: Prefer for methods that don't modify state
+- **Formatting**: gofumpt (not gofmt)
 
 ## Testing
 
@@ -70,3 +77,9 @@ test(game-generator): add property tests for cipher bijection
   - Contracts (Exposes, Guarantees, Expects, Invariants)
   - Key decisions
   - Anti-patterns to avoid
+- Design docs go in `docs/design-plans/YYYY-MM-DD-<topic>.md`
+
+## Pull Requests
+
+- Do NOT include test plans in PR descriptions (they end up in squash commit)
+- Keep PR body to a summary section only

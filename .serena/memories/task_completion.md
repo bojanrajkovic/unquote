@@ -10,11 +10,24 @@
 4. **Format**: `pnpm run format`
 5. **Typecheck**: `pnpm run typecheck`
 
-### TUI Changes (from `tui/` directory)
+Or from the project root: `mise run //api:build`
 
-1. **Build**: `go build -o bin/unquote ./main.go`
-2. **Test**: `go test ./...`
-3. **Vet**: `go vet ./...`
+### TUI Changes
+
+From project root: `mise run //tui:ci` (runs fmt, vet, lint, test, build)
+
+Or individual steps:
+```bash
+mise run //tui:fmt
+mise run //tui:vet
+mise run //tui:lint
+mise run //tui:test
+mise run //tui:build
+```
+
+### Build Everything
+
+From project root: `mise run build`
 
 ## Commit Format
 
@@ -23,8 +36,11 @@ git commit -m "type(scope): description
 
 Optional body explaining WHAT and WHY.
 
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ```
+
+- commitlint enforces **lowercase subject** after type/scope prefix
+- lefthook runs pre-commit hooks and commit-msg validation
 
 ## After Major Changes
 
@@ -38,9 +54,10 @@ Update "Last verified" date when reviewing documentation accuracy.
 
 ## Feature Branch Workflow
 
-1. Create worktree: `git worktree add ../.worktrees/<name> -b <branch>`
-2. Implement feature with tests
-3. Run all verification commands
-4. Commit with conventional commit message
-5. Merge or create PR
-6. Clean up: `git worktree remove ../.worktrees/<name>`
+1. Create worktree: `git worktree add /tmp/unquote-<name> -b <branch>`
+2. Trust mise in worktree: `mise trust /tmp/unquote-<name>`
+3. Implement feature with tests
+4. Run all verification commands
+5. Commit with conventional commit message
+6. Merge or create PR
+7. Clean up: `git worktree remove /tmp/unquote-<name>`

@@ -26,14 +26,17 @@ A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encry
 - Lip Gloss (terminal styling)
 
 ### Build Tools
-- Task runner: Task (via mise)
-- Version management: mise
+- Version management & task runner: mise (`mise.toml`)
+- Containerization: Docker (multi-stage build in `api/Dockerfile`)
+- Registry: GitHub Container Registry (GHCR)
+- Deployment: Kubernetes with Tailscale Funnel ingress
 
 ## Project Structure
 
 ```
 unquote/
 ├── api/                          # Node.js API monorepo
+│   ├── Dockerfile                # Multi-stage Docker build
 │   ├── packages/
 │   │   ├── api/                  # Main API server
 │   │   └── game-generator/       # Puzzle generation library
@@ -44,14 +47,17 @@ unquote/
 │       ├── app/                  # Bubble Tea model/views
 │       ├── puzzle/               # Domain logic
 │       ├── storage/              # Session persistence
-│       └── ui/                   # Styling utilities
-├── docs/                         # Design documentation
-├── CLAUDE.md                     # Project conventions
-└── Taskfile.yml                  # Task runner config
+│       ├── ui/                   # Styling utilities
+│       └── version/              # Build-time version info
+├── docs/design-plans/            # Design documentation
+├── mise.toml                     # Task runner & version config
+├── renovate.json                 # Dependency update config
+└── CLAUDE.md                     # Project conventions
 ```
 
 ## API Endpoints
 
+- `GET /health` - Health check
 - `GET /game/today` - Get today's cryptoquip puzzle
 - `GET /game/:date` - Get puzzle for specific date (YYYY-MM-DD)
 - `POST /game/:id/check` - Validate solution attempt
@@ -62,3 +68,4 @@ unquote/
 - **Keyword cipher**: Uses memorable keywords for substitution
 - **Elm architecture**: Bubble Tea ensures predictable TUI state management
 - **Internal packages**: Go packages under `internal/` prevent external imports
+- **Multi-platform Docker**: linux/amd64 and linux/arm64 via native runners
