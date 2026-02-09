@@ -2,7 +2,7 @@ experimental_monorepo_root = true
 
 [tools]
 node = "lts"
-go = "1.25.6"
+go = "1.25.7"
 "go:golang.org/x/tools/gopls" = "latest"
 lefthook = "latest"
 "npm:@commitlint/cli" = "latest"
