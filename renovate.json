@@ -1,0 +1,104 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices",
+    ":maintainLockFilesWeekly"
+  ],
+  "schedule": ["before 7am on Monday", "before 7am on Thursday"],
+  "prHourlyLimit": 2,
+  "prConcurrentLimit": 10,
+  "minimumReleaseAge": "3 days",
+  "packageRules": [
+    {
+      "description": "Node/pnpm updates use build(api) scope",
+      "matchManagers": ["npm"],
+      "semanticCommitType": "build",
+      "semanticCommitScope": "api",
+      "commitMessageTopic": "{{depName}}"
+    },
+    {
+      "description": "Go module updates use build(tui) scope",
+      "matchManagers": ["gomod"],
+      "semanticCommitType": "build",
+      "semanticCommitScope": "tui",
+      "postUpdateOptions": ["gomodTidy"]
+    },
+    {
+      "description": "GitHub Actions use ci type with no scope",
+      "matchManagers": ["github-actions"],
+      "semanticCommitType": "ci",
+      "semanticCommitScope": ""
+    },
+    {
+      "description": "Dockerfile updates use build(api) scope",
+      "matchManagers": ["dockerfile"],
+      "semanticCommitType": "build",
+      "semanticCommitScope": "api"
+    },
+    {
+      "description": "mise tool updates use build with no scope",
+      "matchManagers": ["mise"],
+      "semanticCommitType": "build",
+      "semanticCommitScope": ""
+    },
+    {
+      "description": "Group all GitHub Actions together",
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions"
+    },
+    {
+      "description": "Group OpenTelemetry packages",
+      "matchPackagePatterns": ["^@opentelemetry/"],
+      "groupName": "opentelemetry"
+    },
+    {
+      "description": "Group Fastify plugin packages",
+      "matchPackagePatterns": ["^@fastify/"],
+      "groupName": "fastify plugins"
+    },
+    {
+      "description": "Group Charmbracelet Go packages",
+      "matchPackagePatterns": ["^github\\.com/charmbracelet/"],
+      "groupName": "charmbracelet"
+    },
+    {
+      "description": "Group oxlint/oxfmt together",
+      "matchPackageNames": ["oxlint", "oxfmt"],
+      "groupName": "oxlint monorepo"
+    },
+    {
+      "description": "Group vitest monorepo",
+      "matchPackagePatterns": ["^@vitest/", "^vitest$"],
+      "groupName": "vitest"
+    },
+    {
+      "description": "Group @types packages",
+      "matchPackagePatterns": ["^@types/"],
+      "groupName": "type definitions"
+    },
+    {
+      "description": "Automerge non-major updates",
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Automerge @types including major",
+      "matchPackagePatterns": ["^@types/"],
+      "matchUpdateTypes": ["minor", "patch", "major"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Automerge pin/digest updates",
+      "matchUpdateTypes": ["pin", "digest"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Require manual review for major updates",
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    }
+  ]
+}
