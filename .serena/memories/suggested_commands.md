@@ -1,50 +1,48 @@
 # Suggested Commands
 
-## Global (from project root)
+## Global (from project root via mise)
 
 ```bash
 # Build everything
-task build
+mise run build
 
 # Build specific component
-task build:api
-task build:tui
+mise run //api:build
+mise run //tui:build
+
+# TUI CI (fmt, vet, lint, test, build)
+mise run //tui:ci
 ```
 
 ## API Development (from `api/` directory)
 
 ```bash
-# Build all packages
-pnpm run build
-
-# Run tests (vitest)
-pnpm run test
-
-# Lint with oxlint
-pnpm run lint
-
-# Format with oxfmt
-pnpm run format
+pnpm run build          # Build all packages
+pnpm run test           # Run tests (vitest)
+pnpm run lint           # Lint with oxlint
+pnpm run format         # Format with oxfmt
 pnpm run format:check   # Check only, don't fix
-
-# TypeScript type checking
-pnpm run typecheck
+pnpm run typecheck      # TypeScript type checking
 ```
 
-## TUI Development (from `tui/` directory)
+## TUI Development
 
+From project root (preferred):
 ```bash
-# Build binary
-go build -o bin/unquote ./main.go
+mise run //tui:build    # Build binary with version info
+mise run //tui:fmt      # Format with gofumpt
+mise run //tui:vet      # Run go vet
+mise run //tui:lint     # Run golangci-lint
+mise run //tui:test     # Run tests with race detector
+mise run //tui:ci       # All of the above in order
+```
 
-# Run all tests
-go test ./...
-
-# Run with verbose output
-go test -v ./...
-
-# Run specific package tests
-go test ./internal/app/...
+Or from `tui/` directory:
+```bash
+mise run :build
+mise run :fmt
+mise run :test
+# etc.
 ```
 
 ## Running the Application
@@ -56,32 +54,15 @@ pnpm start
 
 # TUI client (from tui/)
 ./bin/unquote
-# Optional: UNQUOTE_API_URL (default: http://localhost:3000)
+# Optional: UNQUOTE_API_URL (default: https://unquote.gaur-kardashev.ts.net)
 ```
 
 ## Git
 
 ```bash
-# Standard git commands
-git status
-git diff
-git add <file>
-git commit -m "type(scope): description"
-git log --oneline
-
 # Worktrees (used for feature branches)
-git worktree add ../.worktrees/<name> -b <branch-name>
-git worktree remove ../.worktrees/<name>
+git worktree add /tmp/unquote-<name> -b <branch-name>
+mise trust /tmp/unquote-<name>   # Required for lefthook hooks
+git worktree remove /tmp/unquote-<name>
 git worktree list
-```
-
-## System Utilities
-
-```bash
-ls -la          # List files with details
-find . -name "*.go"   # Find files
-grep -r "pattern" .   # Search in files
-cat <file>      # View file contents
-head -n 20 <file>     # View first 20 lines
-tail -n 20 <file>     # View last 20 lines
 ```
