@@ -15,7 +15,7 @@ catalogs:
     oxlint: ^1.42.0
   prod:
     '@eropple/fastify-openapi3': ^1.0.0
-    '@fastify/cors': ^10.0.0
+    '@fastify/cors': ^11.0.0
     '@fastify/env': ^5.0.0
     '@fastify/helmet': ^13.0.0
     '@fastify/rate-limit': ^10.0.0
