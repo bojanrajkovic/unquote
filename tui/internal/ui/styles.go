@@ -10,6 +10,7 @@ var (
 	ColorError     = lipgloss.Color("196") // Red
 	ColorMuted     = lipgloss.Color("245") // Gray
 	ColorWhite     = lipgloss.Color("15")  // White
+	ColorWarning   = lipgloss.Color("214") // Orange
 )
 
 // HeaderStyle renders the main title header
@@ -46,6 +47,12 @@ var ActiveCellStyle = CellStyle.
 // Uses background tint without bold to differentiate from ActiveCellStyle.
 var RelatedCellStyle = CellStyle.
 	Background(lipgloss.Color("236"))
+
+// DuplicateInputStyle highlights cells where the player's input letter
+// is also assigned to a different ciphertext letter (conflict warning).
+var DuplicateInputStyle = CellStyle.
+	Background(ColorWarning).
+	Foreground(lipgloss.Color("16"))
 
 // CipherStyle renders the cipher letter below input
 var CipherStyle = lipgloss.NewStyle().

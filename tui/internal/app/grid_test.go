@@ -163,7 +163,7 @@ func TestRenderInputCell(t *testing.T) {
 				cursorPos: tt.cursorPos,
 			}
 
-			result := m.renderInputCell(tt.cell, tt.highlightChar)
+			result := m.renderInputCell(tt.cell, tt.highlightChar, nil)
 
 			// Verify the content is correct (either the input character or underscore for empty letters)
 			if !strings.Contains(result, tt.expectedStyle) {
@@ -299,7 +299,7 @@ func TestRenderInputCellTableDrivenComprehensive(t *testing.T) {
 			}
 
 			testCell := tc.cells[tc.cellIndex]
-			result := m.renderInputCell(testCell, tc.highlightChar)
+			result := m.renderInputCell(testCell, tc.highlightChar, nil)
 
 			// Verify the result contains expected content
 			if testCell.IsLetter {
@@ -355,7 +355,7 @@ func TestRenderInputCellStylePrecedence(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := Model{cursorPos: tt.cursorPos}
-			result := m.renderInputCell(tt.cell, tt.highlightChar)
+			result := m.renderInputCell(tt.cell, tt.highlightChar, nil)
 
 			// The result should contain the expected content
 			expectedContent := "_"
@@ -371,6 +371,198 @@ func TestRenderInputCellStylePrecedence(t *testing.T) {
 			// and when cursor is elsewhere but char matches, it uses related style
 			if tt.expectActive && tt.cell.Index != tt.cursorPos {
 				t.Errorf("Expected active style logic but cursor is not on this cell")
+			}
+		})
+	}
+}
+
+//nolint:govet
+func TestFindDuplicateInputs(t *testing.T) {
+	tests := []struct {
+		name     string
+		cells    []puzzle.Cell
+		expected map[rune]bool
+	}{
+		{
+			name:     "no cells",
+			cells:    []puzzle.Cell{},
+			expected: map[rune]bool{},
+		},
+		{
+			name: "no inputs",
+			cells: []puzzle.Cell{
+				{Index: 0, Char: 'A', Input: 0, IsLetter: true},
+				{Index: 1, Char: 'B', Input: 0, IsLetter: true},
+			},
+			expected: map[rune]bool{},
+		},
+		{
+			name: "all unique inputs",
+			cells: []puzzle.Cell{
+				{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
+				{Index: 1, Char: 'B', Input: 'Y', IsLetter: true},
+				{Index: 2, Char: 'C', Input: 'Z', IsLetter: true},
+			},
+			expected: map[rune]bool{},
+		},
+		{
+			name: "same input for same cipher letter is not a duplicate",
+			cells: []puzzle.Cell{
+				{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
+				{Index: 1, Char: 'A', Input: 'X', IsLetter: true},
+			},
+			expected: map[rune]bool{},
+		},
+		{
+			name: "same input for different cipher letters is a duplicate",
+			cells: []puzzle.Cell{
+				{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
+				{Index: 1, Char: 'B', Input: 'X', IsLetter: true},
+			},
+			expected: map[rune]bool{'X': true},
+		},
+		{
+			name: "multiple duplicate inputs",
+			cells: []puzzle.Cell{
+				{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
+				{Index: 1, Char: 'B', Input: 'X', IsLetter: true},
+				{Index: 2, Char: 'C', Input: 'Y', IsLetter: true},
+				{Index: 3, Char: 'D', Input: 'Y', IsLetter: true},
+				{Index: 4, Char: 'E', Input: 'Z', IsLetter: true},
+			},
+			expected: map[rune]bool{'X': true, 'Y': true},
+		},
+		{
+			name: "non-letter cells ignored",
+			cells: []puzzle.Cell{
+				{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
+				{Index: 1, Char: ' ', Input: 0, IsLetter: false},
+				{Index: 2, Char: 'B', Input: 'X', IsLetter: true},
+			},
+			expected: map[rune]bool{'X': true},
+		},
+		{
+			name: "three cipher letters with same input",
+			cells: []puzzle.Cell{
+				{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
+				{Index: 1, Char: 'B', Input: 'X', IsLetter: true},
+				{Index: 2, Char: 'C', Input: 'X', IsLetter: true},
+			},
+			expected: map[rune]bool{'X': true},
+		},
+		{
+			name: "partial inputs - only filled cells considered",
+			cells: []puzzle.Cell{
+				{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
+				{Index: 1, Char: 'B', Input: 0, IsLetter: true},
+				{Index: 2, Char: 'C', Input: 'X', IsLetter: true},
+			},
+			expected: map[rune]bool{'X': true},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := findDuplicateInputs(tt.cells)
+
+			if len(result) != len(tt.expected) {
+				t.Fatalf("findDuplicateInputs() returned %d entries, want %d. Got: %v, Want: %v",
+					len(result), len(tt.expected), result, tt.expected)
+			}
+
+			for key := range tt.expected {
+				if !result[key] {
+					t.Errorf("findDuplicateInputs() missing expected key %q in result %v", string(key), result)
+				}
+			}
+		})
+	}
+}
+
+//nolint:govet
+func TestRenderInputCellDuplicateStyle(t *testing.T) {
+	tests := []struct {
+		name            string
+		cell            puzzle.Cell
+		cursorPos       int
+		highlightChar   rune
+		duplicateInputs map[rune]bool
+		expectedContent string
+		description     string
+	}{
+		{
+			name:            "duplicate input renders with warning style",
+			cell:            puzzle.Cell{Index: 2, Char: 'B', Input: 'X', IsLetter: true},
+			cursorPos:       0,
+			highlightChar:   'A',
+			duplicateInputs: map[rune]bool{'X': true},
+			expectedContent: "X",
+			description:     "Cell with duplicate input should render with DuplicateInputStyle",
+		},
+		{
+			name:            "cursor on duplicate uses active style",
+			cell:            puzzle.Cell{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
+			cursorPos:       0,
+			highlightChar:   'A',
+			duplicateInputs: map[rune]bool{'X': true},
+			expectedContent: "X",
+			description:     "Cursor position takes precedence over duplicate warning",
+		},
+		{
+			name:            "duplicate supersedes related style",
+			cell:            puzzle.Cell{Index: 2, Char: 'A', Input: 'X', IsLetter: true},
+			cursorPos:       0,
+			highlightChar:   'A',
+			duplicateInputs: map[rune]bool{'X': true},
+			expectedContent: "X",
+			description:     "Duplicate warning takes precedence over related cell highlighting",
+		},
+		{
+			name:            "non-duplicate unaffected",
+			cell:            puzzle.Cell{Index: 3, Char: 'C', Input: 'Y', IsLetter: true},
+			cursorPos:       0,
+			highlightChar:   'A',
+			duplicateInputs: map[rune]bool{'X': true},
+			expectedContent: "Y",
+			description:     "Cell without duplicate input should not be affected",
+		},
+		{
+			name:            "nil duplicate map treated as no duplicates",
+			cell:            puzzle.Cell{Index: 2, Char: 'B', Input: 'X', IsLetter: true},
+			cursorPos:       0,
+			highlightChar:   0,
+			duplicateInputs: nil,
+			expectedContent: "X",
+			description:     "Nil duplicateInputs map should behave as no duplicates",
+		},
+		{
+			name:            "empty input not flagged as duplicate",
+			cell:            puzzle.Cell{Index: 2, Char: 'B', Input: 0, IsLetter: true},
+			cursorPos:       0,
+			highlightChar:   0,
+			duplicateInputs: map[rune]bool{'X': true},
+			expectedContent: "_",
+			description:     "Cell with no input should not be flagged even if its input rune (0) were in the map",
+		},
+		{
+			name:            "non-letter cell ignores duplicates",
+			cell:            puzzle.Cell{Index: 2, Char: ',', Input: 0, IsLetter: false},
+			cursorPos:       0,
+			highlightChar:   0,
+			duplicateInputs: map[rune]bool{',': true},
+			expectedContent: ",",
+			description:     "Non-letter cells should never get duplicate styling",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := Model{cursorPos: tt.cursorPos}
+			result := m.renderInputCell(tt.cell, tt.highlightChar, tt.duplicateInputs)
+
+			if !strings.Contains(result, tt.expectedContent) {
+				t.Errorf("renderInputCell() result does not contain expected content %q. Result: %q. Description: %s",
+					tt.expectedContent, result, tt.description)
 			}
 		})
 	}
