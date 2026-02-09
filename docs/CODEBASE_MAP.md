@@ -41,12 +41,6 @@ graph TB
         Random[random - Seeded RNG]
     end
 
-    subgraph Infra ["Infrastructure"]
-        Docker[Dockerfile]
-        CICD[GitHub Actions]
-        OTel[OpenTelemetry]
-    end
-
     Main --> App
     App --> APIClient
     App --> Puzzle
@@ -58,19 +52,15 @@ graph TB
     Server --> DI
     Server --> GameRoutes
     Server --> Health
-    DI --> GameGen
+    DI --> Cipher
+    DI --> Quotes
 
     GameRoutes --> GameID
     GameRoutes --> Cipher
     GameRoutes --> Validation
     Cipher --> Random
     Cipher --> Hints
-    Cipher --> Quotes
-    Hints --> Difficulty
-
-    Server --> OTel
-    Docker --> Server
-    CICD --> Docker
+    Quotes --> Difficulty
 ```
 
 ## Directory Structure
@@ -258,15 +248,15 @@ sequenceDiagram
     Player->>TUI: Launch app
     TUI->>API: GET /game/today
     API->>Generator: generateDailyPuzzle(today)
-    Generator->>Generator: hashString("2026-02-09") → seed
+    Generator->>Generator: hashString("2026-02-09") to seed
     Generator->>QuoteSource: getRandomQuote(seed)
     QuoteSource-->>Generator: Quote
-    Generator->>Generator: selectKeyword(seed) → cipher alphabet
+    Generator->>Generator: selectKeyword(seed) to cipher alphabet
     Generator->>Generator: encryptText(quote, mapping)
     Generator->>Generator: generateHints(mapping, ciphertext, 2)
     Generator-->>API: Puzzle (encrypted text, hints, mapping)
-    API->>API: encodeGameId(date) → opaque ID
-    API-->>TUI: PuzzleResponse (no mapping!)
+    API->>API: encodeGameId(date) to opaque ID
+    API-->>TUI: PuzzleResponse (no mapping)
     TUI->>TUI: BuildCells(encryptedText)
     TUI->>Storage: LoadSession(gameID)
     Storage-->>TUI: Previous inputs (if any)
@@ -285,14 +275,14 @@ sequenceDiagram
 
     Player->>TUI: Enter (submit solution)
     TUI->>TUI: AssembleSolution(cells)
-    TUI->>API: POST /game/:id/check {solution}
-    API->>API: decodeGameId(id) → date
+    TUI->>API: POST /game/:id/check solution
+    API->>API: decodeGameId(id) to date
     API->>Generator: generateDailyPuzzle(date)
     Generator->>QuoteSource: getQuote(puzzle.quoteId)
     QuoteSource-->>Generator: Original quote
     API->>API: validateSolution(submission, quote.text)
-    Note over API: NFC normalize, lowercase,<br/>collapse whitespace,<br/>timing-safe compare
-    API-->>TUI: {correct: true/false}
+    Note over API: NFC normalize, lowercase, collapse whitespace, timing-safe compare
+    API-->>TUI: correct true/false
     TUI->>Storage: SaveSolvedSession(gameID, cells, time)
     TUI-->>Player: Victory screen or "Incorrect"
 ```
@@ -308,12 +298,12 @@ sequenceDiagram
     Note over App,FS: Save (on every input change)
     App->>Storage: SaveSession(gameID, inputs, elapsed)
     Storage->>FS: Write temp file
-    Storage->>FS: Rename to ~/.local/state/unquote/sessions/{gameID}.json
+    Storage->>FS: Rename to sessions/gameID.json
     Note over Storage: Atomic write (no partial reads)
 
     Note over App,FS: Restore (after puzzle fetch)
     App->>Storage: LoadSession(gameID)
-    Storage->>FS: Read ~/.local/state/unquote/sessions/{gameID}.json
+    Storage->>FS: Read sessions/gameID.json
     alt File exists
         Storage-->>App: GameSession (inputs, elapsed, solved)
         App->>App: Restore cell inputs + timer
