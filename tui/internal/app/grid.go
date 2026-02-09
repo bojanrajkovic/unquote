@@ -30,6 +30,9 @@ func (m Model) renderGrid() string {
 		highlightChar = m.cells[m.cursorPos].Char
 	}
 
+	// Find duplicate input assignments for warning highlights
+	duplicateInputs := findDuplicateInputs(m.cells)
+
 	// Group cells by word and wrap into lines
 	groups := ui.GroupCellsByWord(m.cells)
 	lines := ui.WrapWordGroups(groups, maxLineWidth, cellWidth)
@@ -37,18 +40,18 @@ func (m Model) renderGrid() string {
 	var renderedLines []string
 	for _, line := range lines {
 		cells := ui.FlattenLine(line)
-		renderedLines = append(renderedLines, m.renderLine(cells, highlightChar))
+		renderedLines = append(renderedLines, m.renderLine(cells, highlightChar, duplicateInputs))
 	}
 
 	return strings.Join(renderedLines, "\n\n")
 }
 
 // renderLine renders a single line with input row above cipher row
-func (m Model) renderLine(cells []puzzle.Cell, highlightChar rune) string {
+func (m Model) renderLine(cells []puzzle.Cell, highlightChar rune, duplicateInputs map[rune]bool) string {
 	var columns []string
 
 	for _, cell := range cells {
-		inputContent := m.renderInputCell(cell, highlightChar)
+		inputContent := m.renderInputCell(cell, highlightChar, duplicateInputs)
 		cipherContent := m.renderCipherCell(cell)
 
 		// Join input and cipher vertically to form a column
@@ -67,7 +70,7 @@ func (m Model) renderLine(cells []puzzle.Cell, highlightChar rune) string {
 }
 
 // renderInputCell renders the user input cell (top row)
-func (m Model) renderInputCell(cell puzzle.Cell, highlightChar rune) string {
+func (m Model) renderInputCell(cell puzzle.Cell, highlightChar rune, duplicateInputs map[rune]bool) string {
 	if !cell.IsLetter {
 		// Non-letter: show the character as-is (punctuation, space)
 		return ui.CellStyle.Render(string(cell.Char))
@@ -84,6 +87,11 @@ func (m Model) renderInputCell(cell puzzle.Cell, highlightChar rune) string {
 	// Highlight if this is the cursor position (takes precedence)
 	if cell.Index == m.cursorPos {
 		return ui.ActiveCellStyle.Render(content)
+	}
+
+	// Highlight duplicate input assignments (warning)
+	if cell.Input != 0 && duplicateInputs[cell.Input] {
+		return ui.DuplicateInputStyle.Render(content)
 	}
 
 	// Highlight related cells (same cipher letter as cursor)
