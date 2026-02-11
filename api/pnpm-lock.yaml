@@ -84,9 +84,6 @@ catalogs:
     ajv-formats:
       specifier: ^3.0.0
       version: 3.0.1
-    awilix:
-      specifier: ^12.0.0
-      version: 12.0.5
     fastify:
       specifier: ^5.2.0
       version: 5.7.4
@@ -202,7 +199,7 @@ importers:
         version: 3.0.1(patch_hash=5e2c1c896124c3f00a28269fcd286b8e2b62b5d4cfdb7c541d42dfb558017ab8)(ajv@8.17.1)
       awilix:
         specifier: catalog:prod
-        version: 12.0.5
+        version: 12.1.0
       fastify:
         specifier: catalog:prod
         version: 5.7.4
@@ -1509,8 +1506,8 @@ packages:
   avvio@9.1.0:
     resolution: {integrity: sha512-fYASnYi600CsH/j9EQov7lECAniYiBFiiAtBNuZYLA2leLe9qOvZzqYHFjtIj6gD2VMoMLP14834LFWvr4IfDw==}
 
-  awilix@12.0.5:
-    resolution: {integrity: sha512-Qf/V/hRo6DK0FoBKJ9QiObasRxHAhcNi0mV6kW2JMawxS3zq6Un+VsZmVAZDUfvB+MjTEiJ2tUJUl4cr0JiUAw==}
+  awilix@12.1.0:
+    resolution: {integrity: sha512-9ZgF5IHQQvvpgKasxNU2WAzQLVKmRBwjEm8zksqPxtAdrmmCRMVjIgeOTr/kOE4O9EcUXl/qRbtjXh8ucV0CkQ==}
     engines: {node: '>=16.3.0'}
 
   bignumber.js@9.3.1:
@@ -3617,9 +3614,8 @@ snapshots:
       '@fastify/error': 4.2.0
       fastq: 1.20.1
 
-  awilix@12.0.5:
+  awilix@12.1.0:
     dependencies:
-      camel-case: 4.1.2
       fast-glob: 3.3.3
 
   bignumber.js@9.3.1: {}
