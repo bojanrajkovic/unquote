@@ -12,7 +12,6 @@ export const defaultTestConfig: AppConfig = {
   HOST: "0.0.0.0",
   LOG_LEVEL: "silent",
   QUOTES_FILE_PATH: "/tmp/test-quotes.json",
-  OTEL_EXPORTER_OTLP_ENDPOINT: undefined,
   CORS_ORIGIN: "*",
   TRUST_PROXY: false,
   RATE_LIMIT_MAX: 100,
@@ -58,95 +57,59 @@ export function createMockQuoteSource(): QuoteSource {
 }
 
 /**
+ * ROT13 cipher mapping used in mock puzzles.
+ */
+const rot13Mapping = {
+  a: "N",
+  b: "O",
+  c: "P",
+  d: "Q",
+  e: "R",
+  f: "S",
+  g: "T",
+  h: "U",
+  i: "V",
+  j: "W",
+  k: "X",
+  l: "Y",
+  m: "Z",
+  n: "A",
+  o: "B",
+  p: "C",
+  q: "D",
+  r: "E",
+  s: "F",
+  t: "G",
+  u: "H",
+  v: "I",
+  w: "J",
+  x: "K",
+  y: "L",
+  z: "M",
+} as const;
+
+/**
  * Create a mock GameGenerator for tests.
  * Note: The mock returns fixed/predictable data regardless of input.
- * The encryptedText and cipherMapping are example ROT13 values for
+ * The encryptedText and mapping are example ROT13 values for
  * testing structure, not actual encryption of the input quote.
  */
 export function createMockGameGenerator(): GameGenerator {
   return {
     generatePuzzle: (quote: Quote): Puzzle => {
-      // Returns fixed mock data - encryptedText does not match quote.text
       return {
-        id: "test-puzzle-1",
+        quoteId: quote.id,
         encryptedText: "GUR DHVPX OEBJA SBK WHZCF BIRE GUR YNML QBT",
-        originalQuote: quote,
-        cipherMapping: {
-          A: "N",
-          B: "O",
-          C: "P",
-          D: "Q",
-          E: "R",
-          F: "S",
-          G: "T",
-          H: "U",
-          I: "V",
-          J: "W",
-          K: "X",
-          L: "Y",
-          M: "Z",
-          N: "A",
-          O: "B",
-          P: "C",
-          Q: "D",
-          R: "E",
-          S: "F",
-          T: "G",
-          U: "H",
-          V: "I",
-          W: "J",
-          X: "K",
-          Y: "L",
-          Z: "M",
-        },
+        mapping: rot13Mapping,
         hints: [],
-        difficulty: quote.difficulty,
-        generatedAt: new Date().toISOString(),
       };
     },
     generateDailyPuzzle: async (): Promise<Puzzle> => {
-      const quote: Quote = {
-        id: "daily-quote",
-        text: "Test daily puzzle",
-        author: "Daily Author",
-        category: "daily",
-        difficulty: 60,
-      };
       return {
-        id: "daily-puzzle-1",
+        quoteId: "daily-quote",
         encryptedText: "GRFG QNVYL CHMMYR",
-        originalQuote: quote,
-        cipherMapping: {
-          A: "N",
-          B: "O",
-          C: "P",
-          D: "Q",
-          E: "R",
-          F: "S",
-          G: "T",
-          H: "U",
-          I: "V",
-          J: "W",
-          K: "X",
-          L: "Y",
-          M: "Z",
-          N: "A",
-          O: "B",
-          P: "C",
-          Q: "D",
-          R: "E",
-          S: "F",
-          T: "G",
-          U: "H",
-          V: "I",
-          W: "J",
-          X: "K",
-          Y: "L",
-          Z: "M",
-        },
+        mapping: rot13Mapping,
         hints: [],
-        difficulty: 60,
-        generatedAt: new Date().toISOString(),
       };
     },
   };

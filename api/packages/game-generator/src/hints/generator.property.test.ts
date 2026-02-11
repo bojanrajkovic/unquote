@@ -22,7 +22,7 @@ describe("hint generation properties", () => {
       );
 
       for (let i = 0; i < 26; i++) {
-        mapping[alphabet[i]] = shuffled[i];
+        mapping[alphabet[i]!] = shuffled![i]!;
       }
       return mapping;
     });

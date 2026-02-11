@@ -128,14 +128,15 @@ describe("createMockGameGenerator", () => {
 
     expect(puzzle).toBeDefined();
     expect(puzzle.encryptedText).toBeDefined();
-    expect(puzzle.originalQuote).toBe(quote);
+    expect(puzzle.quoteId).toBe(quote.id);
   });
 
   it("should generate a daily puzzle", async () => {
     const generator = createMockGameGenerator();
-    const puzzle = await generator.generateDailyPuzzle();
+    const { DateTime } = await import("luxon");
+    const puzzle = await generator.generateDailyPuzzle(DateTime.fromISO("2026-01-29"));
 
     expect(puzzle).toBeDefined();
-    expect(puzzle.id).toContain("daily");
+    expect(puzzle.quoteId).toContain("daily");
   });
 });
