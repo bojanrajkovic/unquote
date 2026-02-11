@@ -3,7 +3,8 @@ import Fastify, { type FastifyInstance } from "fastify";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import sensible from "@fastify/sensible";
 import { oas3PluginAjv } from "@eropple/fastify-openapi3";
-import { JsonQuoteSource, KeywordCipherGenerator } from "@unquote/game-generator";
+import { KeywordCipherGenerator } from "@unquote/game-generator";
+import { JsonQuoteSource } from "../../../sources/index.js";
 import { DateTime } from "luxon";
 
 import { registerDependencyInjection } from "../../../deps/index.js";

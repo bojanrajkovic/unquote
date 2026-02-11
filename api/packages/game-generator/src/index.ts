@@ -10,7 +10,6 @@ export type { GameGenerator } from "./cipher/index.js";
 
 // Implementations
 export { InMemoryQuoteSource } from "./quotes/index.js";
-export { JsonQuoteSource } from "./quotes/index.js";
 export { KeywordCipherGenerator } from "./cipher/index.js";
 
 // Pure functions

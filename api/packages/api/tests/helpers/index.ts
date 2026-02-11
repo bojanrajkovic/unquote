@@ -3,7 +3,6 @@ export {
   createSilentLogger,
   createMockQuoteSource,
   createMockGameGenerator,
-  TestQuoteSource,
   defaultTestConfig,
   type TestContainerOptions,
 } from "./test-container.js";

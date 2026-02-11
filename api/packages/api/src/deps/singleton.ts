@@ -1,7 +1,8 @@
 import { createContainer, asValue, asFunction, type AwilixContainer } from "awilix";
 import type { Logger } from "pino";
 import type { QuoteSource, GameGenerator } from "@unquote/game-generator";
-import { JsonQuoteSource, KeywordCipherGenerator } from "@unquote/game-generator";
+import { KeywordCipherGenerator } from "@unquote/game-generator";
+import { JsonQuoteSource } from "../sources/index.js";
 import type { AppConfig } from "../config/index.js";
 
 /**

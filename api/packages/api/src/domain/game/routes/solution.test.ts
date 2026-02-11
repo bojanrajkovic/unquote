@@ -7,7 +7,8 @@ import type { GameGenerator, Puzzle, Quote } from "@unquote/game-generator";
 import { DateTime } from "luxon";
 
 import { registerDependencyInjection } from "../../../deps/index.js";
-import { createTestContainer, createSilentLogger, TestQuoteSource } from "../../../../tests/helpers/index.js";
+import { InMemoryQuoteSource } from "@unquote/game-generator";
+import { createTestContainer, createSilentLogger } from "../../../../tests/helpers/index.js";
 import { solutionRoutes } from "./solution.js";
 import { encodeGameId } from "../game-id.js";
 
@@ -32,7 +33,7 @@ describe("solution routes", () => {
     ],
   };
 
-  const mockQuoteSource = new TestQuoteSource([mockQuote]);
+  const mockQuoteSource = new InMemoryQuoteSource([mockQuote]);
 
   const mockGameGenerator: GameGenerator = {
     generatePuzzle: () => mockPuzzle,

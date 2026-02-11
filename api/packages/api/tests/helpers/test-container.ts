@@ -1,6 +1,12 @@
 import { createContainer, asValue, type AwilixContainer } from "awilix";
 import pino, { type Logger } from "pino";
-import { QuoteSource, type GameGenerator, type Quote, type Puzzle } from "@unquote/game-generator";
+import {
+  InMemoryQuoteSource,
+  type GameGenerator,
+  type Quote,
+  type Puzzle,
+  type QuoteSource,
+} from "@unquote/game-generator";
 import type { AppConfig } from "../../src/config/index.js";
 import type { AppSingletonCradle } from "../../src/deps/index.js";
 
@@ -27,24 +33,10 @@ export function createSilentLogger(): Logger {
 }
 
 /**
- * Minimal QuoteSource subclass for tests.
- * Returns a fixed array of quotes — getQuote() and getRandomQuote()
- * are inherited from the abstract class.
- */
-export class TestQuoteSource extends QuoteSource {
-  constructor(private readonly quotes: readonly Quote[]) {
-    super();
-  }
-
-  async getAllQuotes(): Promise<Quote[]> {
-    return [...this.quotes];
-  }
-}
-
-/**
  * Create a mock QuoteSource for tests.
+ * Uses InMemoryQuoteSource with a single test quote.
  */
-export function createMockQuoteSource(): QuoteSource {
+export function createMockQuoteSource(): InMemoryQuoteSource {
   const testQuote: Quote = {
     id: "test-quote-1",
     text: "The quick brown fox jumps over the lazy dog",
@@ -53,7 +45,7 @@ export function createMockQuoteSource(): QuoteSource {
     difficulty: 50,
   };
 
-  return new TestQuoteSource([testQuote]);
+  return new InMemoryQuoteSource([testQuote]);
 }
 
 /**

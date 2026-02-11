@@ -8,7 +8,7 @@ Transforms quotes into cryptoquip puzzles with deterministic daily generation. E
 
 ## Contracts
 
-- **Exposes**: `Quote`, `Puzzle`, `Hint`, `CipherMapping` types; `QuoteSource`, `GameGenerator` interfaces; `JsonQuoteSource` (with `ensureLoaded()` for eager startup validation), `KeywordCipherGenerator` implementations; `validateSolution` function
+- **Exposes**: `Quote`, `Puzzle`, `Hint`, `CipherMapping` types; `QuoteSchema` schema; `QuoteSource`, `GameGenerator` interfaces; `InMemoryQuoteSource`, `KeywordCipherGenerator` implementations; `validateSolution` function
 - **Guarantees**: Same seed produces identical cipher mapping. Daily puzzles are deterministic by date. Cipher mappings are bijective (no letter maps to itself or shares a mapping).
 - **Expects**: Valid Quote objects with id, text, author, category, difficulty. Luxon DateTime for daily puzzle generation.
 
@@ -16,11 +16,11 @@ Transforms quotes into cryptoquip puzzles with deterministic daily generation. E
 
 - **Uses**: Luxon (DateTime), TypeBox (schema validation), fast-check (property testing)
 - **Used by**: API package (via DI container as `quoteSource` and `gameGenerator` singletons)
-- **Boundary**: Pure library with no I/O dependencies; quote data loaded via QuoteSource abstraction
+- **Boundary**: Pure library with zero `node:fs` imports in production code; quote data loaded via QuoteSource abstraction
 
 ## Shared Resources
 
-Test and development quote data lives in `api/resources/quotes.json` (shared across packages), not within this package's source tree. The `JsonQuoteSource` accepts any file path; callers provide the location.
+Test and development quote data lives in `api/resources/quotes.json` (shared across packages), not within this package's source tree. The API package's `JsonQuoteSource` handles file I/O; game-generator consumers use `InMemoryQuoteSource` for testing.
 
 ## Key Decisions
 
@@ -45,9 +45,9 @@ Test and development quote data lives in `api/resources/quotes.json` (shared acr
 
 - `src/index.ts` - Public exports
 - `src/types.ts` - Core types (Quote, Puzzle, Hint, CipherMapping)
-- `src/schemas.ts` - TypeBox validation schemas
+- `src/schemas.ts` - TypeBox validation schemas (QuoteSchema)
 - `src/cipher/keyword-cipher.ts` - KeywordCipherGenerator implementation
-- `src/quotes/json-source.ts` - JsonQuoteSource implementation
+- `src/quotes/in-memory-source.ts` - InMemoryQuoteSource implementation
 - `src/validation.ts` - Solution validation
 - `src/difficulty/scorer.ts` - 7-factor difficulty scoring algorithm (internal)
 

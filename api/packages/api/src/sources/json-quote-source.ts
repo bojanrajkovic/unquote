@@ -2,9 +2,7 @@ import { readFile, access } from "node:fs/promises";
 import { constants } from "node:fs";
 import { Compile } from "typebox/compile";
 import { Type } from "typebox";
-import type { Quote } from "../types.js";
-import { QuoteSource } from "./types.js";
-import { QuoteSchema } from "../schemas.js";
+import { QuoteSource, QuoteSchema, type Quote } from "@unquote/game-generator";
 
 // Compile the schema for efficient validation at runtime
 const QuoteArraySchema = Type.Array(QuoteSchema);

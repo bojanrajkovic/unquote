@@ -3,8 +3,8 @@ import { readFile, writeFile, unlink, mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import type { Quote } from "../types.js";
-import { JsonQuoteSource } from "./json-source.js";
+import type { Quote } from "@unquote/game-generator";
+import { JsonQuoteSource } from "./json-quote-source.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -19,9 +19,7 @@ describe("JsonQuoteSource", () => {
     source = new JsonQuoteSource(quotesPath);
     const content = await readFile(quotesPath, "utf8");
     const quotes: Quote[] = JSON.parse(content);
-    // eslint-disable-next-line @typescript-eslint/no-magic-numbers
     firstQuoteId = quotes[0]?.id ?? "";
-    // eslint-disable-next-line @typescript-eslint/no-magic-numbers
     secondQuoteId = quotes[1]?.id ?? "";
   });
 
