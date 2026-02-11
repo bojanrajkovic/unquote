@@ -3,11 +3,11 @@ import Fastify, { type FastifyInstance } from "fastify";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import sensible from "@fastify/sensible";
 import { oas3PluginAjv } from "@eropple/fastify-openapi3";
-import type { GameGenerator, Puzzle, Quote, QuoteSource } from "@unquote/game-generator";
+import type { GameGenerator, Puzzle, Quote } from "@unquote/game-generator";
 import type { DateTime } from "luxon";
 
 import { registerDependencyInjection } from "../../../deps/index.js";
-import { createTestContainer, createSilentLogger } from "../../../../tests/helpers/index.js";
+import { createTestContainer, createSilentLogger, TestQuoteSource } from "../../../../tests/helpers/index.js";
 import { puzzleRoutes } from "./puzzle.js";
 
 describe("puzzle routes", () => {
@@ -31,10 +31,7 @@ describe("puzzle routes", () => {
     ],
   };
 
-  const mockQuoteSource: QuoteSource = {
-    getQuote: async (id: string) => (id === mockQuote.id ? mockQuote : null),
-    getRandomQuote: async () => mockQuote,
-  };
+  const mockQuoteSource = new TestQuoteSource([mockQuote]);
 
   const mockGameGenerator: GameGenerator = {
     generatePuzzle: () => mockPuzzle,
