@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, beforeAll } from "vitest";
+import { readFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { DateTime } from "luxon";
 import { KeywordCipherGenerator } from "./keyword-cipher.js";
-import { JsonQuoteSource } from "../quotes/json-source.js";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { InMemoryQuoteSource } from "../quotes/in-memory-source.js";
 import type { Quote } from "../types.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -12,10 +13,15 @@ const quotesPath = join(__dirname, "../../../../resources/quotes.json");
 
 describe("KeywordCipherGenerator", () => {
   let generator: KeywordCipherGenerator;
-  let quoteSource: JsonQuoteSource;
+  let quoteSource: InMemoryQuoteSource;
+
+  beforeAll(async () => {
+    const content = await readFile(quotesPath, "utf-8");
+    const quotes: Quote[] = JSON.parse(content);
+    quoteSource = new InMemoryQuoteSource(quotes);
+  });
 
   beforeEach(() => {
-    quoteSource = new JsonQuoteSource(quotesPath);
     generator = new KeywordCipherGenerator(quoteSource);
   });
 

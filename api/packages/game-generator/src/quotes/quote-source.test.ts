@@ -1,16 +1,7 @@
 import { describe, it, expect } from "vitest";
 import type { Quote } from "../types.js";
 import { QuoteSource } from "./types.js";
-
-class InMemoryQuoteSource extends QuoteSource {
-  constructor(private readonly quotes: Quote[]) {
-    super();
-  }
-
-  async getAllQuotes(): Promise<Quote[]> {
-    return this.quotes;
-  }
-}
+import { InMemoryQuoteSource } from "./in-memory-source.js";
 
 const testQuotes: Quote[] = [
   {

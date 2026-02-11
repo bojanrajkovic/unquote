@@ -1,17 +1,13 @@
 import { describe, it } from "vitest";
 import fc from "fast-check";
 import { KeywordCipherGenerator } from "./keyword-cipher.js";
-import { JsonQuoteSource } from "../quotes/json-source.js";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { InMemoryQuoteSource } from "../quotes/in-memory-source.js";
 import type { Quote } from "../types.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const quotesPath = join(__dirname, "../../data/quotes.json");
-
 describe("cipher properties", () => {
-  const quoteSource = new JsonQuoteSource(quotesPath);
+  // The quoteSource is only needed for constructor — generatePuzzle
+  // takes a Quote directly and never calls quoteSource methods.
+  const quoteSource = new InMemoryQuoteSource([]);
   const generator = new KeywordCipherGenerator(quoteSource);
 
   // Arbitrary for Quote

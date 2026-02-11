@@ -5,7 +5,7 @@ import { DateTime } from "luxon";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { Quote } from "./types.js";
 import { KeywordCipherGenerator } from "./cipher/keyword-cipher.js";
-import { JsonQuoteSource } from "./quotes/json-source.js";
+import { InMemoryQuoteSource } from "./quotes/in-memory-source.js";
 import { validateSolution } from "./validation.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -13,17 +13,17 @@ const __dirname = dirname(__filename);
 const quotesPath = join(__dirname, "../../../resources/quotes.json");
 
 describe("Integration Tests", () => {
-  let quoteSource: JsonQuoteSource;
+  let quoteSource: InMemoryQuoteSource;
   let generator: KeywordCipherGenerator;
   let allQuotes: Quote[];
 
   beforeAll(async () => {
     const content = await readFile(quotesPath, "utf8");
     allQuotes = JSON.parse(content);
+    quoteSource = new InMemoryQuoteSource(allQuotes);
   });
 
   beforeEach(() => {
-    quoteSource = new JsonQuoteSource(quotesPath);
     generator = new KeywordCipherGenerator(quoteSource);
   });
 
@@ -56,7 +56,7 @@ describe("Integration Tests", () => {
     });
 
     it("validates correct solution submission", async () => {
-      const quote = allQuotes[0];
+      const quote = allQuotes[0]!;
 
       // Simulate player typing the correct answer
       const isValid = validateSolution(quote.text, quote.text);
@@ -64,7 +64,7 @@ describe("Integration Tests", () => {
     });
 
     it("rejects incorrect solution submission", async () => {
-      const quote = allQuotes[0];
+      const quote = allQuotes[0]!;
 
       // Simulate player typing wrong answer
       const isValid = validateSolution("Wrong answer entirely", quote.text);
@@ -112,8 +112,8 @@ describe("Integration Tests", () => {
         // eslint-disable-next-line @typescript-eslint/no-magic-numbers
         const puzzle2 = puzzleResults[i + 1];
 
-        expect(puzzle1.quoteId).toBe(puzzle2.quoteId);
-        expect(puzzle1.encryptedText).toBe(puzzle2.encryptedText);
+        expect(puzzle1!.quoteId).toBe(puzzle2!.quoteId);
+        expect(puzzle1!.encryptedText).toBe(puzzle2!.encryptedText);
       }
     });
   });
@@ -139,7 +139,7 @@ describe("Integration Tests", () => {
       ];
 
       for (const quote of sampleQuotes) {
-        const puzzle = generator.generatePuzzle(quote, `seed-${quote.id}`);
+        const puzzle = generator.generatePuzzle(quote!, `seed-${quote!.id}`);
 
         // Build reverse mapping
         const reverseMapping: Record<string, string> = {};
@@ -158,7 +158,7 @@ describe("Integration Tests", () => {
           .join("");
 
         // Verify roundtrip
-        expect(validateSolution(decrypted, quote.text)).toBe(true);
+        expect(validateSolution(decrypted, quote!.text)).toBe(true);
       }
     });
 
