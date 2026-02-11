@@ -114,7 +114,7 @@ describe("createMockQuoteSource", () => {
 });
 
 describe("createMockGameGenerator", () => {
-  it("should generate a puzzle from a quote", () => {
+  it("should generate a puzzle from a quote", async () => {
     const generator = createMockGameGenerator();
     const quote = {
       id: "test",
@@ -124,11 +124,13 @@ describe("createMockGameGenerator", () => {
       difficulty: 50,
     };
 
-    const puzzle = generator.generatePuzzle(quote);
+    const puzzle = await generator.generatePuzzle(quote);
 
     expect(puzzle).toBeDefined();
     expect(puzzle.encryptedText).toBeDefined();
-    expect(puzzle.quoteId).toBe(quote.id);
+    expect(puzzle.quoteId).toBeDefined();
+    expect(puzzle.mapping).toBeDefined();
+    expect(puzzle.hints).toBeDefined();
   });
 
   it("should generate a daily puzzle", async () => {

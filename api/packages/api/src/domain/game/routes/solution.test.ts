@@ -36,7 +36,7 @@ describe("solution routes", () => {
   const mockQuoteSource = new InMemoryQuoteSource([mockQuote]);
 
   const mockGameGenerator: GameGenerator = {
-    generatePuzzle: () => mockPuzzle,
+    generatePuzzle: async () => mockPuzzle,
     generateDailyPuzzle: async (_date: DateTime) => mockPuzzle,
   };
 

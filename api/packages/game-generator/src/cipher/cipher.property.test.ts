@@ -1,14 +1,17 @@
 import { describe, it } from "vitest";
 import fc from "fast-check";
 import { KeywordCipherGenerator } from "./keyword-cipher.js";
+import type { KeywordSource } from "./types.js";
 import { InMemoryQuoteSource } from "../quotes/in-memory-source.js";
+import { KEYWORDS } from "../data/keywords.js";
 import type { Quote } from "../types.js";
 
 describe("cipher properties", () => {
   // The quoteSource is only needed for constructor — generatePuzzle
   // takes a Quote directly and never calls quoteSource methods.
   const quoteSource = new InMemoryQuoteSource([]);
-  const generator = new KeywordCipherGenerator(quoteSource);
+  const keywordSource: KeywordSource = { getKeywords: async () => KEYWORDS };
+  const generator = new KeywordCipherGenerator(quoteSource, keywordSource);
 
   // Arbitrary for Quote
   const quoteArbitrary = fc.record({
@@ -20,10 +23,10 @@ describe("cipher properties", () => {
   });
 
   describe("property: cipher roundtrip", () => {
-    it("encrypt then decrypt with reverse mapping recovers original (case-insensitive)", () => {
-      fc.assert(
-        fc.property(quoteArbitrary, fc.string(), (quote, seed) => {
-          const puzzle = generator.generatePuzzle(quote, seed);
+    it("encrypt then decrypt with reverse mapping recovers original (case-insensitive)", async () => {
+      await fc.assert(
+        fc.asyncProperty(quoteArbitrary, fc.string(), async (quote, seed) => {
+          const puzzle = await generator.generatePuzzle(quote, seed);
 
           // Build reverse mapping
           const reverseMapping: Record<string, string> = {};
@@ -52,10 +55,10 @@ describe("cipher properties", () => {
   });
 
   describe("property: cipher mapping bijectivity", () => {
-    it("every mapping has exactly 26 unique keys mapping to 26 unique values", () => {
-      fc.assert(
-        fc.property(quoteArbitrary, fc.string(), (quote, seed) => {
-          const puzzle = generator.generatePuzzle(quote, seed);
+    it("every mapping has exactly 26 unique keys mapping to 26 unique values", async () => {
+      await fc.assert(
+        fc.asyncProperty(quoteArbitrary, fc.string(), async (quote, seed) => {
+          const puzzle = await generator.generatePuzzle(quote, seed);
 
           // Check 26 keys
           const keys = Object.keys(puzzle.mapping);
@@ -89,10 +92,10 @@ describe("cipher properties", () => {
       );
     });
 
-    it("mapping is invertible (bijection)", () => {
-      fc.assert(
-        fc.property(quoteArbitrary, fc.string(), (quote, seed) => {
-          const puzzle = generator.generatePuzzle(quote, seed);
+    it("mapping is invertible (bijection)", async () => {
+      await fc.assert(
+        fc.asyncProperty(quoteArbitrary, fc.string(), async (quote, seed) => {
+          const puzzle = await generator.generatePuzzle(quote, seed);
 
           // Build reverse mapping
           const reverseMapping: Record<string, string> = {};
@@ -112,9 +115,9 @@ describe("cipher properties", () => {
   });
 
   describe("property: non-letter preservation", () => {
-    it("punctuation and spaces unchanged after encryption", () => {
-      fc.assert(
-        fc.property(fc.string({ minLength: 1, maxLength: 100 }), fc.string(), (text, seed) => {
+    it("punctuation and spaces unchanged after encryption", async () => {
+      await fc.assert(
+        fc.asyncProperty(fc.string({ minLength: 1, maxLength: 100 }), fc.string(), async (text, seed) => {
           const quote: Quote = {
             id: "test",
             text,
@@ -123,7 +126,7 @@ describe("cipher properties", () => {
             difficulty: 50,
           };
 
-          const puzzle = generator.generatePuzzle(quote, seed);
+          const puzzle = await generator.generatePuzzle(quote, seed);
 
           // Extract non-letter characters from both
           const originalNonLetters = text.replaceAll(/[a-zA-Z]/g, "");
@@ -134,10 +137,10 @@ describe("cipher properties", () => {
       );
     });
 
-    it("encrypted text has same length as original", () => {
-      fc.assert(
-        fc.property(quoteArbitrary, fc.string(), (quote, seed) => {
-          const puzzle = generator.generatePuzzle(quote, seed);
+    it("encrypted text has same length as original", async () => {
+      await fc.assert(
+        fc.asyncProperty(quoteArbitrary, fc.string(), async (quote, seed) => {
+          const puzzle = await generator.generatePuzzle(quote, seed);
           return puzzle.encryptedText.length === quote.text.length;
         }),
       );
@@ -145,10 +148,10 @@ describe("cipher properties", () => {
   });
 
   describe("property: no self-mapping", () => {
-    it("no plaintext letter ever maps to itself", () => {
-      fc.assert(
-        fc.property(quoteArbitrary, fc.string(), (quote, seed) => {
-          const puzzle = generator.generatePuzzle(quote, seed);
+    it("no plaintext letter ever maps to itself", async () => {
+      await fc.assert(
+        fc.asyncProperty(quoteArbitrary, fc.string(), async (quote, seed) => {
+          const puzzle = await generator.generatePuzzle(quote, seed);
 
           for (const [plain, cipher] of Object.entries(puzzle.mapping)) {
             if (plain === cipher.toLowerCase()) {
@@ -163,11 +166,11 @@ describe("cipher properties", () => {
   });
 
   describe("property: determinism", () => {
-    it("same seed always produces identical puzzle", () => {
-      fc.assert(
-        fc.property(quoteArbitrary, fc.string(), (quote, seed) => {
-          const puzzle1 = generator.generatePuzzle(quote, seed);
-          const puzzle2 = generator.generatePuzzle(quote, seed);
+    it("same seed always produces identical puzzle", async () => {
+      await fc.assert(
+        fc.asyncProperty(quoteArbitrary, fc.string(), async (quote, seed) => {
+          const puzzle1 = await generator.generatePuzzle(quote, seed);
+          const puzzle2 = await generator.generatePuzzle(quote, seed);
 
           return (
             puzzle1.encryptedText === puzzle2.encryptedText &&

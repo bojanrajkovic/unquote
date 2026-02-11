@@ -6,11 +6,14 @@ export { QuoteSchema } from "./schemas.js";
 
 // Contracts
 export { QuoteSource } from "./quotes/index.js";
-export type { GameGenerator } from "./cipher/index.js";
+export type { GameGenerator, KeywordSource } from "./cipher/index.js";
 
 // Implementations
 export { InMemoryQuoteSource } from "./quotes/index.js";
 export { KeywordCipherGenerator } from "./cipher/index.js";
+
+// Data
+export { KEYWORDS } from "./data/keywords.js";
 
 // Pure functions
 export { validateSolution } from "./validation.js";

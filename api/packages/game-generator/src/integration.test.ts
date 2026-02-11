@@ -5,7 +5,9 @@ import { DateTime } from "luxon";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { Quote } from "./types.js";
 import { KeywordCipherGenerator } from "./cipher/keyword-cipher.js";
+import type { KeywordSource } from "./cipher/types.js";
 import { InMemoryQuoteSource } from "./quotes/in-memory-source.js";
+import { KEYWORDS } from "./data/keywords.js";
 import { validateSolution } from "./validation.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -16,6 +18,7 @@ describe("Integration Tests", () => {
   let quoteSource: InMemoryQuoteSource;
   let generator: KeywordCipherGenerator;
   let allQuotes: Quote[];
+  const keywordSource: KeywordSource = { getKeywords: async () => KEYWORDS };
 
   beforeAll(async () => {
     const content = await readFile(quotesPath, "utf8");
@@ -24,7 +27,7 @@ describe("Integration Tests", () => {
   });
 
   beforeEach(() => {
-    generator = new KeywordCipherGenerator(quoteSource);
+    generator = new KeywordCipherGenerator(quoteSource, keywordSource);
   });
 
   describe("end-to-end puzzle flow", () => {
@@ -33,7 +36,7 @@ describe("Integration Tests", () => {
       const quote = await quoteSource.getRandomQuote("test-seed");
 
       // Generate puzzle
-      const puzzle = generator.generatePuzzle(quote, "test-seed");
+      const puzzle = await generator.generatePuzzle(quote, "test-seed");
 
       // Decrypt using the mapping
       const reverseMapping: Record<string, string> = {};
@@ -139,7 +142,7 @@ describe("Integration Tests", () => {
       ];
 
       for (const quote of sampleQuotes) {
-        const puzzle = generator.generatePuzzle(quote!, `seed-${quote!.id}`);
+        const puzzle = await generator.generatePuzzle(quote!, `seed-${quote!.id}`);
 
         // Build reverse mapping
         const reverseMapping: Record<string, string> = {};
@@ -162,7 +165,7 @@ describe("Integration Tests", () => {
       }
     });
 
-    it("all letters are mapped bijectively", () => {
+    it("all letters are mapped bijectively", async () => {
       const quote = {
         id: "test",
         text: "The quick brown fox jumps over the lazy dog",
@@ -171,7 +174,7 @@ describe("Integration Tests", () => {
         difficulty: 50,
       };
 
-      const puzzle = generator.generatePuzzle(quote, "bijection-test");
+      const puzzle = await generator.generatePuzzle(quote, "bijection-test");
 
       // Check all 26 letters are mapped
       expect(Object.keys(puzzle.mapping).length).toBe(26);
@@ -185,14 +188,14 @@ describe("Integration Tests", () => {
   describe("hints verification", () => {
     it("puzzles include hints", async () => {
       const quote = await quoteSource.getRandomQuote("hint-test");
-      const puzzle = generator.generatePuzzle(quote, "hint-test");
+      const puzzle = await generator.generatePuzzle(quote, "hint-test");
 
       expect(puzzle.hints.length).toBeGreaterThan(0);
     });
 
     it("hints are valid mappings", async () => {
       const quote = await quoteSource.getRandomQuote("hint-valid");
-      const puzzle = generator.generatePuzzle(quote, "hint-valid");
+      const puzzle = await generator.generatePuzzle(quote, "hint-valid");
 
       for (const hint of puzzle.hints) {
         expect(puzzle.mapping[hint.plainLetter]).toBe(hint.cipherLetter);

@@ -3,6 +3,7 @@ import pino, { type Logger } from "pino";
 import {
   InMemoryQuoteSource,
   type GameGenerator,
+  type KeywordSource,
   type Quote,
   type Puzzle,
   type QuoteSource,
@@ -49,6 +50,16 @@ export function createMockQuoteSource(): InMemoryQuoteSource {
 }
 
 /**
+ * Create a mock KeywordSource for tests.
+ * Returns a small hardcoded set of keywords.
+ */
+export function createMockKeywordSource(): KeywordSource {
+  return {
+    getKeywords: async () => ["PUZZLE", "CIPHER", "WISDOM"],
+  };
+}
+
+/**
  * ROT13 cipher mapping used in mock puzzles.
  */
 const rot13Mapping = {
@@ -88,9 +99,9 @@ const rot13Mapping = {
  */
 export function createMockGameGenerator(): GameGenerator {
   return {
-    generatePuzzle: (quote: Quote): Puzzle => {
+    generatePuzzle: async (): Promise<Puzzle> => {
       return {
-        quoteId: quote.id,
+        quoteId: "test-quote-1",
         encryptedText: "GUR DHVPX OEBJA SBK WHZCF BIRE GUR YNML QBT",
         mapping: rot13Mapping,
         hints: [],
@@ -114,6 +125,7 @@ export type TestContainerOptions = {
   config?: Partial<AppConfig>;
   logger?: Logger;
   quoteSource?: QuoteSource;
+  keywordSource?: KeywordSource;
   gameGenerator?: GameGenerator;
 };
 
@@ -143,11 +155,13 @@ export function createTestContainer(options: TestContainerOptions = {}): AwilixC
 
   const logger = options.logger ?? createSilentLogger();
   const quoteSource = options.quoteSource ?? createMockQuoteSource();
+  const keywordSource = options.keywordSource ?? createMockKeywordSource();
 
   container.register({
     config: asValue(config),
     logger: asValue(logger),
     quoteSource: asValue(quoteSource),
+    keywordSource: asValue(keywordSource),
     gameGenerator: asValue(options.gameGenerator ?? createMockGameGenerator()),
   });
 
