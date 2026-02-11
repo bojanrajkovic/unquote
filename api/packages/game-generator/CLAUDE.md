@@ -1,6 +1,6 @@
 # Game Generator
 
-Last verified: 2026-02-08
+Last verified: 2026-02-10
 
 ## Purpose
 
@@ -8,19 +8,19 @@ Transforms quotes into cryptoquip puzzles with deterministic daily generation. E
 
 ## Contracts
 
-- **Exposes**: `Quote`, `Puzzle`, `Hint`, `CipherMapping` types; `QuoteSchema` schema; `QuoteSource`, `GameGenerator` interfaces; `InMemoryQuoteSource`, `KeywordCipherGenerator` implementations; `validateSolution` function
+- **Exposes**: `Quote`, `Puzzle`, `Hint`, `CipherMapping` types; `QuoteSchema` schema; `QuoteSource` abstract class (with `ensureLoaded()`, `getQuote()`, `getRandomQuote()` concrete methods); `GameGenerator`, `KeywordSource` interfaces; `KeywordCipherGenerator`, `InMemoryQuoteSource` implementations; `KEYWORDS` constant; `validateSolution` function
 - **Guarantees**: Same seed produces identical cipher mapping. Daily puzzles are deterministic by date. Cipher mappings are bijective (no letter maps to itself or shares a mapping).
 - **Expects**: Valid Quote objects with id, text, author, category, difficulty. Luxon DateTime for daily puzzle generation.
 
 ## Dependencies
 
 - **Uses**: Luxon (DateTime), TypeBox (schema validation), fast-check (property testing)
-- **Used by**: API package (via DI container as `quoteSource` and `gameGenerator` singletons)
-- **Boundary**: Pure library with zero `node:fs` imports in production code; quote data loaded via QuoteSource abstraction
+- **Used by**: API package (via DI container as `quoteSource`, `keywordSource`, and `gameGenerator` singletons)
+- **Boundary**: Pure library with no I/O; defines `QuoteSource` abstract class and `KeywordSource` interface as contracts; implementations live in the api package
 
 ## Shared Resources
 
-Test and development quote data lives in `api/resources/quotes.json` (shared across packages), not within this package's source tree. The API package's `JsonQuoteSource` handles file I/O; game-generator consumers use `InMemoryQuoteSource` for testing.
+Test and development quote data lives in `api/resources/quotes.json` (shared across packages), not within this package's source tree.
 
 ## Key Decisions
 
@@ -46,8 +46,11 @@ Test and development quote data lives in `api/resources/quotes.json` (shared acr
 - `src/index.ts` - Public exports
 - `src/types.ts` - Core types (Quote, Puzzle, Hint, CipherMapping)
 - `src/schemas.ts` - TypeBox validation schemas (QuoteSchema)
+- `src/cipher/types.ts` - GameGenerator and KeywordSource interfaces
 - `src/cipher/keyword-cipher.ts` - KeywordCipherGenerator implementation
-- `src/quotes/in-memory-source.ts` - InMemoryQuoteSource implementation
+- `src/quotes/types.ts` - QuoteSource abstract class (getAllQuotes abstract, getQuote/getRandomQuote/ensureLoaded concrete)
+- `src/quotes/in-memory-source.ts` - InMemoryQuoteSource implementation (test/dev usage)
+- `src/data/keywords.ts` - KEYWORDS constant (30 cipher keywords)
 - `src/validation.ts` - Solution validation
 - `src/difficulty/scorer.ts` - 7-factor difficulty scoring algorithm (internal)
 

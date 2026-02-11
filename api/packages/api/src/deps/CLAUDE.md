@@ -1,10 +1,10 @@
 # Dependency Injection
 
-Last verified: 2026-02-08
+Last verified: 2026-02-10
 
 ## Purpose
 
-Manages application dependencies with lifetime-aware scoping. Singleton services (config, game generator) live for app lifetime; request-scoped services (logger with trace context) live per-request.
+Manages application dependencies with lifetime-aware scoping. Singleton services (config, quote source, keyword source, game generator) live for app lifetime; request-scoped services (logger with trace context) live per-request.
 
 ## Contracts
 
@@ -14,7 +14,7 @@ Manages application dependencies with lifetime-aware scoping. Singleton services
 
 ## Dependencies
 
-- **Uses**: Awilix, `@unquote/game-generator` (QuoteSource, GameGenerator), config module
+- **Uses**: Awilix, `@unquote/game-generator` (QuoteSource, KeywordSource, GameGenerator), local `sources/` module (JsonQuoteSource, StaticKeywordSource), config module
 - **Used by**: All route handlers (via `request.deps`), server startup
 - **Boundary**: Do NOT import Fastify request/reply types here; this is framework-agnostic DI
 
