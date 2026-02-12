@@ -1,13 +1,13 @@
 import { createContainer, asValue, type AwilixContainer } from "awilix";
 import pino, { type Logger } from "pino";
 import {
-  InMemoryQuoteSource,
   type GameGenerator,
   type KeywordSource,
   type Quote,
   type Puzzle,
   type QuoteSource,
 } from "@unquote/game-generator";
+import { InMemoryQuoteSource } from "@unquote/game-generator/testing";
 import type { AppConfig } from "../../src/config/index.js";
 import type { AppSingletonCradle } from "../../src/deps/index.js";
 

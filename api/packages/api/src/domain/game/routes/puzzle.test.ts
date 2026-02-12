@@ -7,7 +7,7 @@ import type { GameGenerator, Puzzle, Quote } from "@unquote/game-generator";
 import type { DateTime } from "luxon";
 
 import { registerDependencyInjection } from "../../../deps/index.js";
-import { InMemoryQuoteSource } from "@unquote/game-generator";
+import { InMemoryQuoteSource } from "@unquote/game-generator/testing";
 import { createTestContainer, createSilentLogger } from "../../../../tests/helpers/index.js";
 import { puzzleRoutes } from "./puzzle.js";
 
