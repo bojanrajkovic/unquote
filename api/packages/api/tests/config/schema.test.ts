@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { Value } from "typebox/value";
-import Ajv from "ajv";
+import { Ajv } from "ajv";
 import addFormats from "ajv-formats";
 
 import { EnvSchema } from "../../src/config/schema.js";
@@ -22,9 +22,7 @@ function envWith(overrides: Record<string, unknown> = {}): Record<string, unknow
  * AJV instance matching production config (ajv-formats with "uri" format).
  * Used for tests that exercise `format` keywords which TypeBox ignores.
  */
-// @ts-expect-error ajv CJS module uses `export =` which conflicts with verbatimModuleSyntax
 function createAjv(): Ajv {
-  // @ts-expect-error ajv CJS/ESM interop - works at runtime
   const ajv = new Ajv({ allErrors: true, useDefaults: true });
   addFormats(ajv, { mode: "fast", formats: ["uri"] });
   return ajv;
