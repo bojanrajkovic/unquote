@@ -4,7 +4,7 @@ import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import sensible from "@fastify/sensible";
 import { oas3PluginAjv } from "@eropple/fastify-openapi3";
 import { KeywordCipherGenerator, KEYWORDS, type KeywordSource } from "@unquote/game-generator";
-import { JsonQuoteSource } from "../../../sources/index.js";
+import { JsonQuoteSource } from "../../../sources/json-quote-source.js";
 
 import { registerDependencyInjection } from "../../../deps/index.js";
 import { createTestContainer, createSilentLogger, getTestQuotesPath } from "../../../../tests/helpers/index.js";

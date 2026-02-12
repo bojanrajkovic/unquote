@@ -3,7 +3,7 @@ import type { Quote, Puzzle, CipherMapping } from "../types.js";
 import type { QuoteSource } from "../quotes/types.js";
 import type { GameGenerator, KeywordSource } from "./types.js";
 import { hashString, createSeededRng, selectFromArray } from "../random.js";
-import { generateHints } from "../hints/index.js";
+import { generateHints } from "../hints/generator.js";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 

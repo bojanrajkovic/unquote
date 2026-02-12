@@ -3,7 +3,8 @@ import type { Logger } from "pino";
 import type { QuoteSource, GameGenerator, KeywordSource } from "@unquote/game-generator";
 import { KeywordCipherGenerator } from "@unquote/game-generator";
 import type { AppConfig } from "../config/index.js";
-import { JsonQuoteSource, StaticKeywordSource } from "../sources/index.js";
+import { JsonQuoteSource } from "../sources/json-quote-source.js";
+import { StaticKeywordSource } from "../sources/static-keyword-source.js";
 
 /**
  * Singleton cradle containing application-lifetime dependencies.
