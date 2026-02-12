@@ -30,11 +30,12 @@ graph TB
         GameRoutes[domain/game/routes]
         GameID[domain/game/game-id]
         Health[routes/health]
+        Sources[sources - Data Sources]
     end
 
     subgraph GameGen ["Game Generator (TypeScript Library)"]
         Cipher[cipher - Keyword Cipher]
-        Quotes[quotes - JSON Source]
+        Quotes[quotes - QuoteSource Contract]
         Hints[hints - Generator]
         Difficulty[difficulty - Scorer]
         Validation[validation - Solution Check]
@@ -53,7 +54,8 @@ graph TB
     Server --> GameRoutes
     Server --> Health
     DI --> Cipher
-    DI --> Quotes
+    DI --> Sources
+    Sources --> Quotes
 
     GameRoutes --> GameID
     GameRoutes --> Cipher
@@ -73,6 +75,7 @@ unquote/
 │   │   │   ├── src/
 │   │   │   │   ├── config/       # Env validation (TypeBox + @fastify/env)
 │   │   │   │   ├── deps/         # Awilix DI container (singleton + request scopes)
+│   │   │   │   ├── sources/      # Data source implementations (JsonQuoteSource, StaticKeywordSource)
 │   │   │   │   ├── domain/game/  # Game routes, ID encoding, schemas
 │   │   │   │   ├── routes/       # Health check endpoint
 │   │   │   │   ├── index.ts      # Server builder & startup
@@ -84,7 +87,7 @@ unquote/
 │   │           ├── data/         # Keywords list, quotes schema
 │   │           ├── difficulty/   # 7-factor difficulty scoring
 │   │           ├── hints/        # Frequency-based hint selection
-│   │           ├── quotes/       # JSON file quote source
+│   │           ├── quotes/       # QuoteSource abstract class
 │   │           ├── random.ts     # Seeded RNG (XorShift128+)
 │   │           └── validation.ts # Timing-safe solution comparison
 │   ├── resources/quotes.json     # Quote data (shared for dev/test)
@@ -123,7 +126,7 @@ unquote/
 | `src/instrumentation.ts` | OpenTelemetry SDK init (ESM loader hook) | 662 |
 | `src/config/schema.ts` | TypeBox env var schema (PORT, HOST, QUOTES_FILE_PATH, etc.) | 310 |
 | `src/config/type-extensions.ts` | Module augmentation for `fastify.config` | 44 |
-| `src/deps/singleton.ts` | Singleton DI container (config, logger, quoteSource, gameGenerator) | 373 |
+| `src/deps/singleton.ts` | Singleton DI container (config, logger, quoteSource, keywordSource, gameGenerator) | ~400 |
 | `src/deps/request.ts` | Request-scoped container (logger with trace context) | 234 |
 | `src/deps/plugin.ts` | Fastify plugin wiring Awilix into request lifecycle | 423 |
 | `src/deps/type-extensions.ts` | Module augmentation for `fastify.deps`, `request.deps` | 220 |
@@ -132,6 +135,9 @@ unquote/
 | `src/domain/game/routes/puzzle.ts` | GET /today, GET /:date handlers | 957 |
 | `src/domain/game/routes/solution.ts` | POST /:id/check handler | 525 |
 | `src/routes/health.ts` | GET /health endpoint | 245 |
+| `src/sources/json-quote-source.ts` | JsonQuoteSource — extends QuoteSource, reads quotes from JSON file | ~300 |
+| `src/sources/static-keyword-source.ts` | StaticKeywordSource — implements KeywordSource, wraps KEYWORDS constant | ~100 |
+| `src/sources/index.ts` | Barrel export for source implementations | ~30 |
 
 **Key exports**: `buildServer()`, `start()`, route plugins
 
@@ -157,15 +163,15 @@ unquote/
 | `src/random.ts` | Seeded RNG: SHA-256 hash + XorShift128+ PRNG | 720 |
 | `src/validation.ts` | Timing-safe solution comparison (NFC + case + whitespace normalization) | 299 |
 | `src/cipher/keyword-cipher.ts` | Keyword substitution cipher (build alphabet → eliminate self-maps → encrypt) | 1245 |
-| `src/cipher/types.ts` | GameGenerator interface | 179 |
+| `src/cipher/types.ts` | GameGenerator and KeywordSource interfaces | ~250 |
 | `src/data/keywords.ts` | 30 keywords for cipher generation | 205 |
 | `src/difficulty/scorer.ts` | 7-factor scoring: length, short words, dominance, patterns, repetition, coverage, digrams | 2040 |
 | `src/difficulty/letter-data.ts` | English letter frequencies + common digrams | 353 |
 | `src/hints/generator.ts` | Reveals uncommon cipher letters as hints | 407 |
-| `src/quotes/json-source.ts` | Loads + validates quotes from JSON file | 677 |
-| `src/quotes/types.ts` | QuoteSource interface | 127 |
+| `src/quotes/types.ts` | QuoteSource abstract class (getAllQuotes abstract, getQuote/getRandomQuote/ensureLoaded concrete) | ~400 |
+| `src/quotes/in-memory-source.ts` | InMemoryQuoteSource — extends QuoteSource, in-memory array-backed source (test/dev usage) | ~50 |
 
-**Key exports**: `KeywordCipherGenerator`, `JsonQuoteSource`, `validateSolution`, domain types
+**Key exports**: `KeywordCipherGenerator`, `InMemoryQuoteSource`, `QuoteSource` (abstract class), `KeywordSource` (interface), `KEYWORDS`, `validateSolution`, domain types
 
 **Dependencies**: Luxon (dates), TypeBox (validation)
 
@@ -333,7 +339,7 @@ sequenceDiagram
 
 - **API**: Awilix with singleton + request scopes
 - **TUI**: Constructor injection (`NewWithClient` for testing)
-- **Game Generator**: Interface-based (QuoteSource, GameGenerator)
+- **Game Generator**: Contract-based (QuoteSource abstract class, KeywordSource and GameGenerator interfaces)
 
 ### Security
 

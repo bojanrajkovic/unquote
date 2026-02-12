@@ -2,10 +2,7 @@ import { readFile, access } from "node:fs/promises";
 import { constants } from "node:fs";
 import { Compile } from "typebox/compile";
 import { Type } from "typebox";
-import type { Quote } from "../types.js";
-import type { QuoteSource } from "./types.js";
-import { hashString, createSeededRng, selectFromArray } from "../random.js";
-import { QuoteSchema } from "../schemas.js";
+import { QuoteSource, QuoteSchema, type Quote } from "@unquote/game-generator";
 
 // Compile the schema for efficient validation at runtime
 const QuoteArraySchema = Type.Array(QuoteSchema);
@@ -15,18 +12,12 @@ const validateQuotes = Compile(QuoteArraySchema);
  * Loads quotes from a JSON file.
  * Caches quotes after first load.
  */
-export class JsonQuoteSource implements QuoteSource {
+export class JsonQuoteSource extends QuoteSource {
   private quotes: Array<Quote> | null = null;
   private validated = false;
 
-  constructor(private readonly filePath: string) {}
-
-  /**
-   * Eagerly load and validate the quotes file.
-   * Call at startup to fail fast on missing/invalid file.
-   */
-  async ensureLoaded(): Promise<void> {
-    await this.loadQuotes();
+  constructor(private readonly filePath: string) {
+    super();
   }
 
   /**
@@ -46,7 +37,7 @@ export class JsonQuoteSource implements QuoteSource {
     }
   }
 
-  private async loadQuotes(): Promise<Quote[]> {
+  async getAllQuotes(): Promise<Quote[]> {
     if (this.quotes !== null) {
       return this.quotes;
     }
@@ -66,32 +57,5 @@ export class JsonQuoteSource implements QuoteSource {
 
     this.quotes = parsed;
     return this.quotes;
-  }
-
-  async getQuote(id: string): Promise<Quote | null> {
-    const quotes = await this.loadQuotes();
-    return quotes.find((q) => q.id === id) ?? null;
-  }
-
-  async getRandomQuote(seed?: string): Promise<Quote> {
-    const quotes = await this.loadQuotes();
-
-    if (quotes.length === 0) {
-      throw new Error("No quotes available");
-    }
-
-    if (seed !== undefined) {
-      // Deterministic selection using shared RNG utilities
-      const rng = createSeededRng(hashString(seed));
-      return selectFromArray(quotes, rng);
-    }
-
-    // Random selection (unseeded)
-    const index = Math.floor(Math.random() * quotes.length);
-    const quote = quotes[index];
-    if (quote === undefined) {
-      throw new Error("Unexpected: no quotes available");
-    }
-    return quote;
   }
 }

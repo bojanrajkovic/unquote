@@ -1,10 +1,9 @@
 import type { DateTime } from "luxon";
 import type { Quote, Puzzle, CipherMapping } from "../types.js";
 import type { QuoteSource } from "../quotes/types.js";
-import type { GameGenerator } from "./types.js";
+import type { GameGenerator, KeywordSource } from "./types.js";
 import { hashString, createSeededRng, selectFromArray } from "../random.js";
-import { generateHints } from "../hints/index.js";
-import { KEYWORDS } from "../data/keywords.js";
+import { generateHints } from "../hints/generator.js";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -124,13 +123,19 @@ function encryptText(text: string, mapping: CipherMapping): string {
  * Generates puzzles using keyword substitution cipher.
  */
 export class KeywordCipherGenerator implements GameGenerator {
-  constructor(private readonly quoteSource: QuoteSource) {}
+  constructor(
+    private readonly quoteSource: QuoteSource,
+    private readonly keywordSource: KeywordSource,
+  ) {}
 
-  generatePuzzle(quote: Quote, seed?: string): Puzzle {
+  async generatePuzzle(quote: Quote, seed?: string): Promise<Puzzle> {
+    // Load keywords from source
+    const keywords = await this.keywordSource.getKeywords();
+
     // Select keyword based on seed
     const seedHash: number = seed === undefined ? Date.now() : hashString(seed);
     const rng = createSeededRng(seedHash);
-    const keyword = selectFromArray(KEYWORDS, rng);
+    const keyword = selectFromArray(keywords, rng);
 
     // Build cipher
     const cipherAlphabet = buildCipherAlphabet(keyword);

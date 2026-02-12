@@ -1,8 +1,10 @@
 import { createContainer, asValue, asFunction, type AwilixContainer } from "awilix";
 import type { Logger } from "pino";
-import type { QuoteSource, GameGenerator } from "@unquote/game-generator";
-import { JsonQuoteSource, KeywordCipherGenerator } from "@unquote/game-generator";
+import type { QuoteSource, GameGenerator, KeywordSource } from "@unquote/game-generator";
+import { KeywordCipherGenerator } from "@unquote/game-generator";
 import type { AppConfig } from "../config/index.js";
+import { JsonQuoteSource } from "../sources/json-quote-source.js";
+import { StaticKeywordSource } from "../sources/static-keyword-source.js";
 
 /**
  * Singleton cradle containing application-lifetime dependencies.
@@ -12,6 +14,7 @@ export type AppSingletonCradle = {
   config: AppConfig;
   logger: Logger;
   quoteSource: QuoteSource;
+  keywordSource: KeywordSource;
   gameGenerator: GameGenerator;
 };
 
@@ -34,6 +37,9 @@ export async function configureContainer(
   const quoteSource = new JsonQuoteSource(config.QUOTES_FILE_PATH);
   await quoteSource.ensureLoaded();
 
+  // Static keyword source wraps the hardcoded KEYWORDS constant
+  const keywordSource = new StaticKeywordSource();
+
   container.register({
     // Configuration and logger as values (already instantiated)
     config: asValue(config),
@@ -42,9 +48,12 @@ export async function configureContainer(
     // QuoteSource loads quotes from the configured file path
     quoteSource: asValue(quoteSource),
 
-    // GameGenerator depends on QuoteSource
+    // KeywordSource provides cipher keywords
+    keywordSource: asValue(keywordSource),
+
+    // GameGenerator depends on QuoteSource and KeywordSource
     gameGenerator: asFunction(
-      (cradle: AppSingletonCradle) => new KeywordCipherGenerator(cradle.quoteSource),
+      (cradle: AppSingletonCradle) => new KeywordCipherGenerator(cradle.quoteSource, cradle.keywordSource),
     ).singleton(),
   });
 

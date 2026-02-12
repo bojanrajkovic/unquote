@@ -13,7 +13,7 @@
     }
   },
   "scripts": {
-    "build": "rimraf dist && tsc",
+    "build": "rimraf dist && tsc -p tsconfig.build.json",
     "dev": "tsx watch --import ./src/instrumentation.ts src/index.ts",
     "start": "node --import ./dist/instrumentation.js dist/index.js",
     "typecheck": "tsc --noEmit",

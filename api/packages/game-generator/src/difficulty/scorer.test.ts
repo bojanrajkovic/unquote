@@ -255,7 +255,7 @@ describe("scoreDifficulty", () => {
 
         // Each score should be >= previous score
         for (let i = 1; i < scores.length; i += 1) {
-          expect(scores[i]).toBeGreaterThanOrEqual(scores[i - 1]);
+          expect(scores[i]!).toBeGreaterThanOrEqual(scores[i - 1]!);
         }
       });
     });

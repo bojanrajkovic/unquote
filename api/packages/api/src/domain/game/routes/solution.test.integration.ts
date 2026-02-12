@@ -3,7 +3,8 @@ import Fastify, { type FastifyInstance } from "fastify";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import sensible from "@fastify/sensible";
 import { oas3PluginAjv } from "@eropple/fastify-openapi3";
-import { JsonQuoteSource, KeywordCipherGenerator } from "@unquote/game-generator";
+import { KeywordCipherGenerator, KEYWORDS, type KeywordSource } from "@unquote/game-generator";
+import { JsonQuoteSource } from "../../../sources/json-quote-source.js";
 import { DateTime } from "luxon";
 
 import { registerDependencyInjection } from "../../../deps/index.js";
@@ -26,7 +27,8 @@ describe("solution routes integration", () => {
     const quotesPath = getTestQuotesPath();
 
     quoteSource = new JsonQuoteSource(quotesPath);
-    gameGenerator = new KeywordCipherGenerator(quoteSource);
+    const keywordSource: KeywordSource = { getKeywords: async () => KEYWORDS };
+    gameGenerator = new KeywordCipherGenerator(quoteSource, keywordSource);
 
     const container = createTestContainer({
       quoteSource,

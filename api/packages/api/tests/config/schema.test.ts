@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { Value } from "typebox/value";
-import Ajv from "ajv";
+import { Ajv } from "ajv";
 import addFormats from "ajv-formats";
 
 import { EnvSchema } from "../../src/config/schema.js";

@@ -3,10 +3,11 @@ import Fastify, { type FastifyInstance } from "fastify";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import sensible from "@fastify/sensible";
 import { oas3PluginAjv } from "@eropple/fastify-openapi3";
-import type { GameGenerator, Puzzle, Quote, QuoteSource } from "@unquote/game-generator";
+import type { GameGenerator, Puzzle, Quote } from "@unquote/game-generator";
 import { DateTime } from "luxon";
 
 import { registerDependencyInjection } from "../../../deps/index.js";
+import { InMemoryQuoteSource } from "@unquote/game-generator/testing";
 import { createTestContainer, createSilentLogger } from "../../../../tests/helpers/index.js";
 import { solutionRoutes } from "./solution.js";
 import { encodeGameId } from "../game-id.js";
@@ -32,13 +33,10 @@ describe("solution routes", () => {
     ],
   };
 
-  const mockQuoteSource: QuoteSource = {
-    getQuote: async (id: string) => (id === mockQuote.id ? mockQuote : null),
-    getRandomQuote: async () => mockQuote,
-  };
+  const mockQuoteSource = new InMemoryQuoteSource([mockQuote]);
 
   const mockGameGenerator: GameGenerator = {
-    generatePuzzle: () => mockPuzzle,
+    generatePuzzle: async () => mockPuzzle,
     generateDailyPuzzle: async (_date: DateTime) => mockPuzzle,
   };
 

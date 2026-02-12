@@ -1,6 +1,13 @@
 import { createContainer, asValue, type AwilixContainer } from "awilix";
 import pino, { type Logger } from "pino";
-import type { QuoteSource, GameGenerator, Quote, Puzzle } from "@unquote/game-generator";
+import {
+  type GameGenerator,
+  type KeywordSource,
+  type Quote,
+  type Puzzle,
+  type QuoteSource,
+} from "@unquote/game-generator";
+import { InMemoryQuoteSource } from "@unquote/game-generator/testing";
 import type { AppConfig } from "../../src/config/index.js";
 import type { AppSingletonCradle } from "../../src/deps/index.js";
 
@@ -12,7 +19,6 @@ export const defaultTestConfig: AppConfig = {
   HOST: "0.0.0.0",
   LOG_LEVEL: "silent",
   QUOTES_FILE_PATH: "/tmp/test-quotes.json",
-  OTEL_EXPORTER_OTLP_ENDPOINT: undefined,
   CORS_ORIGIN: "*",
   TRUST_PROXY: false,
   RATE_LIMIT_MAX: 100,
@@ -29,8 +35,9 @@ export function createSilentLogger(): Logger {
 
 /**
  * Create a mock QuoteSource for tests.
+ * Uses InMemoryQuoteSource with a single test quote.
  */
-export function createMockQuoteSource(): QuoteSource {
+export function createMockQuoteSource(): InMemoryQuoteSource {
   const testQuote: Quote = {
     id: "test-quote-1",
     text: "The quick brown fox jumps over the lazy dog",
@@ -39,106 +46,73 @@ export function createMockQuoteSource(): QuoteSource {
     difficulty: 50,
   };
 
+  return new InMemoryQuoteSource([testQuote]);
+}
+
+/**
+ * Create a mock KeywordSource for tests.
+ * Returns a small hardcoded set of keywords.
+ */
+export function createMockKeywordSource(): KeywordSource {
   return {
-    getQuote: async (id: string): Promise<Quote | null> => {
-      return id === testQuote.id ? testQuote : null;
-    },
-    getRandomQuote: async (): Promise<Quote> => {
-      return testQuote;
-    },
+    getKeywords: async () => ["PUZZLE", "CIPHER", "WISDOM"],
   };
 }
 
 /**
+ * ROT13 cipher mapping used in mock puzzles.
+ */
+const rot13Mapping = {
+  a: "N",
+  b: "O",
+  c: "P",
+  d: "Q",
+  e: "R",
+  f: "S",
+  g: "T",
+  h: "U",
+  i: "V",
+  j: "W",
+  k: "X",
+  l: "Y",
+  m: "Z",
+  n: "A",
+  o: "B",
+  p: "C",
+  q: "D",
+  r: "E",
+  s: "F",
+  t: "G",
+  u: "H",
+  v: "I",
+  w: "J",
+  x: "K",
+  y: "L",
+  z: "M",
+} as const;
+
+/**
  * Create a mock GameGenerator for tests.
  * Note: The mock returns fixed/predictable data regardless of input.
- * The encryptedText and cipherMapping are example ROT13 values for
+ * The encryptedText and mapping are example ROT13 values for
  * testing structure, not actual encryption of the input quote.
  */
 export function createMockGameGenerator(): GameGenerator {
   return {
-    generatePuzzle: (quote: Quote): Puzzle => {
-      // Returns fixed mock data - encryptedText does not match quote.text
+    generatePuzzle: async (): Promise<Puzzle> => {
       return {
-        id: "test-puzzle-1",
+        quoteId: "test-quote-1",
         encryptedText: "GUR DHVPX OEBJA SBK WHZCF BIRE GUR YNML QBT",
-        originalQuote: quote,
-        cipherMapping: {
-          A: "N",
-          B: "O",
-          C: "P",
-          D: "Q",
-          E: "R",
-          F: "S",
-          G: "T",
-          H: "U",
-          I: "V",
-          J: "W",
-          K: "X",
-          L: "Y",
-          M: "Z",
-          N: "A",
-          O: "B",
-          P: "C",
-          Q: "D",
-          R: "E",
-          S: "F",
-          T: "G",
-          U: "H",
-          V: "I",
-          W: "J",
-          X: "K",
-          Y: "L",
-          Z: "M",
-        },
+        mapping: rot13Mapping,
         hints: [],
-        difficulty: quote.difficulty,
-        generatedAt: new Date().toISOString(),
       };
     },
     generateDailyPuzzle: async (): Promise<Puzzle> => {
-      const quote: Quote = {
-        id: "daily-quote",
-        text: "Test daily puzzle",
-        author: "Daily Author",
-        category: "daily",
-        difficulty: 60,
-      };
       return {
-        id: "daily-puzzle-1",
+        quoteId: "daily-quote",
         encryptedText: "GRFG QNVYL CHMMYR",
-        originalQuote: quote,
-        cipherMapping: {
-          A: "N",
-          B: "O",
-          C: "P",
-          D: "Q",
-          E: "R",
-          F: "S",
-          G: "T",
-          H: "U",
-          I: "V",
-          J: "W",
-          K: "X",
-          L: "Y",
-          M: "Z",
-          N: "A",
-          O: "B",
-          P: "C",
-          Q: "D",
-          R: "E",
-          S: "F",
-          T: "G",
-          U: "H",
-          V: "I",
-          W: "J",
-          X: "K",
-          Y: "L",
-          Z: "M",
-        },
+        mapping: rot13Mapping,
         hints: [],
-        difficulty: 60,
-        generatedAt: new Date().toISOString(),
       };
     },
   };
@@ -151,6 +125,7 @@ export type TestContainerOptions = {
   config?: Partial<AppConfig>;
   logger?: Logger;
   quoteSource?: QuoteSource;
+  keywordSource?: KeywordSource;
   gameGenerator?: GameGenerator;
 };
 
@@ -180,11 +155,13 @@ export function createTestContainer(options: TestContainerOptions = {}): AwilixC
 
   const logger = options.logger ?? createSilentLogger();
   const quoteSource = options.quoteSource ?? createMockQuoteSource();
+  const keywordSource = options.keywordSource ?? createMockKeywordSource();
 
   container.register({
     config: asValue(config),
     logger: asValue(logger),
     quoteSource: asValue(quoteSource),
+    keywordSource: asValue(keywordSource),
     gameGenerator: asValue(options.gameGenerator ?? createMockGameGenerator()),
   });
 

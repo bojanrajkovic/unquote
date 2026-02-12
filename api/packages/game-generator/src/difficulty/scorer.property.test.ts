@@ -47,7 +47,7 @@ describe("difficulty scoring properties", () => {
         fc.property(fc.integer({ min: 10, max: 200 }), (length) => {
           // Generate random text of specific length
           const [text] = fc.sample(fc.string({ minLength: length, maxLength: length }), 1);
-          const score = scoreDifficulty(text);
+          const score = scoreDifficulty(text!);
 
           // v2 algorithm uses 7 factors with weighted distribution:
           // - Length + Diversity: 15%
