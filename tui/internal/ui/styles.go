@@ -54,6 +54,11 @@ var DuplicateInputStyle = CellStyle.
 	Background(ColorWarning).
 	Foreground(lipgloss.Color("16"))
 
+// HintCellStyle renders prefilled hint cells with cyan foreground.
+// Visually connects to the "Clues:" text above the grid.
+var HintCellStyle = CellStyle.
+	Foreground(ColorSecondary)
+
 // CipherStyle renders the cipher letter below input
 var CipherStyle = lipgloss.NewStyle().
 	Width(3).

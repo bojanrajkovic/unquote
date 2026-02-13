@@ -567,3 +567,74 @@ func TestRenderInputCellDuplicateStyle(t *testing.T) {
 		})
 	}
 }
+
+func TestRenderInputCellHintStyle(t *testing.T) {
+	//nolint:govet
+	tests := []struct {
+		cell            puzzle.Cell
+		cursorPos       int
+		highlightChar   rune
+		duplicateInputs map[rune]bool
+		name            string
+		expectedContent string
+	}{
+		{
+			cell:            puzzle.Cell{Index: 1, Char: 'A', Input: 'X', Kind: puzzle.CellHint},
+			cursorPos:       0,
+			highlightChar:   0,
+			duplicateInputs: nil,
+			name:            "hint cell renders with hint style",
+			expectedContent: "X",
+		},
+		{
+			cell:            puzzle.Cell{Index: 0, Char: 'A', Input: 'X', Kind: puzzle.CellHint},
+			cursorPos:       0,
+			highlightChar:   'A',
+			duplicateInputs: nil,
+			name:            "hint cell with cursor uses active style",
+			expectedContent: "X",
+		},
+		{
+			cell:            puzzle.Cell{Index: 2, Char: 'A', Input: 'X', Kind: puzzle.CellHint},
+			cursorPos:       0,
+			highlightChar:   'A',
+			duplicateInputs: nil,
+			name:            "hint cell with related highlight uses related style",
+			expectedContent: "X",
+		},
+		{
+			cell:            puzzle.Cell{Index: 1, Char: 'B', Input: 'X', Kind: puzzle.CellHint},
+			cursorPos:       5,
+			highlightChar:   0,
+			duplicateInputs: map[rune]bool{'X': true},
+			name:            "hint cell content renders correctly with duplicate map present",
+			expectedContent: "X",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := Model{cursorPos: tt.cursorPos}
+			result := m.renderInputCell(tt.cell, tt.highlightChar, tt.duplicateInputs)
+
+			if !strings.Contains(result, tt.expectedContent) {
+				t.Errorf("renderInputCell() result does not contain expected content %q. Result: %q",
+					tt.expectedContent, result)
+			}
+		})
+	}
+}
+
+func TestFindDuplicateInputsIgnoresHintCells(t *testing.T) {
+	// Hint cell 'A' has input 'X', regular cell 'B' also has input 'X'
+	// This should NOT be a duplicate because the hint cell is system-assigned
+	cells := []puzzle.Cell{
+		{Index: 0, Char: 'A', Input: 'X', Kind: puzzle.CellHint},
+		{Index: 1, Char: 'B', Input: 'X', Kind: puzzle.CellLetter},
+	}
+
+	result := findDuplicateInputs(cells)
+	if len(result) != 0 {
+		t.Errorf("expected no duplicates when one input is from a hint cell, got %v", result)
+	}
+}

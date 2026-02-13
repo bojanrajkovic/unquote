@@ -57,9 +57,8 @@ func (m Model) renderLine(cells []puzzle.Cell, highlightChar rune, duplicateInpu
 		// Join input and cipher vertically to form a column
 		column := lipgloss.JoinVertical(lipgloss.Left, inputContent, cipherContent)
 
-		// Wrap letter cell columns with zone marker for click detection
-		// This creates a single zone spanning both rows
-		if cell.Kind == puzzle.CellLetter {
+		// Wrap letter and hint cell columns with zone marker for click detection
+		if cell.Kind == puzzle.CellLetter || cell.Kind == puzzle.CellHint {
 			column = zone.Mark(fmt.Sprintf("cell-%d", cell.Index), column)
 		}
 
@@ -71,12 +70,12 @@ func (m Model) renderLine(cells []puzzle.Cell, highlightChar rune, duplicateInpu
 
 // renderInputCell renders the user input cell (top row)
 func (m Model) renderInputCell(cell puzzle.Cell, highlightChar rune, duplicateInputs map[rune]bool) string {
-	if cell.Kind != puzzle.CellLetter {
+	if cell.Kind == puzzle.CellPunctuation {
 		// Non-letter: show the character as-is (punctuation, space)
 		return ui.CellStyle.Render(string(cell.Char))
 	}
 
-	// Letter cell: show user input or underscore
+	// Letter or hint cell: show user input or underscore
 	var content string
 	if cell.Input != 0 {
 		content = string(unicode.ToUpper(cell.Input))
@@ -99,12 +98,17 @@ func (m Model) renderInputCell(cell puzzle.Cell, highlightChar rune, duplicateIn
 		return ui.RelatedCellStyle.Render(content)
 	}
 
+	// Hint cells get distinct styling
+	if cell.Kind == puzzle.CellHint {
+		return ui.HintCellStyle.Render(content)
+	}
+
 	return ui.CellStyle.Render(content)
 }
 
 // renderCipherCell renders the cipher letter cell (bottom row)
 func (m Model) renderCipherCell(cell puzzle.Cell) string {
-	if cell.Kind != puzzle.CellLetter {
+	if cell.Kind == puzzle.CellPunctuation {
 		// Non-letter: empty space below punctuation
 		return ui.CipherStyle.Render(" ")
 	}

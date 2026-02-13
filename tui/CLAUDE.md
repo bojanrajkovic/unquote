@@ -34,7 +34,7 @@ From `tui/` directory:
 - **Expects**: API at `UNQUOTE_API_URL` env var (default: `https://unquote.gaur-kardashev.ts.net`)
 
 ### puzzle package
-- **Exposes**: `Cell`, `BuildCells()`, cell navigation functions, `AssembleSolution()`
+- **Exposes**: `Cell`, `CellKind` (`CellPunctuation`, `CellLetter`, `CellHint`), `BuildCells()`, cell navigation functions, `AssembleSolution()`
 - **Guarantees**: Navigation functions return -1 when no valid cell exists
 - **Invariants**: `Cell.Kind` distinguishes `CellPunctuation` (not editable), `CellLetter` (editable by player), and `CellHint` (prefilled, locked)
 
