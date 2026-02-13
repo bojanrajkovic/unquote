@@ -37,7 +37,7 @@ func TestAssembleSolution(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cells := BuildCells(tt.input)
+			cells := BuildCells(tt.input, nil)
 			for idx, char := range tt.filled {
 				cells[idx].Input = char
 			}
@@ -91,7 +91,7 @@ func TestIsComplete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cells := BuildCells(tt.input)
+			cells := BuildCells(tt.input, nil)
 			for idx, char := range tt.filled {
 				cells[idx].Input = char
 			}
@@ -105,7 +105,7 @@ func TestIsComplete(t *testing.T) {
 }
 
 func TestClearAllInput(t *testing.T) {
-	cells := BuildCells("ABC")
+	cells := BuildCells("ABC", nil)
 	cells[0].Input = 'X'
 	cells[1].Input = 'Y'
 	cells[2].Input = 'Z'
@@ -135,7 +135,7 @@ func TestSetInput(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cells := BuildCells(tt.input)
+			cells := BuildCells(tt.input, nil)
 			result := SetInput(cells, tt.index, tt.char)
 			if result != tt.expected {
 				t.Errorf("SetInput = %v, expected %v", result, tt.expected)

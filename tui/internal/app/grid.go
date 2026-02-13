@@ -26,7 +26,7 @@ func (m Model) renderGrid() string {
 	// Derive highlight character from cursor position
 	// Only highlight if cursor is on a letter cell
 	var highlightChar rune
-	if m.cursorPos >= 0 && m.cursorPos < len(m.cells) && m.cells[m.cursorPos].IsLetter {
+	if m.cursorPos >= 0 && m.cursorPos < len(m.cells) && m.cells[m.cursorPos].Kind == puzzle.CellLetter {
 		highlightChar = m.cells[m.cursorPos].Char
 	}
 
@@ -59,7 +59,7 @@ func (m Model) renderLine(cells []puzzle.Cell, highlightChar rune, duplicateInpu
 
 		// Wrap letter cell columns with zone marker for click detection
 		// This creates a single zone spanning both rows
-		if cell.IsLetter {
+		if cell.Kind == puzzle.CellLetter {
 			column = zone.Mark(fmt.Sprintf("cell-%d", cell.Index), column)
 		}
 
@@ -71,7 +71,7 @@ func (m Model) renderLine(cells []puzzle.Cell, highlightChar rune, duplicateInpu
 
 // renderInputCell renders the user input cell (top row)
 func (m Model) renderInputCell(cell puzzle.Cell, highlightChar rune, duplicateInputs map[rune]bool) string {
-	if !cell.IsLetter {
+	if cell.Kind != puzzle.CellLetter {
 		// Non-letter: show the character as-is (punctuation, space)
 		return ui.CellStyle.Render(string(cell.Char))
 	}
@@ -104,7 +104,7 @@ func (m Model) renderInputCell(cell puzzle.Cell, highlightChar rune, duplicateIn
 
 // renderCipherCell renders the cipher letter cell (bottom row)
 func (m Model) renderCipherCell(cell puzzle.Cell) string {
-	if !cell.IsLetter {
+	if cell.Kind != puzzle.CellLetter {
 		// Non-letter: empty space below punctuation
 		return ui.CipherStyle.Render(" ")
 	}
@@ -120,7 +120,7 @@ func findDuplicateInputs(cells []puzzle.Cell) map[rune]bool {
 	inputToCiphers := make(map[rune]map[rune]bool)
 
 	for _, cell := range cells {
-		if !cell.IsLetter || cell.Input == 0 {
+		if cell.Kind != puzzle.CellLetter || cell.Input == 0 {
 			continue
 		}
 		if inputToCiphers[cell.Input] == nil {

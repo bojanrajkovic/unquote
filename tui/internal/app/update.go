@@ -105,7 +105,7 @@ func (m Model) handleMouseMsg(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 
 	// Check each cell's zone for click
 	for _, cell := range m.cells {
-		if !cell.IsLetter {
+		if cell.Kind != puzzle.CellLetter {
 			continue
 		}
 
@@ -245,7 +245,7 @@ func (m Model) handlePuzzleFetched(msg puzzleFetchedMsg) (tea.Model, tea.Cmd) {
 	}
 
 	m.puzzle = msg.puzzle
-	m.cells = puzzle.BuildCells(msg.puzzle.EncryptedText)
+	m.cells = puzzle.BuildCells(msg.puzzle.EncryptedText, nil)
 	m.cursorPos = puzzle.FirstLetterCell(m.cells)
 	m.state = StatePlaying
 	m.startTime = time.Now()
@@ -263,7 +263,7 @@ func (m Model) handleSessionLoaded(msg sessionLoadedMsg) (tea.Model, tea.Cmd) {
 	// Restore inputs - iterate cells and apply saved inputs
 	// This must happen for both solved and in-progress sessions
 	for i := range m.cells {
-		if !m.cells[i].IsLetter {
+		if m.cells[i].Kind != puzzle.CellLetter {
 			continue
 		}
 		cipherChar := string(m.cells[i].Char)

@@ -17,7 +17,7 @@ func TestHandleSessionLoaded_RestoresInputs(t *testing.T) {
 			ID:            "test-game",
 			EncryptedText: encryptedText,
 		},
-		cells:     puzzle.BuildCells(encryptedText),
+		cells:     puzzle.BuildCells(encryptedText, nil),
 		state:     StatePlaying,
 		startTime: time.Now(),
 	}
@@ -53,7 +53,7 @@ func TestHandleSessionLoaded_RestoresInputs(t *testing.T) {
 	}
 
 	for i, cell := range m.cells {
-		if !cell.IsLetter {
+		if cell.Kind != puzzle.CellLetter {
 			continue
 		}
 		expectedInput, ok := expectedInputs[cell.Char]
@@ -131,7 +131,7 @@ func TestFullFlow_PuzzleFetchThenSessionLoad(t *testing.T) {
 	}
 
 	for i, cell := range model.cells {
-		if !cell.IsLetter {
+		if cell.Kind != puzzle.CellLetter {
 			continue
 		}
 		expectedInput, ok := expectedInputs[cell.Char]
@@ -146,7 +146,7 @@ func TestFullFlow_PuzzleFetchThenSessionLoad(t *testing.T) {
 
 	t.Logf("All cells after session restore:")
 	for i, cell := range model.cells {
-		t.Logf("  Cell %d: Char=%c, IsLetter=%v, Input=%c", i, cell.Char, cell.IsLetter, cell.Input)
+		t.Logf("  Cell %d: Char=%c, IsLetter=%v, Input=%c", i, cell.Char, cell.Kind == puzzle.CellLetter, cell.Input)
 	}
 }
 
@@ -158,7 +158,7 @@ func TestHandleSessionLoaded_SolvedSessionRestoresInputs(t *testing.T) {
 			ID:            "test-game",
 			EncryptedText: encryptedText,
 		},
-		cells:     puzzle.BuildCells(encryptedText),
+		cells:     puzzle.BuildCells(encryptedText, nil),
 		state:     StatePlaying,
 		startTime: time.Now(),
 	}
@@ -199,7 +199,7 @@ func TestHandleSessionLoaded_SolvedSessionRestoresInputs(t *testing.T) {
 	}
 
 	for i, cell := range m.cells {
-		if !cell.IsLetter {
+		if cell.Kind != puzzle.CellLetter {
 			continue
 		}
 		expectedInput, ok := expectedInputs[cell.Char]
@@ -223,14 +223,14 @@ func TestUpdate_SessionLoadedRestoresInputs(t *testing.T) {
 			ID:            "test-game",
 			EncryptedText: encryptedText,
 		},
-		cells:     puzzle.BuildCells(encryptedText),
+		cells:     puzzle.BuildCells(encryptedText, nil),
 		state:     StatePlaying,
 		startTime: time.Now(),
 	}
 
 	// Verify cells start with no input
 	for i, cell := range model.cells {
-		if cell.IsLetter && cell.Input != 0 {
+		if cell.Kind == puzzle.CellLetter && cell.Input != 0 {
 			t.Errorf("Cell %d should start with no input, got %c", i, cell.Input)
 		}
 	}
@@ -266,20 +266,20 @@ func TestUpdate_SessionLoadedRestoresInputs(t *testing.T) {
 
 	t.Log("Cells in ORIGINAL model after Update:")
 	for i, cell := range model.cells {
-		if cell.IsLetter {
+		if cell.Kind == puzzle.CellLetter {
 			t.Logf("  Cell %d: Char=%c, Input=%c", i, cell.Char, cell.Input)
 		}
 	}
 
 	t.Log("Cells in RETURNED model after Update:")
 	for i, cell := range updatedModel.cells {
-		if cell.IsLetter {
+		if cell.Kind == puzzle.CellLetter {
 			t.Logf("  Cell %d: Char=%c, Input=%c", i, cell.Char, cell.Input)
 		}
 	}
 
 	for i, cell := range updatedModel.cells {
-		if !cell.IsLetter {
+		if cell.Kind != puzzle.CellLetter {
 			continue
 		}
 		expectedInput, ok := expectedInputs[cell.Char]

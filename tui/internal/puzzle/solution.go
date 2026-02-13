@@ -9,7 +9,7 @@ func AssembleSolution(cells []Cell) string {
 	builder.Grow(len(cells))
 
 	for _, cell := range cells {
-		if cell.IsLetter {
+		if cell.Kind == CellLetter {
 			if cell.Input != 0 {
 				builder.WriteRune(cell.Input)
 			} else {
@@ -26,7 +26,7 @@ func AssembleSolution(cells []Cell) string {
 // IsComplete checks if all letter cells have been filled in
 func IsComplete(cells []Cell) bool {
 	for _, cell := range cells {
-		if cell.IsLetter && cell.Input == 0 {
+		if cell.Kind == CellLetter && cell.Input == 0 {
 			return false
 		}
 	}
@@ -47,13 +47,13 @@ func SetInput(cells []Cell, index int, input rune) bool {
 	if index < 0 || index >= len(cells) {
 		return false
 	}
-	if !cells[index].IsLetter {
+	if cells[index].Kind != CellLetter {
 		return false
 	}
 
 	cipherChar := cells[index].Char
 	for i := range cells {
-		if cells[i].IsLetter && cells[i].Char == cipherChar {
+		if cells[i].Kind == CellLetter && cells[i].Char == cipherChar {
 			cells[i].Input = input
 		}
 	}

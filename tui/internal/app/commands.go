@@ -59,7 +59,7 @@ func saveSessionCmd(gameID string, cells []puzzle.Cell, elapsed time.Duration) t
 		// Build inputs map from cells - only store unique cipher->input mappings
 		inputs := make(map[string]string)
 		for _, cell := range cells {
-			if cell.IsLetter && cell.Input != 0 {
+			if cell.Kind == puzzle.CellLetter && cell.Input != 0 {
 				inputs[string(cell.Char)] = string(cell.Input)
 			}
 		}
@@ -84,7 +84,7 @@ func saveSolvedSessionCmd(gameID string, cells []puzzle.Cell, completionTime tim
 		// Build inputs map from cells
 		inputs := make(map[string]string)
 		for _, cell := range cells {
-			if cell.IsLetter && cell.Input != 0 {
+			if cell.Kind == puzzle.CellLetter && cell.Input != 0 {
 				inputs[string(cell.Char)] = string(cell.Input)
 			}
 		}
