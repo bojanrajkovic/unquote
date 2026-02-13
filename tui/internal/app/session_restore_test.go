@@ -146,7 +146,7 @@ func TestFullFlow_PuzzleFetchThenSessionLoad(t *testing.T) {
 
 	t.Logf("All cells after session restore:")
 	for i, cell := range model.cells {
-		t.Logf("  Cell %d: Char=%c, IsLetter=%v, Input=%c", i, cell.Char, cell.Kind == puzzle.CellLetter, cell.Input)
+		t.Logf("  Cell %d: Char=%c, Kind=%v, Input=%c", i, cell.Char, cell.Kind, cell.Input)
 	}
 }
 

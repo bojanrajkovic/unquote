@@ -36,7 +36,7 @@ From `tui/` directory:
 ### puzzle package
 - **Exposes**: `Cell`, `BuildCells()`, cell navigation functions, `AssembleSolution()`
 - **Guarantees**: Navigation functions return -1 when no valid cell exists
-- **Invariants**: `Cell.IsLetter` is true only for unicode letters; punctuation and spaces are non-editable
+- **Invariants**: `Cell.Kind` distinguishes `CellPunctuation` (not editable), `CellLetter` (editable by player), and `CellHint` (prefilled, locked)
 
 ### app package
 - **Exposes**: `Model`, `Options`, `New(opts Options)`, `NewWithClient(client)` for testing
