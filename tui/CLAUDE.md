@@ -1,6 +1,6 @@
 # TUI
 
-Last verified: 2026-02-08
+Last verified: 2026-02-12
 
 Terminal UI client for playing cryptoquip puzzles.
 
@@ -34,9 +34,9 @@ From `tui/` directory:
 - **Expects**: API at `UNQUOTE_API_URL` env var (default: `https://unquote.gaur-kardashev.ts.net`)
 
 ### puzzle package
-- **Exposes**: `Cell`, `BuildCells()`, cell navigation functions, `AssembleSolution()`
-- **Guarantees**: Navigation functions return -1 when no valid cell exists
-- **Invariants**: `Cell.IsLetter` is true only for unicode letters; punctuation and spaces are non-editable
+- **Exposes**: `Cell`, `CellKind` (`CellPunctuation`, `CellLetter`, `CellHint`), `BuildCells(text, hints)`, cell navigation functions, `AssembleSolution()`, `SetInput()`, `ClearAllInput()`
+- **Guarantees**: Navigation functions return -1 when no valid cell exists. `SetInput()` rejects non-`CellLetter` cells (returns false). `ClearAllInput()` preserves hint cell input.
+- **Invariants**: `Cell.Kind` distinguishes `CellPunctuation` (not editable), `CellLetter` (editable by player), and `CellHint` (prefilled, locked). Navigation functions only traverse `CellLetter` cells, skipping both punctuation and hints.
 
 ### app package
 - **Exposes**: `Model`, `Options`, `New(opts Options)`, `NewWithClient(client)` for testing
@@ -53,8 +53,8 @@ From `tui/` directory:
 - **Best-effort**: All persistence is non-blocking; errors silently ignored
 
 ### ui package
-- **Exposes**: Style definitions (colors, styles), text wrapping functions: `WordWrapText()`, `GroupCellsByWord()`, `WrapWordGroups()`, `FlattenLine()`
-- **Guarantees**: Consistent color palette across all UI states; word-aware line breaking respects cell boundaries
+- **Exposes**: Style definitions (colors, cell styles including `HintCellStyle`), text wrapping functions: `WordWrapText()`, `GroupCellsByWord()`, `WrapWordGroups()`, `FlattenLine()`
+- **Guarantees**: Consistent color palette across all UI states; word-aware line breaking respects cell boundaries. Hint cells render with cyan foreground (`ColorSecondary`) to visually match clue text.
 
 ### version package
 - **Exposes**: `Info` struct, `Get()`, `Version` and `Branch` vars (ldflags targets)

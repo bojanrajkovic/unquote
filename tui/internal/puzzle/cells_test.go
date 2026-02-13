@@ -4,40 +4,40 @@ import "testing"
 
 func TestBuildCells(t *testing.T) {
 	tests := []struct {
-		name           string
-		input          string
-		expectedLetter []bool
-		expectedLen    int
+		name         string
+		input        string
+		expectedKind []CellKind
+		expectedLen  int
 	}{
 		{
-			name:           "simple word",
-			input:          "HELLO",
-			expectedLen:    5,
-			expectedLetter: []bool{true, true, true, true, true},
+			name:         "simple word",
+			input:        "HELLO",
+			expectedLen:  5,
+			expectedKind: []CellKind{CellLetter, CellLetter, CellLetter, CellLetter, CellLetter},
 		},
 		{
-			name:           "with spaces",
-			input:          "HI THERE",
-			expectedLen:    8,
-			expectedLetter: []bool{true, true, false, true, true, true, true, true},
+			name:         "with spaces",
+			input:        "HI THERE",
+			expectedLen:  8,
+			expectedKind: []CellKind{CellLetter, CellLetter, CellPunctuation, CellLetter, CellLetter, CellLetter, CellLetter, CellLetter},
 		},
 		{
-			name:           "with punctuation",
-			input:          "HELLO, WORLD!",
-			expectedLen:    13,
-			expectedLetter: []bool{true, true, true, true, true, false, false, true, true, true, true, true, false},
+			name:         "with punctuation",
+			input:        "HELLO, WORLD!",
+			expectedLen:  13,
+			expectedKind: []CellKind{CellLetter, CellLetter, CellLetter, CellLetter, CellLetter, CellPunctuation, CellPunctuation, CellLetter, CellLetter, CellLetter, CellLetter, CellLetter, CellPunctuation},
 		},
 		{
-			name:           "empty string",
-			input:          "",
-			expectedLen:    0,
-			expectedLetter: []bool{},
+			name:         "empty string",
+			input:        "",
+			expectedLen:  0,
+			expectedKind: []CellKind{},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cells := BuildCells(tt.input)
+			cells := BuildCells(tt.input, nil)
 
 			if len(cells) != tt.expectedLen {
 				t.Errorf("expected %d cells, got %d", tt.expectedLen, len(cells))
@@ -47,8 +47,8 @@ func TestBuildCells(t *testing.T) {
 				if cell.Index != i {
 					t.Errorf("cell %d: expected Index %d, got %d", i, i, cell.Index)
 				}
-				if i < len(tt.expectedLetter) && cell.IsLetter != tt.expectedLetter[i] {
-					t.Errorf("cell %d: expected IsLetter %v, got %v", i, tt.expectedLetter[i], cell.IsLetter)
+				if i < len(tt.expectedKind) && cell.Kind != tt.expectedKind[i] {
+					t.Errorf("cell %d: expected Kind %v, got %v", i, tt.expectedKind[i], cell.Kind)
 				}
 				if cell.Input != 0 {
 					t.Errorf("cell %d: expected Input to be 0, got %d", i, cell.Input)
@@ -59,7 +59,7 @@ func TestBuildCells(t *testing.T) {
 }
 
 func TestNextLetterCell(t *testing.T) {
-	cells := BuildCells("A, B")
+	cells := BuildCells("A, B", nil)
 
 	tests := []struct {
 		currentPos int
@@ -80,7 +80,7 @@ func TestNextLetterCell(t *testing.T) {
 }
 
 func TestNextUnfilledLetterCell(t *testing.T) {
-	cells := BuildCells("A, BC")
+	cells := BuildCells("A, BC", nil)
 	// Fill some cells: A is filled, B is unfilled, C is filled
 	cells[0].Input = 'X' // A is filled
 	cells[4].Input = 'Z' // C is filled
@@ -108,7 +108,7 @@ func TestNextUnfilledLetterCell(t *testing.T) {
 }
 
 func TestPrevLetterCell(t *testing.T) {
-	cells := BuildCells("A, B")
+	cells := BuildCells("A, B", nil)
 
 	tests := []struct {
 		currentPos int
@@ -142,7 +142,7 @@ func TestFirstLetterCell(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cells := BuildCells(tt.input)
+			cells := BuildCells(tt.input, nil)
 			result := FirstLetterCell(cells)
 			if result != tt.expected {
 				t.Errorf("FirstLetterCell = %d, expected %d", result, tt.expected)
@@ -165,10 +165,199 @@ func TestLastLetterCell(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cells := BuildCells(tt.input)
+			cells := BuildCells(tt.input, nil)
 			result := LastLetterCell(cells)
 			if result != tt.expected {
 				t.Errorf("LastLetterCell = %d, expected %d", result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestBuildCellsWithHints(t *testing.T) {
+	// Encrypted text: "AB, CD" where A->X and C->Z are hints
+	hints := map[rune]rune{'A': 'X', 'C': 'Z'}
+	cells := BuildCells("AB, CD", hints)
+
+	tests := []struct {
+		name          string
+		index         int
+		expectedKind  CellKind
+		expectedChar  rune
+		expectedInput rune
+	}{
+		{"hint cell A", 0, CellHint, 'A', 'X'},
+		{"regular letter B", 1, CellLetter, 'B', 0},
+		{"comma", 2, CellPunctuation, ',', 0},
+		{"space", 3, CellPunctuation, ' ', 0},
+		{"hint cell C", 4, CellHint, 'C', 'Z'},
+		{"regular letter D", 5, CellLetter, 'D', 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cell := cells[tt.index]
+			if cell.Kind != tt.expectedKind {
+				t.Errorf("expected Kind %v, got %v", tt.expectedKind, cell.Kind)
+			}
+			if cell.Char != tt.expectedChar {
+				t.Errorf("expected Char %c, got %c", tt.expectedChar, cell.Char)
+			}
+			if cell.Input != tt.expectedInput {
+				t.Errorf("expected Input %c, got %c", tt.expectedInput, cell.Input)
+			}
+		})
+	}
+}
+
+func TestBuildCellsHintDuplicates(t *testing.T) {
+	// "ABA" with A->X hint — both A cells should be CellHint
+	hints := map[rune]rune{'A': 'X'}
+	cells := BuildCells("ABA", hints)
+
+	if cells[0].Kind != CellHint || cells[0].Input != 'X' {
+		t.Errorf("cell 0: expected CellHint with Input 'X', got Kind=%v Input=%c", cells[0].Kind, cells[0].Input)
+	}
+	if cells[1].Kind != CellLetter {
+		t.Errorf("cell 1: expected CellLetter, got %v", cells[1].Kind)
+	}
+	if cells[2].Kind != CellHint || cells[2].Input != 'X' {
+		t.Errorf("cell 2: expected CellHint with Input 'X', got Kind=%v Input=%c", cells[2].Kind, cells[2].Input)
+	}
+}
+
+func TestBuildCellsNilHints(t *testing.T) {
+	cells := BuildCells("A, B", nil)
+
+	// With nil hints, letters should be CellLetter and non-letters CellPunctuation
+	expectedKinds := []CellKind{CellLetter, CellPunctuation, CellPunctuation, CellLetter}
+	for i, cell := range cells {
+		if cell.Kind != expectedKinds[i] {
+			t.Errorf("cell %d: expected Kind %v with nil hints, got %v", i, expectedKinds[i], cell.Kind)
+		}
+		if cell.Input != 0 {
+			t.Errorf("cell %d: expected Input 0 with nil hints, got %c", i, cell.Input)
+		}
+	}
+}
+
+func TestNextLetterCellSkipsHints(t *testing.T) {
+	// "ABC" with A and C as hints — only B (index 1) is CellLetter
+	hints := map[rune]rune{'A': 'X', 'C': 'Z'}
+	cells := BuildCells("ABC", hints)
+
+	tests := []struct {
+		name       string
+		currentPos int
+		expected   int
+	}{
+		{"from hint A finds letter B", 0, 1},
+		{"from letter B finds nothing", 1, -1},
+		{"from hint C finds nothing", 2, -1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := NextLetterCell(cells, tt.currentPos)
+			if result != tt.expected {
+				t.Errorf("NextLetterCell(%d) = %d, expected %d", tt.currentPos, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestPrevLetterCellSkipsHints(t *testing.T) {
+	// "ABC" with A and C as hints — only B (index 1) is CellLetter
+	hints := map[rune]rune{'A': 'X', 'C': 'Z'}
+	cells := BuildCells("ABC", hints)
+
+	tests := []struct {
+		name       string
+		currentPos int
+		expected   int
+	}{
+		{"from hint C finds letter B", 2, 1},
+		{"from letter B finds nothing", 1, -1},
+		{"from hint A finds nothing", 0, -1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := PrevLetterCell(cells, tt.currentPos)
+			if result != tt.expected {
+				t.Errorf("PrevLetterCell(%d) = %d, expected %d", tt.currentPos, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestFirstLetterCellSkipsHints(t *testing.T) {
+	tests := []struct {
+		hints    map[rune]rune
+		name     string
+		input    string
+		expected int
+	}{
+		{map[rune]rune{'A': 'X'}, "first cell is hint", "ABC", 1},
+		{map[rune]rune{'A': 'X', 'B': 'Y'}, "all cells are hints", "AB", -1},
+		{nil, "no hints", "ABC", 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cells := BuildCells(tt.input, tt.hints)
+			result := FirstLetterCell(cells)
+			if result != tt.expected {
+				t.Errorf("FirstLetterCell = %d, expected %d", result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestLastLetterCellSkipsHints(t *testing.T) {
+	tests := []struct {
+		hints    map[rune]rune
+		name     string
+		input    string
+		expected int
+	}{
+		{map[rune]rune{'C': 'Z'}, "last cell is hint", "ABC", 1},
+		{map[rune]rune{'A': 'X', 'B': 'Y'}, "all cells are hints", "AB", -1},
+		{nil, "no hints", "ABC", 2},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cells := BuildCells(tt.input, tt.hints)
+			result := LastLetterCell(cells)
+			if result != tt.expected {
+				t.Errorf("LastLetterCell = %d, expected %d", result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestNextUnfilledLetterCellSkipsHints(t *testing.T) {
+	// "ABC" with A as hint, B filled, C unfilled
+	hints := map[rune]rune{'A': 'X'}
+	cells := BuildCells("ABC", hints)
+	cells[1].Input = 'Y' // B is filled
+
+	tests := []struct {
+		name       string
+		currentPos int
+		expected   int
+	}{
+		{"from hint A skips to unfilled C", 0, 2},
+		{"from filled B finds unfilled C", 1, 2},
+		{"from unfilled C finds nothing", 2, -1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := NextUnfilledLetterCell(cells, tt.currentPos)
+			if result != tt.expected {
+				t.Errorf("NextUnfilledLetterCell(%d) = %d, expected %d", tt.currentPos, result, tt.expected)
 			}
 		})
 	}

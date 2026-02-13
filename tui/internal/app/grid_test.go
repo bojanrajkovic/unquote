@@ -20,10 +20,10 @@ func TestRenderInputCell(t *testing.T) {
 		{
 			name: "cursor on letter cell with user input",
 			cell: puzzle.Cell{
-				Index:    0,
-				Char:     'A',
-				Input:    'B',
-				IsLetter: true,
+				Index: 0,
+				Char:  'A',
+				Input: 'B',
+				Kind:  puzzle.CellLetter,
 			},
 			cursorPos:     0,
 			highlightChar: 0,
@@ -33,10 +33,10 @@ func TestRenderInputCell(t *testing.T) {
 		{
 			name: "cursor on letter cell without user input",
 			cell: puzzle.Cell{
-				Index:    0,
-				Char:     'A',
-				Input:    0,
-				IsLetter: true,
+				Index: 0,
+				Char:  'A',
+				Input: 0,
+				Kind:  puzzle.CellLetter,
 			},
 			cursorPos:     0,
 			highlightChar: 0,
@@ -48,10 +48,10 @@ func TestRenderInputCell(t *testing.T) {
 		{
 			name: "related letter cell with same cipher letter as highlight",
 			cell: puzzle.Cell{
-				Index:    2,
-				Char:     'A',
-				Input:    'X',
-				IsLetter: true,
+				Index: 2,
+				Char:  'A',
+				Input: 'X',
+				Kind:  puzzle.CellLetter,
 			},
 			cursorPos:     0,   // Cursor is elsewhere
 			highlightChar: 'A', // Highlight character is 'A'
@@ -61,10 +61,10 @@ func TestRenderInputCell(t *testing.T) {
 		{
 			name: "related letter cell without user input",
 			cell: puzzle.Cell{
-				Index:    2,
-				Char:     'A',
-				Input:    0,
-				IsLetter: true,
+				Index: 2,
+				Char:  'A',
+				Input: 0,
+				Kind:  puzzle.CellLetter,
 			},
 			cursorPos:     0,
 			highlightChar: 'A',
@@ -76,10 +76,10 @@ func TestRenderInputCell(t *testing.T) {
 		{
 			name: "regular letter cell not highlighted",
 			cell: puzzle.Cell{
-				Index:    3,
-				Char:     'B',
-				Input:    'Y',
-				IsLetter: true,
+				Index: 3,
+				Char:  'B',
+				Input: 'Y',
+				Kind:  puzzle.CellLetter,
 			},
 			cursorPos:     0,
 			highlightChar: 'A',
@@ -89,10 +89,10 @@ func TestRenderInputCell(t *testing.T) {
 		{
 			name: "letter cell with no highlight active",
 			cell: puzzle.Cell{
-				Index:    1,
-				Char:     'C',
-				Input:    'Z',
-				IsLetter: true,
+				Index: 1,
+				Char:  'C',
+				Input: 'Z',
+				Kind:  puzzle.CellLetter,
 			},
 			cursorPos:     0,
 			highlightChar: 0,   // No highlight character (cursor on non-letter)
@@ -104,10 +104,10 @@ func TestRenderInputCell(t *testing.T) {
 		{
 			name: "non-letter cell (space)",
 			cell: puzzle.Cell{
-				Index:    1,
-				Char:     ' ',
-				Input:    0,
-				IsLetter: false,
+				Index: 1,
+				Char:  ' ',
+				Input: 0,
+				Kind:  puzzle.CellPunctuation,
 			},
 			cursorPos:     0,
 			highlightChar: 'A',
@@ -117,10 +117,10 @@ func TestRenderInputCell(t *testing.T) {
 		{
 			name: "non-letter cell (punctuation)",
 			cell: puzzle.Cell{
-				Index:    5,
-				Char:     ',',
-				Input:    0,
-				IsLetter: false,
+				Index: 5,
+				Char:  ',',
+				Input: 0,
+				Kind:  puzzle.CellPunctuation,
 			},
 			cursorPos:     0,
 			highlightChar: 'A',
@@ -130,10 +130,10 @@ func TestRenderInputCell(t *testing.T) {
 		{
 			name: "cursor on non-letter cell",
 			cell: puzzle.Cell{
-				Index:    5,
-				Char:     ',',
-				Input:    0,
-				IsLetter: false,
+				Index: 5,
+				Char:  ',',
+				Input: 0,
+				Kind:  puzzle.CellPunctuation,
 			},
 			cursorPos:     5, // Cursor is on this non-letter cell
 			highlightChar: 0, // Non-letters don't produce highlight char
@@ -145,10 +145,10 @@ func TestRenderInputCell(t *testing.T) {
 		{
 			name: "cursor takes precedence when on related letter",
 			cell: puzzle.Cell{
-				Index:    0,
-				Char:     'A',
-				Input:    'B',
-				IsLetter: true,
+				Index: 0,
+				Char:  'A',
+				Input: 'B',
+				Kind:  puzzle.CellLetter,
 			},
 			cursorPos:     0,   // Cursor is on this cell
 			highlightChar: 'A', // This cell also matches highlight char
@@ -187,7 +187,7 @@ func verifyStyleApplication(t *testing.T, tt struct {
 	highlightChar rune
 }, result string,
 ) {
-	if !tt.cell.IsLetter {
+	if tt.cell.Kind != puzzle.CellLetter {
 		// Non-letter cells always use CellStyle regardless of cursor/highlight
 		// Just verify content is present
 		if !strings.Contains(result, tt.expectedStyle) {
@@ -229,7 +229,7 @@ func TestRenderInputCellTableDrivenComprehensive(t *testing.T) {
 		{
 			name: "single letter cell as cursor",
 			cells: []puzzle.Cell{
-				{Index: 0, Char: 'A', Input: 'B', IsLetter: true},
+				{Index: 0, Char: 'A', Input: 'B', Kind: puzzle.CellLetter},
 			},
 			cursorPos:       0,
 			highlightChar:   0,
@@ -241,9 +241,9 @@ func TestRenderInputCellTableDrivenComprehensive(t *testing.T) {
 		{
 			name: "multiple letters - cursor and highlight",
 			cells: []puzzle.Cell{
-				{Index: 0, Char: 'A', Input: 'B', IsLetter: true},
-				{Index: 1, Char: 'A', Input: 0, IsLetter: true},
-				{Index: 2, Char: 'C', Input: 'X', IsLetter: true},
+				{Index: 0, Char: 'A', Input: 'B', Kind: puzzle.CellLetter},
+				{Index: 1, Char: 'A', Input: 0, Kind: puzzle.CellLetter},
+				{Index: 2, Char: 'C', Input: 'X', Kind: puzzle.CellLetter},
 			},
 			cursorPos:       0,
 			highlightChar:   'A',
@@ -255,9 +255,9 @@ func TestRenderInputCellTableDrivenComprehensive(t *testing.T) {
 		{
 			name: "cursor on non-letter prevents highlighting",
 			cells: []puzzle.Cell{
-				{Index: 0, Char: 'A', Input: 'B', IsLetter: true},
-				{Index: 1, Char: ' ', Input: 0, IsLetter: false},
-				{Index: 2, Char: 'A', Input: 'C', IsLetter: true},
+				{Index: 0, Char: 'A', Input: 'B', Kind: puzzle.CellLetter},
+				{Index: 1, Char: ' ', Input: 0, Kind: puzzle.CellPunctuation},
+				{Index: 2, Char: 'A', Input: 'C', Kind: puzzle.CellLetter},
 			},
 			cursorPos:       1, // Non-letter
 			highlightChar:   0, // No highlight when on non-letter
@@ -269,10 +269,10 @@ func TestRenderInputCellTableDrivenComprehensive(t *testing.T) {
 		{
 			name: "puzzle with punctuation and letters",
 			cells: []puzzle.Cell{
-				{Index: 0, Char: 'H', Input: 'X', IsLetter: true},
-				{Index: 1, Char: 'I', Input: 'Y', IsLetter: true},
-				{Index: 2, Char: ',', Input: 0, IsLetter: false},
-				{Index: 3, Char: 'H', Input: 0, IsLetter: true},
+				{Index: 0, Char: 'H', Input: 'X', Kind: puzzle.CellLetter},
+				{Index: 1, Char: 'I', Input: 'Y', Kind: puzzle.CellLetter},
+				{Index: 2, Char: ',', Input: 0, Kind: puzzle.CellPunctuation},
+				{Index: 3, Char: 'H', Input: 0, Kind: puzzle.CellLetter},
 			},
 			cursorPos:       0, // On 'H'
 			highlightChar:   'H',
@@ -302,7 +302,7 @@ func TestRenderInputCellTableDrivenComprehensive(t *testing.T) {
 			result := m.renderInputCell(testCell, tc.highlightChar, nil)
 
 			// Verify the result contains expected content
-			if testCell.IsLetter {
+			if testCell.Kind == puzzle.CellLetter {
 				expectedContent := "_"
 				if testCell.Input != 0 {
 					expectedContent = string(testCell.Input)
@@ -331,21 +331,21 @@ func TestRenderInputCellStylePrecedence(t *testing.T) {
 	}{
 		{
 			name:          "cursor takes precedence",
-			cell:          puzzle.Cell{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
+			cell:          puzzle.Cell{Index: 0, Char: 'A', Input: 'X', Kind: puzzle.CellLetter},
 			cursorPos:     0,
 			highlightChar: 'A', // Same as cell.Char
 			expectActive:  true,
 		},
 		{
 			name:          "non-cursor, matching highlight",
-			cell:          puzzle.Cell{Index: 1, Char: 'A', Input: 'Y', IsLetter: true},
+			cell:          puzzle.Cell{Index: 1, Char: 'A', Input: 'Y', Kind: puzzle.CellLetter},
 			cursorPos:     0,
 			highlightChar: 'A',
 			expectActive:  false, // Not cursor position, so should be related not active
 		},
 		{
 			name:          "cursor, no highlight char",
-			cell:          puzzle.Cell{Index: 0, Char: 'B', Input: 'Z', IsLetter: true},
+			cell:          puzzle.Cell{Index: 0, Char: 'B', Input: 'Z', Kind: puzzle.CellLetter},
 			cursorPos:     0,
 			highlightChar: 0,
 			expectActive:  true,
@@ -391,71 +391,71 @@ func TestFindDuplicateInputs(t *testing.T) {
 		{
 			name: "no inputs",
 			cells: []puzzle.Cell{
-				{Index: 0, Char: 'A', Input: 0, IsLetter: true},
-				{Index: 1, Char: 'B', Input: 0, IsLetter: true},
+				{Index: 0, Char: 'A', Input: 0, Kind: puzzle.CellLetter},
+				{Index: 1, Char: 'B', Input: 0, Kind: puzzle.CellLetter},
 			},
 			expected: map[rune]bool{},
 		},
 		{
 			name: "all unique inputs",
 			cells: []puzzle.Cell{
-				{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
-				{Index: 1, Char: 'B', Input: 'Y', IsLetter: true},
-				{Index: 2, Char: 'C', Input: 'Z', IsLetter: true},
+				{Index: 0, Char: 'A', Input: 'X', Kind: puzzle.CellLetter},
+				{Index: 1, Char: 'B', Input: 'Y', Kind: puzzle.CellLetter},
+				{Index: 2, Char: 'C', Input: 'Z', Kind: puzzle.CellLetter},
 			},
 			expected: map[rune]bool{},
 		},
 		{
 			name: "same input for same cipher letter is not a duplicate",
 			cells: []puzzle.Cell{
-				{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
-				{Index: 1, Char: 'A', Input: 'X', IsLetter: true},
+				{Index: 0, Char: 'A', Input: 'X', Kind: puzzle.CellLetter},
+				{Index: 1, Char: 'A', Input: 'X', Kind: puzzle.CellLetter},
 			},
 			expected: map[rune]bool{},
 		},
 		{
 			name: "same input for different cipher letters is a duplicate",
 			cells: []puzzle.Cell{
-				{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
-				{Index: 1, Char: 'B', Input: 'X', IsLetter: true},
+				{Index: 0, Char: 'A', Input: 'X', Kind: puzzle.CellLetter},
+				{Index: 1, Char: 'B', Input: 'X', Kind: puzzle.CellLetter},
 			},
 			expected: map[rune]bool{'X': true},
 		},
 		{
 			name: "multiple duplicate inputs",
 			cells: []puzzle.Cell{
-				{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
-				{Index: 1, Char: 'B', Input: 'X', IsLetter: true},
-				{Index: 2, Char: 'C', Input: 'Y', IsLetter: true},
-				{Index: 3, Char: 'D', Input: 'Y', IsLetter: true},
-				{Index: 4, Char: 'E', Input: 'Z', IsLetter: true},
+				{Index: 0, Char: 'A', Input: 'X', Kind: puzzle.CellLetter},
+				{Index: 1, Char: 'B', Input: 'X', Kind: puzzle.CellLetter},
+				{Index: 2, Char: 'C', Input: 'Y', Kind: puzzle.CellLetter},
+				{Index: 3, Char: 'D', Input: 'Y', Kind: puzzle.CellLetter},
+				{Index: 4, Char: 'E', Input: 'Z', Kind: puzzle.CellLetter},
 			},
 			expected: map[rune]bool{'X': true, 'Y': true},
 		},
 		{
 			name: "non-letter cells ignored",
 			cells: []puzzle.Cell{
-				{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
-				{Index: 1, Char: ' ', Input: 0, IsLetter: false},
-				{Index: 2, Char: 'B', Input: 'X', IsLetter: true},
+				{Index: 0, Char: 'A', Input: 'X', Kind: puzzle.CellLetter},
+				{Index: 1, Char: ' ', Input: 0, Kind: puzzle.CellPunctuation},
+				{Index: 2, Char: 'B', Input: 'X', Kind: puzzle.CellLetter},
 			},
 			expected: map[rune]bool{'X': true},
 		},
 		{
 			name: "three cipher letters with same input",
 			cells: []puzzle.Cell{
-				{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
-				{Index: 1, Char: 'B', Input: 'X', IsLetter: true},
-				{Index: 2, Char: 'C', Input: 'X', IsLetter: true},
+				{Index: 0, Char: 'A', Input: 'X', Kind: puzzle.CellLetter},
+				{Index: 1, Char: 'B', Input: 'X', Kind: puzzle.CellLetter},
+				{Index: 2, Char: 'C', Input: 'X', Kind: puzzle.CellLetter},
 			},
 			expected: map[rune]bool{'X': true},
 		},
 		{
 			name: "partial inputs - only filled cells considered",
 			cells: []puzzle.Cell{
-				{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
-				{Index: 1, Char: 'B', Input: 0, IsLetter: true},
-				{Index: 2, Char: 'C', Input: 'X', IsLetter: true},
+				{Index: 0, Char: 'A', Input: 'X', Kind: puzzle.CellLetter},
+				{Index: 1, Char: 'B', Input: 0, Kind: puzzle.CellLetter},
+				{Index: 2, Char: 'C', Input: 'X', Kind: puzzle.CellLetter},
 			},
 			expected: map[rune]bool{'X': true},
 		},
@@ -492,7 +492,7 @@ func TestRenderInputCellDuplicateStyle(t *testing.T) {
 	}{
 		{
 			name:            "duplicate input renders with warning style",
-			cell:            puzzle.Cell{Index: 2, Char: 'B', Input: 'X', IsLetter: true},
+			cell:            puzzle.Cell{Index: 2, Char: 'B', Input: 'X', Kind: puzzle.CellLetter},
 			cursorPos:       0,
 			highlightChar:   'A',
 			duplicateInputs: map[rune]bool{'X': true},
@@ -501,7 +501,7 @@ func TestRenderInputCellDuplicateStyle(t *testing.T) {
 		},
 		{
 			name:            "cursor on duplicate uses active style",
-			cell:            puzzle.Cell{Index: 0, Char: 'A', Input: 'X', IsLetter: true},
+			cell:            puzzle.Cell{Index: 0, Char: 'A', Input: 'X', Kind: puzzle.CellLetter},
 			cursorPos:       0,
 			highlightChar:   'A',
 			duplicateInputs: map[rune]bool{'X': true},
@@ -510,7 +510,7 @@ func TestRenderInputCellDuplicateStyle(t *testing.T) {
 		},
 		{
 			name:            "duplicate supersedes related style",
-			cell:            puzzle.Cell{Index: 2, Char: 'A', Input: 'X', IsLetter: true},
+			cell:            puzzle.Cell{Index: 2, Char: 'A', Input: 'X', Kind: puzzle.CellLetter},
 			cursorPos:       0,
 			highlightChar:   'A',
 			duplicateInputs: map[rune]bool{'X': true},
@@ -519,7 +519,7 @@ func TestRenderInputCellDuplicateStyle(t *testing.T) {
 		},
 		{
 			name:            "non-duplicate unaffected",
-			cell:            puzzle.Cell{Index: 3, Char: 'C', Input: 'Y', IsLetter: true},
+			cell:            puzzle.Cell{Index: 3, Char: 'C', Input: 'Y', Kind: puzzle.CellLetter},
 			cursorPos:       0,
 			highlightChar:   'A',
 			duplicateInputs: map[rune]bool{'X': true},
@@ -528,7 +528,7 @@ func TestRenderInputCellDuplicateStyle(t *testing.T) {
 		},
 		{
 			name:            "nil duplicate map treated as no duplicates",
-			cell:            puzzle.Cell{Index: 2, Char: 'B', Input: 'X', IsLetter: true},
+			cell:            puzzle.Cell{Index: 2, Char: 'B', Input: 'X', Kind: puzzle.CellLetter},
 			cursorPos:       0,
 			highlightChar:   0,
 			duplicateInputs: nil,
@@ -537,7 +537,7 @@ func TestRenderInputCellDuplicateStyle(t *testing.T) {
 		},
 		{
 			name:            "empty input not flagged as duplicate",
-			cell:            puzzle.Cell{Index: 2, Char: 'B', Input: 0, IsLetter: true},
+			cell:            puzzle.Cell{Index: 2, Char: 'B', Input: 0, Kind: puzzle.CellLetter},
 			cursorPos:       0,
 			highlightChar:   0,
 			duplicateInputs: map[rune]bool{'X': true},
@@ -546,7 +546,7 @@ func TestRenderInputCellDuplicateStyle(t *testing.T) {
 		},
 		{
 			name:            "non-letter cell ignores duplicates",
-			cell:            puzzle.Cell{Index: 2, Char: ',', Input: 0, IsLetter: false},
+			cell:            puzzle.Cell{Index: 2, Char: ',', Input: 0, Kind: puzzle.CellPunctuation},
 			cursorPos:       0,
 			highlightChar:   0,
 			duplicateInputs: map[rune]bool{',': true},
@@ -565,5 +565,76 @@ func TestRenderInputCellDuplicateStyle(t *testing.T) {
 					tt.expectedContent, result, tt.description)
 			}
 		})
+	}
+}
+
+func TestRenderInputCellHintStyle(t *testing.T) {
+	//nolint:govet
+	tests := []struct {
+		cell            puzzle.Cell
+		cursorPos       int
+		highlightChar   rune
+		duplicateInputs map[rune]bool
+		name            string
+		expectedContent string
+	}{
+		{
+			cell:            puzzle.Cell{Index: 1, Char: 'A', Input: 'X', Kind: puzzle.CellHint},
+			cursorPos:       0,
+			highlightChar:   0,
+			duplicateInputs: nil,
+			name:            "hint cell renders with hint style",
+			expectedContent: "X",
+		},
+		{
+			cell:            puzzle.Cell{Index: 0, Char: 'A', Input: 'X', Kind: puzzle.CellHint},
+			cursorPos:       0,
+			highlightChar:   'A',
+			duplicateInputs: nil,
+			name:            "hint cell with cursor uses active style",
+			expectedContent: "X",
+		},
+		{
+			cell:            puzzle.Cell{Index: 2, Char: 'A', Input: 'X', Kind: puzzle.CellHint},
+			cursorPos:       0,
+			highlightChar:   'A',
+			duplicateInputs: nil,
+			name:            "hint cell with related highlight uses related style",
+			expectedContent: "X",
+		},
+		{
+			cell:            puzzle.Cell{Index: 1, Char: 'B', Input: 'X', Kind: puzzle.CellHint},
+			cursorPos:       5,
+			highlightChar:   0,
+			duplicateInputs: map[rune]bool{'X': true},
+			name:            "hint cell content renders correctly with duplicate map present",
+			expectedContent: "X",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := Model{cursorPos: tt.cursorPos}
+			result := m.renderInputCell(tt.cell, tt.highlightChar, tt.duplicateInputs)
+
+			if !strings.Contains(result, tt.expectedContent) {
+				t.Errorf("renderInputCell() result does not contain expected content %q. Result: %q",
+					tt.expectedContent, result)
+			}
+		})
+	}
+}
+
+func TestFindDuplicateInputsIgnoresHintCells(t *testing.T) {
+	// Hint cell 'A' has input 'X', regular cell 'B' also has input 'X'
+	// This should NOT be a duplicate because the hint cell is system-assigned
+	cells := []puzzle.Cell{
+		{Index: 0, Char: 'A', Input: 'X', Kind: puzzle.CellHint},
+		{Index: 1, Char: 'B', Input: 'X', Kind: puzzle.CellLetter},
+	}
+
+	result := findDuplicateInputs(cells)
+	if len(result) != 0 {
+		t.Errorf("expected no duplicates when one input is from a hint cell, got %v", result)
 	}
 }

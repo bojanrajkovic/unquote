@@ -7,7 +7,7 @@ import (
 )
 
 func TestGroupCellsByWord(t *testing.T) {
-	cells := puzzle.BuildCells("HI THERE")
+	cells := puzzle.BuildCells("HI THERE", nil)
 	groups := GroupCellsByWord(cells)
 
 	// Should have: "HI", " ", "THERE"
@@ -29,7 +29,7 @@ func TestGroupCellsByWord(t *testing.T) {
 }
 
 func TestWrapWordGroups(t *testing.T) {
-	cells := puzzle.BuildCells("ONE TWO THREE FOUR")
+	cells := puzzle.BuildCells("ONE TWO THREE FOUR", nil)
 	groups := GroupCellsByWord(cells)
 
 	// With cellWidth=3 and maxWidth=15, should fit ~5 chars per line
@@ -43,7 +43,7 @@ func TestWrapWordGroups(t *testing.T) {
 }
 
 func TestFlattenLine(t *testing.T) {
-	cells := puzzle.BuildCells("AB CD")
+	cells := puzzle.BuildCells("AB CD", nil)
 	groups := GroupCellsByWord(cells)
 
 	// Flatten first line (assuming it contains all)

@@ -17,7 +17,7 @@ func TestHandleSessionLoaded_RestoresInputs(t *testing.T) {
 			ID:            "test-game",
 			EncryptedText: encryptedText,
 		},
-		cells:     puzzle.BuildCells(encryptedText),
+		cells:     puzzle.BuildCells(encryptedText, nil),
 		state:     StatePlaying,
 		startTime: time.Now(),
 	}
@@ -53,7 +53,7 @@ func TestHandleSessionLoaded_RestoresInputs(t *testing.T) {
 	}
 
 	for i, cell := range m.cells {
-		if !cell.IsLetter {
+		if cell.Kind != puzzle.CellLetter {
 			continue
 		}
 		expectedInput, ok := expectedInputs[cell.Char]
@@ -131,7 +131,7 @@ func TestFullFlow_PuzzleFetchThenSessionLoad(t *testing.T) {
 	}
 
 	for i, cell := range model.cells {
-		if !cell.IsLetter {
+		if cell.Kind != puzzle.CellLetter {
 			continue
 		}
 		expectedInput, ok := expectedInputs[cell.Char]
@@ -146,7 +146,7 @@ func TestFullFlow_PuzzleFetchThenSessionLoad(t *testing.T) {
 
 	t.Logf("All cells after session restore:")
 	for i, cell := range model.cells {
-		t.Logf("  Cell %d: Char=%c, IsLetter=%v, Input=%c", i, cell.Char, cell.IsLetter, cell.Input)
+		t.Logf("  Cell %d: Char=%c, Kind=%v, Input=%c", i, cell.Char, cell.Kind, cell.Input)
 	}
 }
 
@@ -158,7 +158,7 @@ func TestHandleSessionLoaded_SolvedSessionRestoresInputs(t *testing.T) {
 			ID:            "test-game",
 			EncryptedText: encryptedText,
 		},
-		cells:     puzzle.BuildCells(encryptedText),
+		cells:     puzzle.BuildCells(encryptedText, nil),
 		state:     StatePlaying,
 		startTime: time.Now(),
 	}
@@ -199,7 +199,7 @@ func TestHandleSessionLoaded_SolvedSessionRestoresInputs(t *testing.T) {
 	}
 
 	for i, cell := range m.cells {
-		if !cell.IsLetter {
+		if cell.Kind != puzzle.CellLetter {
 			continue
 		}
 		expectedInput, ok := expectedInputs[cell.Char]
@@ -223,14 +223,14 @@ func TestUpdate_SessionLoadedRestoresInputs(t *testing.T) {
 			ID:            "test-game",
 			EncryptedText: encryptedText,
 		},
-		cells:     puzzle.BuildCells(encryptedText),
+		cells:     puzzle.BuildCells(encryptedText, nil),
 		state:     StatePlaying,
 		startTime: time.Now(),
 	}
 
 	// Verify cells start with no input
 	for i, cell := range model.cells {
-		if cell.IsLetter && cell.Input != 0 {
+		if cell.Kind == puzzle.CellLetter && cell.Input != 0 {
 			t.Errorf("Cell %d should start with no input, got %c", i, cell.Input)
 		}
 	}
@@ -266,20 +266,20 @@ func TestUpdate_SessionLoadedRestoresInputs(t *testing.T) {
 
 	t.Log("Cells in ORIGINAL model after Update:")
 	for i, cell := range model.cells {
-		if cell.IsLetter {
+		if cell.Kind == puzzle.CellLetter {
 			t.Logf("  Cell %d: Char=%c, Input=%c", i, cell.Char, cell.Input)
 		}
 	}
 
 	t.Log("Cells in RETURNED model after Update:")
 	for i, cell := range updatedModel.cells {
-		if cell.IsLetter {
+		if cell.Kind == puzzle.CellLetter {
 			t.Logf("  Cell %d: Char=%c, Input=%c", i, cell.Char, cell.Input)
 		}
 	}
 
 	for i, cell := range updatedModel.cells {
-		if !cell.IsLetter {
+		if cell.Kind != puzzle.CellLetter {
 			continue
 		}
 		expectedInput, ok := expectedInputs[cell.Char]
@@ -290,5 +290,102 @@ func TestUpdate_SessionLoadedRestoresInputs(t *testing.T) {
 		if cell.Input != expectedInput {
 			t.Errorf("Cell %d (cipher=%c): expected input %c, got %c", i, cell.Char, expectedInput, cell.Input)
 		}
+	}
+}
+
+func TestHandleSessionLoaded_PreservesHintCells(t *testing.T) {
+	// Encrypted text "AB CD" with A->X hint
+	encryptedText := "AB CD"
+	hints := map[rune]rune{'A': 'X'}
+	model := Model{
+		puzzle: &api.Puzzle{
+			ID:            "test-game",
+			EncryptedText: encryptedText,
+		},
+		cells:     puzzle.BuildCells(encryptedText, hints),
+		state:     StatePlaying,
+		startTime: time.Now(),
+	}
+
+	// Verify hint cell is set up correctly
+	if model.cells[0].Kind != puzzle.CellHint || model.cells[0].Input != 'X' {
+		t.Fatalf("cell 0: expected CellHint with Input 'X', got Kind=%v Input=%c", model.cells[0].Kind, model.cells[0].Input)
+	}
+
+	// Session has saved inputs for regular letters only
+	session := &storage.GameSession{
+		GameID: "test-game",
+		Inputs: map[string]string{
+			"B": "Y",
+			"C": "Z",
+			"D": "W",
+		},
+		ElapsedTime: 10 * time.Second,
+		Solved:      false,
+	}
+
+	msg := sessionLoadedMsg{session: session}
+	resultModel, _ := model.handleSessionLoaded(msg)
+	m := resultModel.(Model)
+
+	// Verify hint cell A is unchanged (still 'X')
+	if m.cells[0].Input != 'X' {
+		t.Errorf("hint cell A: expected Input 'X' preserved, got %c", m.cells[0].Input)
+	}
+	if m.cells[0].Kind != puzzle.CellHint {
+		t.Errorf("hint cell A: expected CellHint, got %v", m.cells[0].Kind)
+	}
+
+	// Verify regular cells got session inputs
+	if m.cells[1].Input != 'Y' {
+		t.Errorf("regular cell B: expected Input 'Y', got %c", m.cells[1].Input)
+	}
+	if m.cells[3].Input != 'Z' {
+		t.Errorf("regular cell C: expected Input 'Z', got %c", m.cells[3].Input)
+	}
+	if m.cells[4].Input != 'W' {
+		t.Errorf("regular cell D: expected Input 'W', got %c", m.cells[4].Input)
+	}
+}
+
+func TestHandlePuzzleFetched_CreatesHintCells(t *testing.T) {
+	model := Model{
+		state: StateLoading,
+	}
+
+	puzzleMsg := puzzleFetchedMsg{
+		puzzle: &api.Puzzle{
+			ID:            "test-game",
+			EncryptedText: "AB CD",
+			Hints: []api.Hint{
+				{CipherLetter: "A", PlainLetter: "X"},
+			},
+		},
+	}
+
+	resultModel, cmd := model.handlePuzzleFetched(puzzleMsg)
+	m := resultModel.(Model)
+
+	// Verify hint cell A was created
+	if m.cells[0].Kind != puzzle.CellHint {
+		t.Errorf("cell 0 (A): expected CellHint, got %v", m.cells[0].Kind)
+	}
+	if m.cells[0].Input != 'X' {
+		t.Errorf("cell 0 (A): expected Input 'X', got %c", m.cells[0].Input)
+	}
+
+	// Verify regular letter B was created
+	if m.cells[1].Kind != puzzle.CellLetter {
+		t.Errorf("cell 1 (B): expected CellLetter, got %v", m.cells[1].Kind)
+	}
+
+	// Verify cursor starts on first regular letter (not hint)
+	if m.cursorPos != 1 {
+		t.Errorf("cursorPos: expected 1 (first CellLetter), got %d", m.cursorPos)
+	}
+
+	// Verify a command was returned (loadSessionCmd)
+	if cmd == nil {
+		t.Fatal("Expected loadSessionCmd to be returned")
 	}
 }
