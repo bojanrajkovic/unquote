@@ -158,18 +158,11 @@ jobs:
           path: tui/dist/unquote_*_linux_arm64.tar.gz
           retention-days: 7
 
-      - name: Upload macOS amd64
+      - name: Upload macOS universal
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
-          name: unquote-macos-amd64
-          path: tui/dist/unquote_*_darwin_amd64.tar.gz
-          retention-days: 7
-
-      - name: Upload macOS arm64
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-        with:
-          name: unquote-macos-arm64
-          path: tui/dist/unquote_*_darwin_arm64.tar.gz
+          name: unquote-macos-universal
+          path: tui/dist/unquote_*_darwin_all.tar.gz
           retention-days: 7
 
       - name: Upload Windows amd64
@@ -205,7 +198,7 @@ jobs:
 
             **Platforms built:**
             - Linux (amd64, arm64)
-            - macOS (amd64, arm64)
+            - macOS (universal)
             - Windows (amd64)
 
             [Download artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})

@@ -30,6 +30,9 @@ builds:
       - -X 'github.com/bojanrajkovic/unquote/tui/internal/version.Commit={{.ShortCommit}}'
       - -X 'github.com/bojanrajkovic/unquote/tui/internal/version.Date={{.Date}}'
 
+universal_binaries:
+  - replace: true
+
 archives:
   - id: default
     formats:

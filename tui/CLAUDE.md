@@ -94,7 +94,7 @@ Triggered automatically when you open a PR that modifies files in `tui/` or `.gi
 
 3. **Build Snapshot** - Runs after CI passes
    - Calculates alpha version from commit history
-   - Builds cross-platform binaries via goreleaser (Linux amd64/arm64, macOS amd64/arm64, Windows amd64)
+   - Builds cross-platform binaries via goreleaser (Linux amd64/arm64, macOS universal, Windows amd64)
    - Uploads artifacts to GitHub Actions (7-day retention)
    - Posts/updates PR comment with download links
 
