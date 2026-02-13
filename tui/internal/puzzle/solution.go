@@ -9,7 +9,7 @@ func AssembleSolution(cells []Cell) string {
 	builder.Grow(len(cells))
 
 	for _, cell := range cells {
-		if cell.Kind == CellLetter {
+		if cell.Kind == CellLetter || cell.Kind == CellHint {
 			if cell.Input != 0 {
 				builder.WriteRune(cell.Input)
 			} else {
@@ -26,17 +26,20 @@ func AssembleSolution(cells []Cell) string {
 // IsComplete checks if all letter cells have been filled in
 func IsComplete(cells []Cell) bool {
 	for _, cell := range cells {
-		if cell.Kind == CellLetter && cell.Input == 0 {
+		if (cell.Kind == CellLetter || cell.Kind == CellHint) && cell.Input == 0 {
 			return false
 		}
 	}
 	return true
 }
 
-// ClearAllInput resets all user input in the cells
+// ClearAllInput resets all user input in regular letter cells.
+// Hint cells are left untouched.
 func ClearAllInput(cells []Cell) {
 	for i := range cells {
-		cells[i].Input = 0
+		if cells[i].Kind == CellLetter {
+			cells[i].Input = 0
+		}
 	}
 }
 

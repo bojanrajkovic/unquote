@@ -240,3 +240,125 @@ func TestBuildCellsNilHints(t *testing.T) {
 		}
 	}
 }
+
+func TestNextLetterCellSkipsHints(t *testing.T) {
+	// "ABC" with A and C as hints — only B (index 1) is CellLetter
+	hints := map[rune]rune{'A': 'X', 'C': 'Z'}
+	cells := BuildCells("ABC", hints)
+
+	tests := []struct {
+		name       string
+		currentPos int
+		expected   int
+	}{
+		{"from hint A finds letter B", 0, 1},
+		{"from letter B finds nothing", 1, -1},
+		{"from hint C finds nothing", 2, -1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := NextLetterCell(cells, tt.currentPos)
+			if result != tt.expected {
+				t.Errorf("NextLetterCell(%d) = %d, expected %d", tt.currentPos, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestPrevLetterCellSkipsHints(t *testing.T) {
+	// "ABC" with A and C as hints — only B (index 1) is CellLetter
+	hints := map[rune]rune{'A': 'X', 'C': 'Z'}
+	cells := BuildCells("ABC", hints)
+
+	tests := []struct {
+		name       string
+		currentPos int
+		expected   int
+	}{
+		{"from hint C finds letter B", 2, 1},
+		{"from letter B finds nothing", 1, -1},
+		{"from hint A finds nothing", 0, -1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := PrevLetterCell(cells, tt.currentPos)
+			if result != tt.expected {
+				t.Errorf("PrevLetterCell(%d) = %d, expected %d", tt.currentPos, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestFirstLetterCellSkipsHints(t *testing.T) {
+	tests := []struct {
+		hints    map[rune]rune
+		name     string
+		input    string
+		expected int
+	}{
+		{map[rune]rune{'A': 'X'}, "first cell is hint", "ABC", 1},
+		{map[rune]rune{'A': 'X', 'B': 'Y'}, "all cells are hints", "AB", -1},
+		{nil, "no hints", "ABC", 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cells := BuildCells(tt.input, tt.hints)
+			result := FirstLetterCell(cells)
+			if result != tt.expected {
+				t.Errorf("FirstLetterCell = %d, expected %d", result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestLastLetterCellSkipsHints(t *testing.T) {
+	tests := []struct {
+		hints    map[rune]rune
+		name     string
+		input    string
+		expected int
+	}{
+		{map[rune]rune{'C': 'Z'}, "last cell is hint", "ABC", 1},
+		{map[rune]rune{'A': 'X', 'B': 'Y'}, "all cells are hints", "AB", -1},
+		{nil, "no hints", "ABC", 2},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cells := BuildCells(tt.input, tt.hints)
+			result := LastLetterCell(cells)
+			if result != tt.expected {
+				t.Errorf("LastLetterCell = %d, expected %d", result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestNextUnfilledLetterCellSkipsHints(t *testing.T) {
+	// "ABC" with A as hint, B filled, C unfilled
+	hints := map[rune]rune{'A': 'X'}
+	cells := BuildCells("ABC", hints)
+	cells[1].Input = 'Y' // B is filled
+
+	tests := []struct {
+		name       string
+		currentPos int
+		expected   int
+	}{
+		{"from hint A skips to unfilled C", 0, 2},
+		{"from filled B finds unfilled C", 1, 2},
+		{"from unfilled C finds nothing", 2, -1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := NextUnfilledLetterCell(cells, tt.currentPos)
+			if result != tt.expected {
+				t.Errorf("NextUnfilledLetterCell(%d) = %d, expected %d", tt.currentPos, result, tt.expected)
+			}
+		})
+	}
+}
