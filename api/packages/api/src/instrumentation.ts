@@ -15,10 +15,13 @@ if (process.env["OTEL_DEBUG"]) {
 }
 
 import { NodeSDK } from "@opentelemetry/sdk-node";
-import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { resourceFromAttributes } from "@opentelemetry/resources";
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from "@opentelemetry/semantic-conventions";
+import { FastifyInstrumentation } from "@opentelemetry/instrumentation-fastify";
+import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
+import { PinoInstrumentation } from "@opentelemetry/instrumentation-pino";
+import { UndiciInstrumentation } from "@opentelemetry/instrumentation-undici";
 
 // Read service metadata from package.json using fs for ESM compatibility
 const currentDir = dirname(fileURLToPath(import.meta.url));
@@ -34,7 +37,7 @@ const serviceVersion = packageJson.version;
 // Configure OTLP exporter - only if endpoint is configured
 const otlpEndpoint = process.env["OTEL_EXPORTER_OTLP_ENDPOINT"];
 
-// Create SDK with auto-instrumentations
+// Create SDK with selective instrumentations
 const sdkConfig = {
   resource: resourceFromAttributes({
     [ATTR_SERVICE_NAME]: serviceName,
@@ -46,24 +49,16 @@ const sdkConfig = {
     }),
   }),
   instrumentations: [
-    getNodeAutoInstrumentations({
-      // Enable Fastify instrumentation (disabled by default in auto-instrumentations)
-      "@opentelemetry/instrumentation-fastify": {
-        enabled: true,
-      },
-      // Configure Pino instrumentation to add trace context to logs
-      "@opentelemetry/instrumentation-pino": {
-        logKeys: {
-          traceId: "trace_id",
-          spanId: "span_id",
-          traceFlags: "trace_flags",
-        },
-      },
-      // Disable fs instrumentation (too verbose)
-      "@opentelemetry/instrumentation-fs": {
-        enabled: false,
+    new HttpInstrumentation(),
+    new FastifyInstrumentation(),
+    new PinoInstrumentation({
+      logKeys: {
+        traceId: "trace_id",
+        spanId: "span_id",
+        traceFlags: "trace_flags",
       },
     }),
+    new UndiciInstrumentation(),
   ],
 };
 

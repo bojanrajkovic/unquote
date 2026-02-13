@@ -14,6 +14,13 @@
     "test": "pnpm -r run test",
     "typecheck": "pnpm -r run typecheck"
   },
+  "pnpm": {
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "@scalar/fastify-api-reference"
+      ]
+    }
+  },
   "devDependencies": {
     "@tsconfig/node24": "catalog:build",
     "@tsconfig/strictest": "catalog:build",
