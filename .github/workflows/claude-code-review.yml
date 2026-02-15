@@ -8,6 +8,7 @@ permissions: {} # job-level permissions only
 
 jobs:
   claude-review:
+    if: github.actor != 'renovate[bot]'
     runs-on: ubuntu-latest
     permissions:
       contents: read
