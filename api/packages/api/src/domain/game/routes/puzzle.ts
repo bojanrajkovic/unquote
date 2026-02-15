@@ -34,6 +34,7 @@ async function generatePuzzleResponse(
     date: dateStr,
     encryptedText: puzzle.encryptedText,
     author: quote.author,
+    category: quote.category,
     difficulty: quote.difficulty,
     hints: puzzle.hints.map((hint) => ({
       cipherLetter: hint.cipherLetter.toUpperCase(),

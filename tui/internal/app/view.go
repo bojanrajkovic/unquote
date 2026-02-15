@@ -99,9 +99,9 @@ func (m Model) viewError() string {
 func (m Model) viewPlaying() string {
 	header := m.renderHeader()
 
-	// Difficulty
+	// Category and Difficulty
 	diffText := puzzle.DifficultyText(m.puzzle.Difficulty)
-	difficulty := ui.DifficultyStyle.Render(fmt.Sprintf("Difficulty: %s", diffText))
+	difficulty := ui.DifficultyStyle.Render(fmt.Sprintf("%s · Difficulty: %s", m.puzzle.Category, diffText))
 
 	// Timer
 	timer := ui.TimerStyle.Render(fmt.Sprintf("Time: %s", formatElapsed(m.Elapsed())))
