@@ -120,16 +120,13 @@ jobs:
           change_path: "api/"
           version_format: "${major}.${minor}.${patch}"
 
-      - name: Enable corepack
-        run: corepack enable
-
       - name: Update package.json versions
         working-directory: api
         run: |
           VERSION="${STEPS_VERSION_OUTPUTS_VERSION}"
           echo "Updating package.json versions to $VERSION"
-          pnpm --filter='@unquote/api' version "$VERSION" --no-git-tag-version
-          pnpm --filter='@unquote/game-generator' version "$VERSION" --no-git-tag-version
+          npm version "$VERSION" --no-git-tag-version --prefix packages/api
+          npm version "$VERSION" --no-git-tag-version --prefix packages/game-generator
         env:
           STEPS_VERSION_OUTPUTS_VERSION: ${{ steps.version.outputs.version }}
 
