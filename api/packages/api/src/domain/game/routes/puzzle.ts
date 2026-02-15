@@ -43,13 +43,17 @@ async function generatePuzzleResponse(
   };
 }
 
+/** Date range for random puzzle generation. */
+const RANDOM_DATE_START = DateTime.utc(2020, 1, 1);
+
 /**
  * Routes for puzzle retrieval.
  * - GET /today - today's puzzle
+ * - GET /random - a random puzzle
  * - GET /:date - puzzle for specific date
  *
- * IMPORTANT: /today must be registered BEFORE /:date to prevent
- * "today" from being captured as a date parameter.
+ * IMPORTANT: /today and /random must be registered BEFORE /:date to prevent
+ * them from being captured as a date parameter.
  */
 const puzzleRoutesPlugin: FastifyPluginAsync = async (fastify) => {
   /**
@@ -84,6 +88,51 @@ const puzzleRoutesPlugin: FastifyPluginAsync = async (fastify) => {
 
       try {
         return await generatePuzzleResponse(today, gameGenerator, quoteSource);
+      } catch (error) {
+        if (error instanceof Error && error.message === "quote not found for generated puzzle") {
+          throw fastify.httpErrors.internalServerError(error.message);
+        }
+        throw error;
+      }
+    },
+  });
+
+  /**
+   * GET /random
+   * Returns a random cryptoquip puzzle.
+   * Picks a random date between 2020-01-01 and today.
+   */
+  fastify.route<{
+    Reply: PuzzleResponse;
+  }>({
+    method: "GET",
+    url: "/random",
+    schema: {
+      response: {
+        200: PuzzleResponseSchema,
+      },
+    },
+    oas: {
+      operationId: "getRandomPuzzle",
+      tags: ["game"],
+      summary: "Get a random puzzle",
+      description: "Retrieves a cryptoquip puzzle for a randomly selected date",
+    },
+    handler: async (request) => {
+      const deps = request.deps;
+      if (!deps) {
+        throw fastify.httpErrors.internalServerError("dependency injection not initialized");
+      }
+
+      const { gameGenerator, quoteSource } = deps;
+
+      const today = DateTime.utc().startOf("day");
+      const totalDays = today.diff(RANDOM_DATE_START, "days").days;
+      const randomOffset = Math.floor(Math.random() * (totalDays + 1));
+      const randomDate = RANDOM_DATE_START.plus({ days: randomOffset });
+
+      try {
+        return await generatePuzzleResponse(randomDate, gameGenerator, quoteSource);
       } catch (error) {
         if (error instanceof Error && error.message === "quote not found for generated puzzle") {
           throw fastify.httpErrors.internalServerError(error.message);

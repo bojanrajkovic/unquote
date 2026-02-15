@@ -21,6 +21,7 @@ func main() {
 
 	// Define flags
 	insecure := flag.Bool("insecure", false, "allow insecure HTTP connections to non-localhost hosts")
+	random := flag.Bool("random", false, "play a random puzzle instead of today's")
 	showVersion := flag.Bool("version", false, "print version information and exit")
 	flag.Parse()
 
@@ -35,6 +36,7 @@ func main() {
 	// Create options and pass to app.New()
 	opts := app.Options{
 		Insecure: *insecure,
+		Random:   *random,
 	}
 	model, err := app.New(opts)
 	if err != nil {

@@ -28,6 +28,7 @@ const (
 // Options configures the application behavior.
 type Options struct {
 	Insecure bool
+	Random   bool
 }
 
 // Model holds the application state

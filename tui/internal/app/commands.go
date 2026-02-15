@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -10,6 +11,8 @@ import (
 	"github.com/bojanrajkovic/unquote/tui/internal/storage"
 )
 
+const maxRandomRetries = 50
+
 // fetchPuzzleCmd creates a command to fetch today's puzzle
 func fetchPuzzleCmd(client *api.Client) tea.Cmd {
 	return func() tea.Msg {
@@ -18,6 +21,31 @@ func fetchPuzzleCmd(client *api.Client) tea.Cmd {
 			return errMsg{err: err}
 		}
 		return puzzleFetchedMsg{puzzle: puzzle}
+	}
+}
+
+// fetchRandomPuzzleCmd creates a command to fetch a random puzzle,
+// retrying until it finds one that hasn't been played before.
+func fetchRandomPuzzleCmd(client *api.Client) tea.Cmd {
+	return func() tea.Msg {
+		for range maxRandomRetries {
+			puzzle, err := client.FetchRandomPuzzle()
+			if err != nil {
+				return errMsg{err: err}
+			}
+
+			played, err := storage.SessionExists(puzzle.ID)
+			if err != nil {
+				// Storage errors are best-effort; treat as unplayed
+				return puzzleFetchedMsg{puzzle: puzzle}
+			}
+
+			if !played {
+				return puzzleFetchedMsg{puzzle: puzzle}
+			}
+		}
+
+		return errMsg{err: fmt.Errorf("could not find an unplayed puzzle after %d attempts", maxRandomRetries)}
 	}
 }
 
