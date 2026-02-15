@@ -15,6 +15,9 @@ import (
 
 // Init is called when the program starts
 func (m Model) Init() tea.Cmd {
+	if m.opts.Random {
+		return fetchRandomPuzzleCmd(m.client)
+	}
 	return fetchPuzzleCmd(m.client)
 }
 
@@ -124,6 +127,9 @@ func (m Model) handleErrorKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		// Retry on error
 		m.state = StateLoading
 		m.errorMsg = ""
+		if m.opts.Random {
+			return m, fetchRandomPuzzleCmd(m.client)
+		}
 		return m, fetchPuzzleCmd(m.client)
 	}
 	return m, nil

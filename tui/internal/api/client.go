@@ -129,6 +129,29 @@ func (c *Client) FetchPuzzleByDate(date string) (*Puzzle, error) {
 	return &puzzle, nil
 }
 
+// FetchRandomPuzzle retrieves a random puzzle
+func (c *Client) FetchRandomPuzzle() (*Puzzle, error) {
+	url := fmt.Sprintf("%s/game/random", c.baseURL)
+
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch puzzle: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("server returned %d: %s", resp.StatusCode, string(body))
+	}
+
+	var puzzle Puzzle
+	if err := json.NewDecoder(io.LimitReader(resp.Body, maxResponseBytes)).Decode(&puzzle); err != nil {
+		return nil, fmt.Errorf("failed to parse puzzle response: %w", err)
+	}
+
+	return &puzzle, nil
+}
+
 // CheckSolution validates the user's solution against the API
 func (c *Client) CheckSolution(gameID, solution string) (*CheckResponse, error) {
 	url := fmt.Sprintf("%s/game/%s/check", c.baseURL, gameID)
