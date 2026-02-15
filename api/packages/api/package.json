@@ -36,6 +36,7 @@
     "@opentelemetry/instrumentation-http": "catalog:prod",
     "@opentelemetry/instrumentation-pino": "catalog:prod",
     "@opentelemetry/instrumentation-undici": "catalog:prod",
+    "@opentelemetry/resource-detector-container": "catalog:prod",
     "@opentelemetry/resources": "catalog:prod",
     "@opentelemetry/sdk-node": "catalog:prod",
     "@opentelemetry/semantic-conventions": "catalog:prod",

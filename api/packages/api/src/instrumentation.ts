@@ -16,7 +16,14 @@ if (process.env["OTEL_DEBUG"]) {
 
 import { NodeSDK } from "@opentelemetry/sdk-node";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
-import { resourceFromAttributes } from "@opentelemetry/resources";
+import { containerDetector } from "@opentelemetry/resource-detector-container";
+import {
+  envDetector,
+  hostDetector,
+  osDetector,
+  processDetector,
+  resourceFromAttributes,
+} from "@opentelemetry/resources";
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from "@opentelemetry/semantic-conventions";
 import { FastifyInstrumentation } from "@opentelemetry/instrumentation-fastify";
 import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
@@ -43,6 +50,7 @@ const sdkConfig = {
     [ATTR_SERVICE_NAME]: serviceName,
     [ATTR_SERVICE_VERSION]: serviceVersion,
   }),
+  resourceDetectors: [envDetector, processDetector, hostDetector, osDetector, containerDetector],
   ...(otlpEndpoint && {
     traceExporter: new OTLPTraceExporter({
       url: `${otlpEndpoint}/v1/traces`,

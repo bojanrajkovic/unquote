@@ -81,6 +81,9 @@ catalogs:
     '@opentelemetry/instrumentation-undici':
       specifier: ^0.21.0
       version: 0.21.0
+    '@opentelemetry/resource-detector-container':
+      specifier: ^0.8.2
+      version: 0.8.2
     '@opentelemetry/resources':
       specifier: ^2.5.0
       version: 2.5.0
@@ -209,6 +212,9 @@ importers:
       '@opentelemetry/instrumentation-undici':
         specifier: catalog:prod
         version: 0.21.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/resource-detector-container':
+        specifier: catalog:prod
+        version: 0.8.2(@opentelemetry/api@1.9.0)
       '@opentelemetry/resources':
         specifier: catalog:prod
         version: 2.5.0(@opentelemetry/api@1.9.0)
@@ -798,6 +804,12 @@ packages:
     engines: {node: ^18.19.0 || >=20.6.0}
     peerDependencies:
       '@opentelemetry/api': '>=1.0.0 <1.10.0'
+
+  '@opentelemetry/resource-detector-container@0.8.2':
+    resolution: {integrity: sha512-8oT0tUO+QS8Tz7u0YQZKoZOpS+LIgS4FnLjWSCPyXPOgKuOeOK5Xe0sd0ulkAGPN4yKr7toNYNVkBeaC/HlmFQ==}
+    engines: {node: ^18.19.0 || >=20.6.0}
+    peerDependencies:
+      '@opentelemetry/api': ^1.0.0
 
   '@opentelemetry/resources@2.5.0':
     resolution: {integrity: sha512-F8W52ApePshpoSrfsSk1H2yJn9aKjCrbpQF1M9Qii0GHzbfVeFUB+rc3X4aggyZD8x9Gu3Slua+s6krmq6Dt8g==}
@@ -2403,6 +2415,12 @@ snapshots:
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/core': 2.5.0(@opentelemetry/api@1.9.0)
+
+  '@opentelemetry/resource-detector-container@0.8.2(@opentelemetry/api@1.9.0)':
+    dependencies:
+      '@opentelemetry/api': 1.9.0
+      '@opentelemetry/core': 2.5.1(@opentelemetry/api@1.9.0)
+      '@opentelemetry/resources': 2.5.0(@opentelemetry/api@1.9.0)
 
   '@opentelemetry/resources@2.5.0(@opentelemetry/api@1.9.0)':
     dependencies:
