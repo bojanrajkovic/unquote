@@ -50,6 +50,8 @@
     "typebox": "catalog:prod"
   },
   "devDependencies": {
+    "@opentelemetry/context-async-hooks": "catalog:testing",
+    "@opentelemetry/sdk-trace-base": "catalog:testing",
     "@tsconfig/node24": "catalog:build",
     "@tsconfig/strictest": "catalog:build",
     "@types/luxon": "catalog:build",

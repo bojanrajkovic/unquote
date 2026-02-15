@@ -246,6 +246,12 @@ importers:
         specifier: catalog:prod
         version: 1.0.81
     devDependencies:
+      '@opentelemetry/context-async-hooks':
+        specifier: catalog:testing
+        version: 2.5.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/sdk-trace-base':
+        specifier: catalog:testing
+        version: 2.5.0(@opentelemetry/api@1.9.0)
       '@tsconfig/node24':
         specifier: catalog:build
         version: 24.0.4
