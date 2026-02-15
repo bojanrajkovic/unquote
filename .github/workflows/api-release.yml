@@ -120,6 +120,13 @@ jobs:
           change_path: "api/"
           version_format: "${major}.${minor}.${patch}"
 
+      - name: Generate release token
+        id: app-token
+        uses: actions/create-github-app-token@df432ceedc7162793a195dd1713ff69aefc7379e # v2.0.6
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - name: Update package.json versions
         working-directory: api
         run: |
@@ -134,7 +141,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git remote set-url origin "https://x-access-token:${APP_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
           VERSION="${STEPS_VERSION_OUTPUTS_VERSION}"
           TAG="api-v${VERSION}"
@@ -144,7 +151,7 @@ jobs:
           git tag -a "$TAG" -m "Release $TAG"
           git push origin HEAD:main "$TAG"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APP_TOKEN: ${{ steps.app-token.outputs.token }}
           STEPS_VERSION_OUTPUTS_VERSION: ${{ steps.version.outputs.version }}
 
   docker-build:
