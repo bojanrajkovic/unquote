@@ -5,6 +5,7 @@ import { KeywordCipherGenerator } from "@unquote/game-generator";
 import type { AppConfig } from "../config/index.js";
 import { JsonQuoteSource } from "../sources/json-quote-source.js";
 import { StaticKeywordSource } from "../sources/static-keyword-source.js";
+import { tracedProxy } from "../tracing/traced-proxy.js";
 
 /**
  * Singleton cradle containing application-lifetime dependencies.
@@ -34,11 +35,12 @@ export async function configureContainer(
   });
 
   // Construct and eagerly validate quotes file (fail-fast at startup)
-  const quoteSource = new JsonQuoteSource(config.QUOTES_FILE_PATH);
-  await quoteSource.ensureLoaded();
+  const rawQuoteSource = new JsonQuoteSource(config.QUOTES_FILE_PATH);
+  await rawQuoteSource.ensureLoaded();
+  const quoteSource = tracedProxy<QuoteSource>(rawQuoteSource, "QuoteSource");
 
   // Static keyword source wraps the hardcoded KEYWORDS constant
-  const keywordSource = new StaticKeywordSource();
+  const keywordSource = tracedProxy<KeywordSource>(new StaticKeywordSource(), "KeywordSource");
 
   container.register({
     // Configuration and logger as values (already instantiated)
