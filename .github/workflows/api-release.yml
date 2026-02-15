@@ -120,15 +120,32 @@ jobs:
           change_path: "api/"
           version_format: "${major}.${minor}.${patch}"
 
-      - name: Create and push tag
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Update package.json versions
+        working-directory: api
+        run: |
+          VERSION="${STEPS_VERSION_OUTPUTS_VERSION}"
+          echo "Updating package.json versions to $VERSION"
+          pnpm --filter='@unquote/api' version "$VERSION" --no-git-tag-version
+          pnpm --filter='@unquote/game-generator' version "$VERSION" --no-git-tag-version
+        env:
+          STEPS_VERSION_OUTPUTS_VERSION: ${{ steps.version.outputs.version }}
+
+      - name: Commit version bump, tag, and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          TAG="api-v${STEPS_VERSION_OUTPUTS_VERSION}"
-          echo "Creating tag: $TAG"
+
+          VERSION="${STEPS_VERSION_OUTPUTS_VERSION}"
+          TAG="api-v${VERSION}"
+
+          git add api/packages/api/package.json api/packages/game-generator/package.json
+          git commit -m "chore(api): bump version to ${VERSION} [skip ci]"
           git tag -a "$TAG" -m "Release $TAG"
-          git push origin "$TAG"
+          git push origin HEAD:main "$TAG"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           STEPS_VERSION_OUTPUTS_VERSION: ${{ steps.version.outputs.version }}
@@ -152,6 +169,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          ref: api-v${{ needs.release.outputs.version }}
           persist-credentials: false
 
       - name: Set up Docker Buildx

@@ -45,6 +45,10 @@ Test data and fixtures shared across packages live in `api/resources/`:
 
 Both `@unquote/api` and `@unquote/game-generator` tests can reference this location.
 
+## Docker / Podman
+
+- Fastify binds `0.0.0.0` (IPv4 only). Podman's `-p 3000:3000` maps IPv4 by default, so `curl localhost` may fail on systems where it resolves to `::1` (IPv6). Use `curl -4 http://localhost:3000` or `curl http://127.0.0.1:3000` when testing locally.
+
 ## Key Files
 
 - `src/index.ts` - Server entry point, plugin registration
