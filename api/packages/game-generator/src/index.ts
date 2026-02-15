@@ -16,3 +16,6 @@ export { KEYWORDS } from "./data/keywords.js";
 
 // Pure functions
 export { validateSolution } from "./validation.js";
+
+// Tracing
+export { traced, withSpan } from "./tracing.js";

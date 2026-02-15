@@ -4,6 +4,7 @@ import type { QuoteSource } from "../quotes/types.js";
 import type { GameGenerator, KeywordSource } from "./types.js";
 import { hashString, createSeededRng, selectFromArray } from "../random.js";
 import { generateHints } from "../hints/generator.js";
+import { withSpan } from "../tracing.js";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -13,7 +14,7 @@ const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
  * Example: keyword "PUZZLE" → "PUZZLEABCDFGHIJKMNOQRSTVWXY"
  * (Note: duplicate letters in keyword are kept as-is, remaining letters fill gaps)
  */
-function buildCipherAlphabet(keyword: string): string {
+const buildCipherAlphabet = withSpan("buildCipherAlphabet", (_span, keyword: string): string => {
   const upperKeyword = keyword.toUpperCase();
   const usedLetters = new Set<string>();
   let cipherAlphabet = "";
@@ -34,7 +35,7 @@ function buildCipherAlphabet(keyword: string): string {
   }
 
   return cipherAlphabet;
-}
+});
 
 /**
  * Eliminate self-mappings (where a letter maps to itself) by swapping
@@ -46,7 +47,7 @@ function swapChars(chars: string[], i: number, j: number): void {
   chars[j] = tmp;
 }
 
-function eliminateSelfMappings(cipherAlphabet: string): string {
+const eliminateSelfMappings = withSpan("eliminateSelfMappings", (_span, cipherAlphabet: string): string => {
   const chars = [...cipherAlphabet];
 
   for (let i = 0; i < chars.length; i++) {
@@ -79,12 +80,12 @@ function eliminateSelfMappings(cipherAlphabet: string): string {
   }
 
   return chars.join("");
-}
+});
 
 /**
  * Build a mapping from plaintext letters to ciphertext letters.
  */
-function buildCipherMapping(cipherAlphabet: string): CipherMapping {
+const buildCipherMapping = withSpan("buildCipherMapping", (_span, cipherAlphabet: string): CipherMapping => {
   const fixedAlphabet = eliminateSelfMappings(cipherAlphabet);
   const mapping: Record<string, string> = {};
 
@@ -98,14 +99,14 @@ function buildCipherMapping(cipherAlphabet: string): CipherMapping {
   }
 
   return mapping;
-}
+});
 
 /**
  * Encrypt text using a cipher mapping.
  * Preserves non-letter characters (spaces, punctuation).
  * Always outputs uppercase letters for consistency with the cipher alphabet.
  */
-function encryptText(text: string, mapping: CipherMapping): string {
+const encryptText = withSpan("encryptText", (_span, text: string, mapping: CipherMapping): string => {
   return [...text]
     .map((char) => {
       const lower = char.toLowerCase();
@@ -117,7 +118,7 @@ function encryptText(text: string, mapping: CipherMapping): string {
       return char;
     })
     .join("");
-}
+});
 
 /**
  * Generates puzzles using keyword substitution cipher.
