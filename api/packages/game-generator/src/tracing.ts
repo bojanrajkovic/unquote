@@ -4,6 +4,56 @@ import type { Span } from "@opentelemetry/api";
 const tracer = trace.getTracer("@unquote/game-generator");
 
 /**
+ * Execute a callback inside an active span, handling sync/async results and errors.
+ * This is the shared core for both `traced` and `withSpan`.
+ */
+function executeInSpan<R>(name: string, callback: (span: Span) => R): R {
+  const result = tracer.startActiveSpan(name, (span) => {
+    try {
+      const callbackResult = callback(span);
+
+      if (
+        callbackResult !== null &&
+        typeof callbackResult === "object" &&
+        "then" in callbackResult &&
+        typeof callbackResult.then === "function"
+      ) {
+        const promise = callbackResult as unknown as Promise<unknown>;
+        return promise
+          .then((value) => {
+            span.end();
+            return value;
+          })
+          .catch((error: unknown) => {
+            recordException(span, error);
+            span.setStatus({ code: SpanStatusCode.ERROR });
+            span.end();
+            throw error;
+          });
+      } else {
+        span.end();
+        return callbackResult;
+      }
+    } catch (error) {
+      recordException(span, error);
+      span.setStatus({ code: SpanStatusCode.ERROR });
+      span.end();
+      throw error;
+    }
+  });
+
+  return result as R;
+}
+
+function recordException(span: Span, error: unknown): void {
+  if (error instanceof Error || typeof error === "string") {
+    span.recordException(error);
+  } else {
+    span.recordException(new Error(String(error)));
+  }
+}
+
+/**
  * Class method decorator that wraps the method with automatic span creation.
  * The span name is derived from the class name and method name.
  *
@@ -22,59 +72,9 @@ function traced<This extends { constructor: { name: string } }, Args extends Arr
   const methodName = String(context.name);
 
   return function (this: This, ...args: Args): Return {
-    const className = this.constructor.name;
-    const spanName = `${className}.${methodName}`;
-
-    const result = tracer.startActiveSpan(spanName, (span) => {
-      try {
-        const methodResult = target.call(this, ...args);
-
-        // Check if result is a thenable (Promise-like)
-        if (
-          methodResult !== null &&
-          typeof methodResult === "object" &&
-          "then" in methodResult &&
-          typeof methodResult.then === "function"
-        ) {
-          // Handle async result
-          const promise = methodResult as unknown as Promise<unknown>;
-          return promise
-            .then((value) => {
-              span.end();
-              return value;
-            })
-            .catch((error: unknown) => {
-              recordException(span, error);
-              span.setStatus({ code: SpanStatusCode.ERROR });
-              span.end();
-              throw error;
-            });
-        } else {
-          // Handle sync result
-          span.end();
-          return methodResult;
-        }
-      } catch (error) {
-        recordException(span, error);
-        span.setStatus({ code: SpanStatusCode.ERROR });
-        span.end();
-        throw error;
-      }
-    });
-
-    return result as Return;
+    const spanName = `${this.constructor.name}.${methodName}`;
+    return executeInSpan(spanName, () => target.call(this, ...args));
   };
-}
-
-/**
- * Helper function to safely record exceptions with proper typing.
- */
-function recordException(span: Span, error: unknown): void {
-  if (error instanceof Error || typeof error === "string") {
-    span.recordException(error);
-  } else {
-    span.recordException(new Error(String(error)));
-  }
 }
 
 /**
@@ -93,44 +93,7 @@ function withSpan<Args extends Array<unknown>, Return>(
   fn: (span: Span, ...args: Args) => Return,
 ): (...args: Args) => Return {
   return (...args: Args): Return => {
-    const result = tracer.startActiveSpan(name, (span) => {
-      try {
-        const fnResult = fn(span, ...args);
-
-        // Check if result is a thenable (Promise-like)
-        if (
-          fnResult !== null &&
-          typeof fnResult === "object" &&
-          "then" in fnResult &&
-          typeof fnResult.then === "function"
-        ) {
-          // Handle async result
-          const promise = fnResult as unknown as Promise<unknown>;
-          return promise
-            .then((value) => {
-              span.end();
-              return value;
-            })
-            .catch((error: unknown) => {
-              recordException(span, error);
-              span.setStatus({ code: SpanStatusCode.ERROR });
-              span.end();
-              throw error;
-            });
-        } else {
-          // Handle sync result
-          span.end();
-          return fnResult;
-        }
-      } catch (error) {
-        recordException(span, error);
-        span.setStatus({ code: SpanStatusCode.ERROR });
-        span.end();
-        throw error;
-      }
-    });
-
-    return result as Return;
+    return executeInSpan(name, (span) => fn(span, ...args));
   };
 }
 
