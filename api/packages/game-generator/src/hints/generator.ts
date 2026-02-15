@@ -1,6 +1,5 @@
 import type { CipherMapping, Hint } from "../types.js";
 import { LETTER_FREQUENCY } from "../difficulty/letter-data.js";
-import type { Span } from "@opentelemetry/api";
 import { withSpan } from "../tracing.js";
 
 const DEFAULT_HINT_COUNT = 2;
@@ -17,7 +16,7 @@ const DEFAULT_HINT_COUNT = 2;
  */
 export const generateHints = withSpan(
   "generateHints",
-  (_span: Span, mapping: CipherMapping, ciphertext: string, count: number = DEFAULT_HINT_COUNT): Hint[] => {
+  (_span, mapping: CipherMapping, ciphertext: string, count: number = DEFAULT_HINT_COUNT): Hint[] => {
     if (count <= 0) {
       return [];
     }

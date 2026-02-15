@@ -1,5 +1,4 @@
 import { timingSafeEqual } from "node:crypto";
-import type { Span } from "@opentelemetry/api";
 import { withSpan } from "./tracing.js";
 
 /**
@@ -25,7 +24,7 @@ function normalizeText(text: string): string {
  */
 export const validateSolution = withSpan(
   "validateSolution",
-  (_span: Span, submission: string, originalQuote: string): boolean => {
+  (_span, submission: string, originalQuote: string): boolean => {
     const normalizedSubmission = normalizeText(submission);
     const normalizedOriginal = normalizeText(originalQuote);
 

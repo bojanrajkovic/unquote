@@ -115,6 +115,9 @@ catalogs:
       specifier: ^1.0.13
       version: 1.0.81
   testing:
+    '@opentelemetry/context-async-hooks':
+      specifier: ^2.5.0
+      version: 2.5.0
     '@opentelemetry/sdk-trace-base':
       specifier: ^2.5.0
       version: 2.5.0
@@ -289,6 +292,9 @@ importers:
         specifier: catalog:prod
         version: 1.0.81
     devDependencies:
+      '@opentelemetry/context-async-hooks':
+        specifier: catalog:testing
+        version: 2.5.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-trace-base':
         specifier: catalog:testing
         version: 2.5.0(@opentelemetry/api@1.9.0)

@@ -4,13 +4,15 @@ import { fileURLToPath } from "node:url";
 import { DateTime } from "luxon";
 import { beforeAll, describe, expect, it } from "vitest";
 import { BasicTracerProvider, InMemorySpanExporter, SimpleSpanProcessor } from "@opentelemetry/sdk-trace-base";
-import { trace } from "@opentelemetry/api";
+import { AsyncLocalStorageContextManager } from "@opentelemetry/context-async-hooks";
+import { context, trace } from "@opentelemetry/api";
 import type { Quote } from "./types.js";
 import { KeywordCipherGenerator } from "./cipher/keyword-cipher.js";
 import type { KeywordSource } from "./cipher/types.js";
 import { InMemoryQuoteSource } from "./quotes/in-memory-source.js";
 import { KEYWORDS } from "./data/keywords.js";
 import { validateSolution } from "./validation.js";
+import { traced, withSpan } from "./tracing.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -24,6 +26,10 @@ describe("game-tracing span tree integration tests", () => {
   const keywordSource: KeywordSource = { getKeywords: async () => KEYWORDS };
 
   beforeAll(async () => {
+    // Set up context manager for parent-child span propagation
+    const contextManager = new AsyncLocalStorageContextManager();
+    context.setGlobalContextManager(contextManager);
+
     // Set up in-memory OTel SDK
     exporter = new InMemorySpanExporter();
     const tracerProvider = new BasicTracerProvider({
@@ -80,9 +86,8 @@ describe("game-tracing span tree integration tests", () => {
       expect(genPuzzleSpan).toBeDefined();
       if (genPuzzleSpan && genDailySpan) {
         const parentCtx = genPuzzleSpan.parentSpanContext;
-        if (parentCtx) {
-          expect(parentCtx.spanId).toBe(genDailySpan.spanContext().spanId);
-        }
+        expect(parentCtx).toBeDefined();
+        expect(parentCtx?.spanId).toBe(genDailySpan.spanContext().spanId);
       }
 
       // buildCipherAlphabet should be child of generatePuzzle
@@ -90,9 +95,8 @@ describe("game-tracing span tree integration tests", () => {
       expect(buildAlphabetSpan).toBeDefined();
       if (buildAlphabetSpan && genPuzzleSpan) {
         const parentCtx = buildAlphabetSpan.parentSpanContext;
-        if (parentCtx) {
-          expect(parentCtx.spanId).toBe(genPuzzleSpan.spanContext().spanId);
-        }
+        expect(parentCtx).toBeDefined();
+        expect(parentCtx?.spanId).toBe(genPuzzleSpan.spanContext().spanId);
       }
 
       // buildCipherMapping should be child of generatePuzzle
@@ -100,9 +104,8 @@ describe("game-tracing span tree integration tests", () => {
       expect(buildMappingSpan).toBeDefined();
       if (buildMappingSpan && genPuzzleSpan) {
         const parentCtx = buildMappingSpan.parentSpanContext;
-        if (parentCtx) {
-          expect(parentCtx.spanId).toBe(genPuzzleSpan.spanContext().spanId);
-        }
+        expect(parentCtx).toBeDefined();
+        expect(parentCtx?.spanId).toBe(genPuzzleSpan.spanContext().spanId);
       }
 
       // eliminateSelfMappings should be child of buildCipherMapping
@@ -110,9 +113,8 @@ describe("game-tracing span tree integration tests", () => {
       expect(eliminateSpan).toBeDefined();
       if (eliminateSpan && buildMappingSpan) {
         const parentCtx = eliminateSpan.parentSpanContext;
-        if (parentCtx) {
-          expect(parentCtx.spanId).toBe(buildMappingSpan.spanContext().spanId);
-        }
+        expect(parentCtx).toBeDefined();
+        expect(parentCtx?.spanId).toBe(buildMappingSpan.spanContext().spanId);
       }
 
       // encryptText should be child of generatePuzzle
@@ -120,9 +122,8 @@ describe("game-tracing span tree integration tests", () => {
       expect(encryptSpan).toBeDefined();
       if (encryptSpan && genPuzzleSpan) {
         const parentCtx = encryptSpan.parentSpanContext;
-        if (parentCtx) {
-          expect(parentCtx.spanId).toBe(genPuzzleSpan.spanContext().spanId);
-        }
+        expect(parentCtx).toBeDefined();
+        expect(parentCtx?.spanId).toBe(genPuzzleSpan.spanContext().spanId);
       }
 
       // generateHints should be child of generatePuzzle
@@ -130,9 +131,8 @@ describe("game-tracing span tree integration tests", () => {
       expect(hintsSpan).toBeDefined();
       if (hintsSpan && genPuzzleSpan) {
         const parentCtx = hintsSpan.parentSpanContext;
-        if (parentCtx) {
-          expect(parentCtx.spanId).toBe(genPuzzleSpan.spanContext().spanId);
-        }
+        expect(parentCtx).toBeDefined();
+        expect(parentCtx?.spanId).toBe(genPuzzleSpan.spanContext().spanId);
       }
 
       // Puzzle should be valid
@@ -165,49 +165,74 @@ describe("game-tracing span tree integration tests", () => {
 
   describe("game-tracing.AC4.3: custom attributes on spans", () => {
     it("allows setting custom attributes via span parameter in withSpan", async () => {
-      // This test verifies that the span parameter is available in withSpan-wrapped functions
-      // We'll use the existing validateSolution which is wrapped with withSpan
-      // and relies on the span being available for future attribute setting
-
       // Reset exporter
       exporter.reset();
 
-      // We need to create a test that actually sets an attribute
-      // Let's call validateSolution which is wrapped with withSpan
-      const quote = allQuotes[0]!;
-      validateSolution(quote.text, quote.text);
+      // Create a test-local function wrapped with withSpan that sets a custom attribute
+      const testAttributeKey = "test.custom.key";
+      const testAttributeValue = "test.custom.value";
+
+      const testFunction = withSpan("testAttributeSpan", (span, value: string) => {
+        span.setAttribute(testAttributeKey, value);
+        return value;
+      });
+
+      // Call the test function
+      testFunction(testAttributeValue);
 
       await exporter.forceFlush();
 
+      // Verify the span was created with the custom attribute
       const spans = exporter.getFinishedSpans();
-      const validateSpan = spans.find((s) => s.name === "validateSolution");
+      const testSpan = spans.find((s) => s.name === "testAttributeSpan");
 
-      // Verify the span exists (indicating withSpan wrapper works)
-      expect(validateSpan).toBeDefined();
-      // Note: We're testing that the span infrastructure is in place.
-      // Actual attribute setting would require modifying the source code temporarily.
+      expect(testSpan).toBeDefined();
+      expect(testSpan?.attributes).toBeDefined();
+      expect(testSpan?.attributes?.[testAttributeKey]).toBe(testAttributeValue);
     });
 
-    it("allows accessing and modifying spans via trace.getActiveSpan() in @traced methods", async () => {
-      // Create a test puzzle to verify span attributes can be set
+    it("allows setting custom attributes via span parameter in @traced decorated methods", async () => {
+      // Reset exporter
       exporter.reset();
 
-      const date = DateTime.fromISO("2026-02-15");
-      const puzzle = await generator.generateDailyPuzzle(date);
+      // The @traced decorator wraps methods and creates spans automatically.
+      // To set custom attributes, create a helper function wrapped with withSpan
+      // that receives the span parameter and returns a value
+      const testAttributeKey = "test.traced.key";
+      const testAttributeValue = "test.traced.value";
+
+      const tracedHelper = withSpan("tracedHelperSpan", (span, message: string) => {
+        span.setAttribute(testAttributeKey, message);
+        return message;
+      });
+
+      class TestTracedClass {
+        @traced
+        async testMethod(): Promise<string> {
+          // Call the traced helper to set custom attributes
+          const result = tracedHelper(testAttributeValue);
+          return result;
+        }
+      }
+
+      // Call the traced method
+      const testClass = new TestTracedClass();
+      await testClass.testMethod();
 
       await exporter.forceFlush();
 
-      // The span should have been created
+      // Verify both the traced method span and the helper span were created
       const spans = exporter.getFinishedSpans();
-      expect(spans.length).toBeGreaterThan(0);
 
-      // Verify generateDailyPuzzle span exists
-      const rootSpans = spans.filter((s) => s.name === "KeywordCipherGenerator.generateDailyPuzzle");
-      expect(rootSpans.length).toBeGreaterThan(0);
+      // Check the helper span was created with the attribute
+      const helperSpan = spans.find((s) => s.name === "tracedHelperSpan");
+      expect(helperSpan).toBeDefined();
+      expect(helperSpan?.attributes).toBeDefined();
+      expect(helperSpan?.attributes?.[testAttributeKey]).toBe(testAttributeValue);
 
-      // Puzzle should be valid
-      expect(puzzle.encryptedText).toBeDefined();
-      expect(puzzle.mapping).toBeDefined();
+      // Check the traced method span was also created
+      const methodSpan = spans.find((s) => s.name === "TestTracedClass.testMethod");
+      expect(methodSpan).toBeDefined();
     });
   });
 });
