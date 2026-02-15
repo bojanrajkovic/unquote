@@ -12,6 +12,7 @@ type Puzzle struct {
 	Date          string `json:"date"`
 	EncryptedText string `json:"encryptedText"`
 	Author        string `json:"author"`
+	Category      string `json:"category"`
 	Hints         []Hint `json:"hints"`
 	Difficulty    int    `json:"difficulty"`
 }

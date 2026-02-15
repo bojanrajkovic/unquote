@@ -28,6 +28,7 @@ export const PuzzleResponseSchema = schemaType(
       date: Type.String({ format: "date", description: "ISO date (YYYY-MM-DD)" }),
       encryptedText: Type.String({ description: "Encrypted quote text" }),
       author: Type.String({ description: "Quote author" }),
+      category: Type.String({ description: "Quote category (e.g. inspiration, humor)" }),
       difficulty: Type.Number({ minimum: 0, maximum: 100 }),
       hints: Type.Array(HintSchema),
     },
