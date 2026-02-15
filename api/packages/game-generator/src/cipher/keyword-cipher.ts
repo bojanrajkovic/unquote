@@ -4,7 +4,7 @@ import type { QuoteSource } from "../quotes/types.js";
 import type { GameGenerator, KeywordSource } from "./types.js";
 import { hashString, createSeededRng, selectFromArray } from "../random.js";
 import { generateHints } from "../hints/generator.js";
-import { withSpan } from "../tracing.js";
+import { traced, withSpan } from "../tracing.js";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -129,6 +129,7 @@ export class KeywordCipherGenerator implements GameGenerator {
     private readonly keywordSource: KeywordSource,
   ) {}
 
+  @traced
   async generatePuzzle(quote: Quote, seed?: string): Promise<Puzzle> {
     // Load keywords from source
     const keywords = await this.keywordSource.getKeywords();
@@ -156,6 +157,7 @@ export class KeywordCipherGenerator implements GameGenerator {
     };
   }
 
+  @traced
   async generateDailyPuzzle(date: DateTime): Promise<Puzzle> {
     // Create date seed in YYYY-MM-DD format using Luxon
     const dateSeed = date.toISODate();
