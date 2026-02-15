@@ -16,6 +16,9 @@ docs/implementation-plans/
 .env*
 !.env.example
 
+# OS
+.DS_Store
+
 # Go
 bin/
 tui/unquote-tui

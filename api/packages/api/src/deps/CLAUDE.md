@@ -1,6 +1,6 @@
 # Dependency Injection
 
-Last verified: 2026-02-10
+Last verified: 2026-02-14
 
 ## Purpose
 
@@ -9,12 +9,12 @@ Manages application dependencies with lifetime-aware scoping. Singleton services
 ## Contracts
 
 - **Exposes**: `configureContainer()` (async), `configureRequestScope()`, `registerDependencyInjection` plugin, `AppSingletonCradle`, `AppRequestCradle` types
-- **Guarantees**: Fastify type extensions make `fastify.deps` and `request.deps` typed. Request scopes are created in `onRequest` and disposed in `onResponse`. Quote source is eagerly loaded and validated at startup (fail-fast).
+- **Guarantees**: Fastify type extensions make `fastify.deps` and `request.deps` typed. Request scopes are created in `onRequest` and disposed in `onResponse`. Quote source is eagerly loaded and validated at startup (fail-fast). DI services (`quoteSource`, `keywordSource`) are wrapped with `tracedProxy` for automatic OpenTelemetry span creation on method calls.
 - **Expects**: Valid `AppConfig` and Pino logger at container creation. Plugin registered after `@fastify/env`.
 
 ## Dependencies
 
-- **Uses**: Awilix, `@unquote/game-generator` (QuoteSource, KeywordSource, GameGenerator), local `sources/` module (JsonQuoteSource, StaticKeywordSource), config module
+- **Uses**: Awilix, `@unquote/game-generator` (QuoteSource, KeywordSource, GameGenerator), local `sources/` module (JsonQuoteSource, StaticKeywordSource), local `tracing/` module (tracedProxy), config module
 - **Used by**: All route handlers (via `request.deps`), server startup
 - **Boundary**: Do NOT import Fastify request/reply types here; this is framework-agnostic DI
 

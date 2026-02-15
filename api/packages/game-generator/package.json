@@ -1,6 +1,6 @@
 {
   "name": "@unquote/game-generator",
-  "version": "0.1.0",
+  "version": "0.1.6",
   "private": true,
   "files": [
     "dist",
@@ -26,10 +26,13 @@
     "format": "oxfmt ."
   },
   "dependencies": {
+    "@opentelemetry/api": "catalog:prod",
     "luxon": "catalog:prod",
     "typebox": "catalog:prod"
   },
   "devDependencies": {
+    "@opentelemetry/context-async-hooks": "catalog:testing",
+    "@opentelemetry/sdk-trace-base": "catalog:testing",
     "@tsconfig/node24": "catalog:build",
     "@tsconfig/strictest": "catalog:build",
     "@types/luxon": "catalog:build",

@@ -1,4 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
+import { withSpan } from "./tracing.js";
 
 /**
  * Normalize text for comparison.
@@ -21,19 +22,22 @@ function normalizeText(text: string): string {
  * @param originalQuote - The original quote text
  * @returns true if the solution matches, false otherwise
  */
-export function validateSolution(submission: string, originalQuote: string): boolean {
-  const normalizedSubmission = normalizeText(submission);
-  const normalizedOriginal = normalizeText(originalQuote);
+export const validateSolution = withSpan(
+  "validateSolution",
+  (_span, submission: string, originalQuote: string): boolean => {
+    const normalizedSubmission = normalizeText(submission);
+    const normalizedOriginal = normalizeText(originalQuote);
 
-  const submissionBuffer = Buffer.from(normalizedSubmission, "utf-8");
-  const originalBuffer = Buffer.from(normalizedOriginal, "utf-8");
+    const submissionBuffer = Buffer.from(normalizedSubmission, "utf-8");
+    const originalBuffer = Buffer.from(normalizedOriginal, "utf-8");
 
-  const maxLength = Math.max(submissionBuffer.length, originalBuffer.length);
-  const paddedSubmission = Buffer.alloc(maxLength);
-  const paddedOriginal = Buffer.alloc(maxLength);
+    const maxLength = Math.max(submissionBuffer.length, originalBuffer.length);
+    const paddedSubmission = Buffer.alloc(maxLength);
+    const paddedOriginal = Buffer.alloc(maxLength);
 
-  submissionBuffer.copy(paddedSubmission);
-  originalBuffer.copy(paddedOriginal);
+    submissionBuffer.copy(paddedSubmission);
+    originalBuffer.copy(paddedOriginal);
 
-  return timingSafeEqual(paddedSubmission, paddedOriginal) && submissionBuffer.length === originalBuffer.length;
-}
+    return timingSafeEqual(paddedSubmission, paddedOriginal) && submissionBuffer.length === originalBuffer.length;
+  },
+);

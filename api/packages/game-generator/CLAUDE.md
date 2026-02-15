@@ -1,6 +1,6 @@
 # Game Generator
 
-Last verified: 2026-02-10
+Last verified: 2026-02-14
 
 ## Purpose
 
@@ -8,15 +8,15 @@ Transforms quotes into cryptoquip puzzles with deterministic daily generation. E
 
 ## Contracts
 
-- **Exposes**: `Quote`, `Puzzle`, `Hint`, `CipherMapping` types; `QuoteSchema` schema; `QuoteSource` abstract class (with `ensureLoaded()`, `getQuote()`, `getRandomQuote()` concrete methods); `GameGenerator`, `KeywordSource` interfaces; `KeywordCipherGenerator`, `InMemoryQuoteSource` implementations; `KEYWORDS` constant; `validateSolution` function
+- **Exposes**: `Quote`, `Puzzle`, `Hint`, `CipherMapping` types; `QuoteSchema` schema; `QuoteSource` abstract class (with `ensureLoaded()`, `getQuote()`, `getRandomQuote()` concrete methods); `GameGenerator`, `KeywordSource` interfaces; `KeywordCipherGenerator`, `InMemoryQuoteSource` implementations; `KEYWORDS` constant; `validateSolution` function; `traced` decorator and `withSpan` higher-order function (tracing utilities)
 - **Guarantees**: Same seed produces identical cipher mapping. Daily puzzles are deterministic by date. Cipher mappings are bijective (no letter maps to itself or shares a mapping).
 - **Expects**: Valid Quote objects with id, text, author, category, difficulty. Luxon DateTime for daily puzzle generation.
 
 ## Dependencies
 
-- **Uses**: Luxon (DateTime), TypeBox (schema validation), fast-check (property testing)
+- **Uses**: Luxon (DateTime), TypeBox (schema validation), OpenTelemetry API (tracing spans), fast-check (property testing)
 - **Used by**: API package (via DI container as `quoteSource`, `keywordSource`, and `gameGenerator` singletons)
-- **Boundary**: Pure library with no I/O; defines `QuoteSource` abstract class and `KeywordSource` interface as contracts; implementations live in the api package
+- **Boundary**: Pure library with no I/O; defines `QuoteSource` abstract class and `KeywordSource` interface as contracts; implementations live in the api package. Tracing is opt-in via OpenTelemetry API (no-op when no SDK is registered).
 
 ## Shared Resources
 
@@ -44,6 +44,7 @@ Test and development quote data lives in `api/resources/quotes.json` (shared acr
 ## Key Files
 
 - `src/index.ts` - Public exports
+- `src/tracing.ts` - `@traced` class method decorator and `withSpan` higher-order function for OpenTelemetry spans
 - `src/types.ts` - Core types (Quote, Puzzle, Hint, CipherMapping)
 - `src/schemas.ts` - TypeBox validation schemas (QuoteSchema)
 - `src/cipher/types.ts` - GameGenerator and KeywordSource interfaces
