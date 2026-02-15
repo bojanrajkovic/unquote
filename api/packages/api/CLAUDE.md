@@ -1,6 +1,6 @@
 # API Server
 
-Last verified: 2026-02-10
+Last verified: 2026-02-14
 
 ## Purpose
 
@@ -52,6 +52,7 @@ Both `@unquote/api` and `@unquote/game-generator` tests can reference this locat
 - `src/domain/game/game-id.ts` - Sqids-based date encoding for opaque game IDs
 - `src/routes/health.ts` - Health check endpoint (no DI dependencies)
 - `src/sources/` - Data source implementations (JsonQuoteSource, StaticKeywordSource)
+- `src/tracing/` - Tracing utilities (`tracedProxy` for DI service instrumentation)
 - `src/deps/` - Awilix dependency injection configuration
 - `src/config/` - Environment variable schema and validation
 - `tests/helpers/` - Test utilities including DI container factory

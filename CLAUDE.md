@@ -1,6 +1,6 @@
 # Unquote
 
-Last verified: 2026-02-08
+Last verified: 2026-02-14
 
 A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encrypted quotes by substituting letters.
 
@@ -48,7 +48,7 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 - **Security**: helmet, cors, rate limiting (per-IP, configurable via env vars), under-pressure
 - **Configuration**: `@fastify/env` with TypeBox schema validation (fail-fast on missing required vars)
 - **DI**: Awilix with singleton + request scopes (see `src/deps/CLAUDE.md`)
-- **Observability**: OpenTelemetry auto-instrumentation (traces, Pino log correlation)
+- **Observability**: OpenTelemetry traces (auto-instrumentation + manual spans via `tracedProxy` and game-generator's `@traced`/`withSpan`), Pino log correlation
 - **Port**: 3000 (default, configurable via PORT env var)
 
 ### Environment Variables
