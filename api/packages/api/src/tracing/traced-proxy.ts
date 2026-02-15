@@ -13,7 +13,7 @@ import type { Span } from "@opentelemetry/api";
  * @returns A Proxy that instruments method calls on the target
  *
  * @example
- * const quoter Source = new JsonQuoteSource(path);
+ * const quoteSource = new JsonQuoteSource(path);
  * const proxied = tracedProxy(quoteSource, "QuoteSource");
  * // Calling proxied.getQuote() creates a span named "QuoteSource.getQuote"
  */
