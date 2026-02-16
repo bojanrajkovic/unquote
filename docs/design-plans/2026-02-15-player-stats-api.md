@@ -14,7 +14,7 @@ REST endpoints for player registration (`POST /player`), session recording (`POS
 
 ### player-stats-api.AC1: Player Registration
 - **player-stats-api.AC1.1 Success:** `POST /player` returns 201 with a claim code in `ADJECTIVE-NOUN-NNNN` format
-- **player-stats-api.AC1.2 Failure:** `POST /player` returns 503 when `DATABASE_URL` is not configured
+- **player-stats-api.AC1.2 Failure:** `POST /player` returns 503 when database is unavailable (`DatabaseUnavailableError` from PlayerStore)
 
 ### player-stats-api.AC2: Session Recording
 - **player-stats-api.AC2.1 Success:** `POST /player/:code/session` with a new game returns 201 Created
@@ -28,6 +28,7 @@ REST endpoints for player registration (`POST /player`), session recording (`POS
 - **player-stats-api.AC3.2 Success:** `recentSolves` contains last 30 days of solve times ordered by date ascending
 - **player-stats-api.AC3.3 Edge:** Stats for a player with zero solves returns zeroed counts and null for bestTime/averageTime
 - **player-stats-api.AC3.4 Failure:** `GET /player/:code/stats` with unknown claim code returns 404
+- **player-stats-api.AC3.5 Failure:** `GET /player/:code/stats` returns 503 when database is unavailable
 
 ### player-stats-api.AC4: Health Endpoints
 - **player-stats-api.AC4.1 Success:** `GET /health/live` always returns `200 { status: "ok" }`
