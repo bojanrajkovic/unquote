@@ -18,6 +18,7 @@ import { healthRoutes } from "../../../routes/health.js";
  */
 describe("OpenAPI schema", () => {
   let fastify: FastifyInstance;
+  let specResponse: Awaited<ReturnType<FastifyInstance["inject"]>>;
 
   beforeAll(async () => {
     const quotesPath = getTestQuotesPath();
@@ -50,34 +51,29 @@ describe("OpenAPI schema", () => {
     await fastify.register(registerPlayerRoutes, { prefix: "/player" });
     await fastify.register(healthRoutes, { prefix: "/health" });
     await fastify.ready();
+
+    specResponse = await fastify.inject({
+      method: "GET",
+      url: "/openapi.json",
+    });
   });
 
   afterAll(async () => {
     await fastify.close();
   });
 
-  it("returns OpenAPI specification", async () => {
-    const response = await fastify.inject({
-      method: "GET",
-      url: "/openapi.json",
-    });
-
-    expect(response.statusCode).toBe(200);
-
-    const spec = response.json();
+  it("returns OpenAPI specification", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
+    const spec: any = specResponse.json();
     expect(spec).toHaveProperty("openapi");
     expect(spec).toHaveProperty("info");
     expect(spec).toHaveProperty("paths");
     expect(spec.info.title).toBe("Unquote API");
   });
 
-  it("OpenAPI spec is valid JSON schema", async () => {
-    const response = await fastify.inject({
-      method: "GET",
-      url: "/openapi.json",
-    });
-
-    const spec = response.json();
+  it("OpenAPI spec is valid JSON schema", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
+    const spec: any = specResponse.json();
 
     // Verify basic OpenAPI structure
     expect(spec.openapi).toBeTruthy();
@@ -88,13 +84,9 @@ describe("OpenAPI schema", () => {
     expect(typeof spec).toBe("object");
   });
 
-  it("includes operation metadata for GET /game/today", async () => {
-    const response = await fastify.inject({
-      method: "GET",
-      url: "/openapi.json",
-    });
-
-    const spec = response.json();
+  it("includes operation metadata for GET /game/today", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
+    const spec: any = specResponse.json();
     const todayPath = spec.paths["/game/today"];
 
     expect(todayPath).toBeDefined();
@@ -103,13 +95,9 @@ describe("OpenAPI schema", () => {
     expect(todayPath.get.tags).toContain("game");
   });
 
-  it("includes operation metadata for GET /game/{date}", async () => {
-    const response = await fastify.inject({
-      method: "GET",
-      url: "/openapi.json",
-    });
-
-    const spec = response.json();
+  it("includes operation metadata for GET /game/{date}", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
+    const spec: any = specResponse.json();
     const datePath = spec.paths["/game/{date}"];
 
     expect(datePath).toBeDefined();
@@ -118,13 +106,9 @@ describe("OpenAPI schema", () => {
     expect(datePath.get.tags).toContain("game");
   });
 
-  it("includes operation metadata for POST /game/{id}/check", async () => {
-    const response = await fastify.inject({
-      method: "GET",
-      url: "/openapi.json",
-    });
-
-    const spec = response.json();
+  it("includes operation metadata for POST /game/{id}/check", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
+    const spec: any = specResponse.json();
     const checkPath = spec.paths["/game/{id}/check"];
 
     expect(checkPath).toBeDefined();
@@ -142,13 +126,9 @@ describe("OpenAPI schema", () => {
     expect(response.statusCode).toBe(200);
   });
 
-  it("extracts named schemas to components", async () => {
-    const response = await fastify.inject({
-      method: "GET",
-      url: "/openapi.json",
-    });
-
-    const spec = response.json();
+  it("extracts named schemas to components", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
+    const spec: any = specResponse.json();
 
     // Verify schemas are extracted to components
     expect(spec.components?.schemas).toBeDefined();
@@ -157,13 +137,9 @@ describe("OpenAPI schema", () => {
     expect(spec.components.schemas.CheckResponse).toBeDefined();
   });
 
-  it("includes operation metadata for POST /player", async () => {
-    const response = await fastify.inject({
-      method: "GET",
-      url: "/openapi.json",
-    });
-
-    const spec = response.json();
+  it("includes operation metadata for POST /player", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
+    const spec: any = specResponse.json();
     const playerPath = spec.paths["/player"];
 
     expect(playerPath).toBeDefined();
@@ -171,13 +147,9 @@ describe("OpenAPI schema", () => {
     expect(playerPath.post.tags).toContain("player");
   });
 
-  it("includes operation metadata for POST /player/{code}/session", async () => {
-    const response = await fastify.inject({
-      method: "GET",
-      url: "/openapi.json",
-    });
-
-    const spec = response.json();
+  it("includes operation metadata for POST /player/{code}/session", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
+    const spec: any = specResponse.json();
     const sessionPath = spec.paths["/player/{code}/session"];
 
     expect(sessionPath).toBeDefined();
@@ -185,13 +157,9 @@ describe("OpenAPI schema", () => {
     expect(sessionPath.post.tags).toContain("player");
   });
 
-  it("includes operation metadata for GET /player/{code}/stats", async () => {
-    const response = await fastify.inject({
-      method: "GET",
-      url: "/openapi.json",
-    });
-
-    const spec = response.json();
+  it("includes operation metadata for GET /player/{code}/stats", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
+    const spec: any = specResponse.json();
     const statsPath = spec.paths["/player/{code}/stats"];
 
     expect(statsPath).toBeDefined();
@@ -199,13 +167,9 @@ describe("OpenAPI schema", () => {
     expect(statsPath.get.tags).toContain("player");
   });
 
-  it("includes operation metadata for GET /health/live", async () => {
-    const response = await fastify.inject({
-      method: "GET",
-      url: "/openapi.json",
-    });
-
-    const spec = response.json();
+  it("includes operation metadata for GET /health/live", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
+    const spec: any = specResponse.json();
     const livePath = spec.paths["/health/live"];
 
     expect(livePath).toBeDefined();
@@ -213,13 +177,9 @@ describe("OpenAPI schema", () => {
     expect(livePath.get.tags).toContain("health");
   });
 
-  it("includes operation metadata for GET /health/ready", async () => {
-    const response = await fastify.inject({
-      method: "GET",
-      url: "/openapi.json",
-    });
-
-    const spec = response.json();
+  it("includes operation metadata for GET /health/ready", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
+    const spec: any = specResponse.json();
     const readyPath = spec.paths["/health/ready"];
 
     expect(readyPath).toBeDefined();

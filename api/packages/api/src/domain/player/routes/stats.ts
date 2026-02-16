@@ -1,13 +1,21 @@
 import type { FastifyPluginAsync } from "fastify";
 
-import { ClaimCodeParamsSchema, PlayerStatsResponseSchema } from "./schemas.js";
+import {
+  ClaimCodeParamsSchema,
+  PlayerStatsResponseSchema,
+  type ClaimCodeParams,
+  type PlayerStatsResponse,
+} from "./schemas.js";
 import { DatabaseUnavailableError } from "../types.js";
 
 /**
  * Route plugin for GET /player/:code/stats (player statistics retrieval).
  */
 export const statsRoute: FastifyPluginAsync = async (fastify) => {
-  fastify.route({
+  fastify.route<{
+    Params: ClaimCodeParams;
+    Reply: PlayerStatsResponse;
+  }>({
     method: "GET",
     url: "/:code/stats",
     schema: {
@@ -33,7 +41,7 @@ export const statsRoute: FastifyPluginAsync = async (fastify) => {
         return reply.serviceUnavailable("database is not configured");
       }
 
-      const { code } = request.params as { code: string };
+      const { code } = request.params;
 
       try {
         const stats = await playerStore.getStats(code);

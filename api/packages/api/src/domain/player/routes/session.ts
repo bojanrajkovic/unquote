@@ -1,6 +1,13 @@
 import type { FastifyPluginAsync } from "fastify";
 
-import { ClaimCodeParamsSchema, RecordSessionRequestSchema, RecordSessionResponseSchema } from "./schemas.js";
+import {
+  ClaimCodeParamsSchema,
+  RecordSessionRequestSchema,
+  RecordSessionResponseSchema,
+  type ClaimCodeParams,
+  type RecordSessionRequest,
+  type RecordSessionResponse,
+} from "./schemas.js";
 import { DatabaseUnavailableError, PlayerNotFoundError } from "../types.js";
 import { decodeGameId } from "../../game/game-id.js";
 
@@ -8,7 +15,11 @@ import { decodeGameId } from "../../game/game-id.js";
  * Route plugin for POST /player/:code/session (session recording).
  */
 export const sessionRoute: FastifyPluginAsync = async (fastify) => {
-  fastify.route({
+  fastify.route<{
+    Params: ClaimCodeParams;
+    Body: RecordSessionRequest;
+    Reply: RecordSessionResponse;
+  }>({
     method: "POST",
     url: "/:code/session",
     schema: {
@@ -36,8 +47,8 @@ export const sessionRoute: FastifyPluginAsync = async (fastify) => {
         return reply.serviceUnavailable("database is not configured");
       }
 
-      const { code } = request.params as { code: string };
-      const { gameId, completionTime } = request.body as { gameId: string; completionTime: number };
+      const { code } = request.params;
+      const { gameId, completionTime } = request.body;
 
       // Server-side validation: ensure gameId encodes a valid date
       const decoded = decodeGameId(gameId);
