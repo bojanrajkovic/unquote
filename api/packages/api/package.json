@@ -3,7 +3,8 @@
   "version": "0.2.0",
   "private": true,
   "files": [
-    "dist"
+    "dist",
+    "db"
   ],
   "type": "module",
   "exports": {
@@ -40,8 +41,13 @@
     "@opentelemetry/resources": "catalog:prod",
     "@opentelemetry/sdk-node": "catalog:prod",
     "@opentelemetry/semantic-conventions": "catalog:prod",
+    "@kubiks/otel-drizzle": "catalog:prod",
+    "@opentelemetry/instrumentation-pg": "catalog:prod",
     "@unquote/game-generator": "workspace:*",
     "ajv-formats": "catalog:prod",
+    "drizzle-orm": "catalog:prod",
+    "pg": "catalog:prod",
+    "type-fest": "catalog:prod",
     "awilix": "catalog:prod",
     "fastify": "catalog:prod",
     "fastify-plugin": "catalog:prod",
@@ -51,14 +57,17 @@
     "typebox": "catalog:prod"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "catalog:testing",
     "@opentelemetry/context-async-hooks": "catalog:testing",
     "@opentelemetry/sdk-trace-base": "catalog:testing",
     "@tsconfig/node24": "catalog:build",
     "@tsconfig/strictest": "catalog:build",
     "@types/luxon": "catalog:build",
     "@types/node": "catalog:build",
+    "@types/pg": "catalog:build",
     "@vitest/coverage-v8": "catalog:testing",
     "ajv": "catalog:testing",
+    "drizzle-kit": "catalog:build",
     "fast-check": "catalog:testing",
     "rimraf": "catalog:build",
     "tsx": "catalog:build",
