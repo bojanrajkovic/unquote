@@ -20,7 +20,8 @@ REST endpoints for player registration (`POST /player`), session recording (`POS
 - **player-stats-api.AC2.1 Success:** `POST /player/:code/session` with a new game returns 201 Created
 - **player-stats-api.AC2.2 Success:** `POST /player/:code/session` with a previously recorded game returns 200 OK (no-op, no data modified)
 - **player-stats-api.AC2.3 Failure:** `POST /player/:code/session` with unknown claim code returns 404
-- **player-stats-api.AC2.4 Failure:** `POST /player/:code/session` returns 503 when database is unavailable
+- **player-stats-api.AC2.4 Failure:** `POST /player/:code/session` with invalid or non-existent `gameId` returns 404
+- **player-stats-api.AC2.5 Failure:** `POST /player/:code/session` returns 503 when database is unavailable
 
 ### player-stats-api.AC3: Stats Retrieval
 - **player-stats-api.AC3.1 Success:** `GET /player/:code/stats` returns aggregated stats including gamesPlayed, gamesSolved, winRate, currentStreak, bestStreak, bestTime, averageTime, and recentSolves
@@ -194,7 +195,7 @@ The `DATABASE_URL` environment variable is added to the config schema as part of
 **Components:**
 - Route schemas in `src/domain/player/routes/schemas.ts` using `schemaType()` and TypeBox
 - `POST /player` route in `src/domain/player/routes/register.ts` — creates player, returns claim code
-- `POST /player/:code/session` route in `src/domain/player/routes/session.ts` — records game session (201 Created new, 200 OK duplicate); maps PlayerStore's `"exists"` return value to `"recorded"` in the response schema
+- `POST /player/:code/session` route in `src/domain/player/routes/session.ts` — validates `gameId` against the game generator before recording; records game session (201 Created new, 200 OK duplicate); maps PlayerStore's `"exists"` return value to `"recorded"` in the response schema
 - `GET /player/:code/stats` route in `src/domain/player/routes/stats.ts` — returns aggregated stats and recent solves
 - Route aggregator in `src/domain/player/routes/index.ts` (`registerPlayerRoutes`)
 - Registration in `src/index.ts` under `/player` prefix
