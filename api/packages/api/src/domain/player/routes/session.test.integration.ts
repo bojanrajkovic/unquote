@@ -46,7 +46,7 @@ describe("session route (POST /:code/session)", () => {
         url: `/TEST-CODE-0000/session`,
         payload: {
           gameId: validGameId,
-          completionTime: 60000,
+          completionTime: 60_000,
         },
       });
 
@@ -77,7 +77,7 @@ describe("session route (POST /:code/session)", () => {
         url: `/TEST-CODE-0000/session`,
         payload: {
           gameId: validGameId,
-          completionTime: 60000,
+          completionTime: 60_000,
         },
       });
 
@@ -110,7 +110,7 @@ describe("session route (POST /:code/session)", () => {
         url: `/UNKNOWN-CODE-9999/session`,
         payload: {
           gameId: validGameId,
-          completionTime: 60000,
+          completionTime: 60_000,
         },
       });
 
@@ -135,7 +135,7 @@ describe("session route (POST /:code/session)", () => {
         url: `/TEST-CODE-0000/session`,
         payload: {
           gameId: "invalid-id",
-          completionTime: 60000,
+          completionTime: 60_000,
         },
       });
 
@@ -160,7 +160,7 @@ describe("session route (POST /:code/session)", () => {
         url: `/TEST-CODE-0000/session`,
         payload: {
           gameId: validGameId,
-          completionTime: 60000,
+          completionTime: 60_000,
         },
       });
 
