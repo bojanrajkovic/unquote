@@ -38,7 +38,8 @@ The TUI migrates from `flag` to cobra for subcommand support. `unquote` (no args
 - **player-stats-tui.AC5.1 Success:** On registration, TUI backfills pre-registration solved sessions to the server
 - **player-stats-tui.AC5.2 Success:** On each launch (when registered), sessions without `uploaded: true` are re-submitted
 - **player-stats-tui.AC5.3 Success:** Server returns 200 OK for already-recorded sessions, making reconciliation idempotent
-- **player-stats-tui.AC5.4 Failure:** Reconciliation errors are silently ignored — app launch is never blocked
+- **player-stats-tui.AC5.4 Edge:** Only sessions where `Solved: true` are reconciled — unsolved sessions are never sent to the server
+- **player-stats-tui.AC5.5 Failure:** Reconciliation errors are silently ignored — app launch is never blocked
 
 ## Glossary
 
@@ -165,6 +166,8 @@ A hint line appears on the solved screen if the player is NOT registered (no con
 ### Session Reconciliation
 
 On registration, the TUI scans local session files for solved games and bulk-submits them to the server (backfill of pre-registration history). On each subsequent launch (when registered), any solved sessions without `uploaded: true` are re-submitted. The server returns `200 OK` for already-recorded sessions, making reconciliation simple fire-and-forget. Reconciliation errors are silently ignored.
+
+Reconciliation runs as a non-blocking Bubble Tea `Cmd` — the puzzle loads concurrently and the user is never blocked waiting for reconciliation to complete.
 
 Only sessions where `Solved: true` and `Uploaded: false` (or field absent) are submitted during reconciliation. Unsolved sessions are never sent to the server.
 

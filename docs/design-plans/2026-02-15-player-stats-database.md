@@ -22,24 +22,32 @@ PostgreSQL connectivity is established via Drizzle ORM with `node-postgres`. Dat
 - **player-stats-database.AC2.1 Success:** `createPlayer()` returns a claim code in `ADJECTIVE-NOUN-NNNN` format
 - **player-stats-database.AC2.2 Success:** Generated claim code is unique across all players
 - **player-stats-database.AC2.3 Edge:** Claim code collision triggers retry and returns a different valid code
-- **player-stats-database.AC2.4 Failure:** `createPlayer()` throws when Drizzle instance is null (database unconfigured)
+- **player-stats-database.AC2.4 Failure:** `createPlayer()` throws `DatabaseUnavailableError` when Drizzle instance is null (database unconfigured)
 
 ### player-stats-database.AC3: Session Recording
 - **player-stats-database.AC3.1 Success:** `recordSession()` with a new game returns `"created"`
 - **player-stats-database.AC3.2 Success:** `recordSession()` with a previously recorded game returns `"exists"` (no data modified)
-- **player-stats-database.AC3.3 Failure:** `recordSession()` with unknown claim code returns `null` or throws (player not found)
+- **player-stats-database.AC3.3 Failure:** `recordSession()` with unknown claim code throws a domain error (player not found); the API layer catches this and returns 404
+- **player-stats-database.AC3.4 Failure:** `recordSession()` throws `DatabaseUnavailableError` when Drizzle instance is null (database unconfigured)
 
 ### player-stats-database.AC4: Stats Aggregation
 - **player-stats-database.AC4.1 Success:** `getStats()` returns gamesPlayed, gamesSolved, winRate, currentStreak, bestStreak, bestTime, averageTime, and recentSolves
 - **player-stats-database.AC4.2 Success:** `recentSolves` contains last 30 days of solve times ordered by date ascending
 - **player-stats-database.AC4.3 Edge:** Stats for a player with zero solves returns zeroed counts and null for bestTime/averageTime
 - **player-stats-database.AC4.4 Failure:** `getStats()` with unknown claim code returns `null`
+- **player-stats-database.AC4.5 Failure:** `getStats()` throws `DatabaseUnavailableError` when Drizzle instance is null (database unconfigured)
 
-### player-stats-database.AC5: Streak Calculation
-- **player-stats-database.AC5.1 Success:** Current streak increments for consecutive calendar days with a solve
-- **player-stats-database.AC5.2 Success:** Best streak reflects the longest consecutive run in history
-- **player-stats-database.AC5.3 Edge:** Streak resets to 0 when a day is missed
-- **player-stats-database.AC5.4 Edge:** Multiple solves on the same day count as one streak day
+### player-stats-database.AC6: Health Check
+- **player-stats-database.AC6.1 Success:** `checkHealth()` returns `{ status: "connected" }` when database connection succeeds
+- **player-stats-database.AC6.2 Failure:** `checkHealth()` returns `{ status: "error", error: "<message>" }` when database connection fails
+
+### player-stats-database.AC7: Streak Calculation
+- **player-stats-database.AC7.1 Success:** Current streak increments for consecutive calendar days with a solve
+- **player-stats-database.AC7.2 Success:** Best streak reflects the longest consecutive run in history
+- **player-stats-database.AC7.3 Edge:** Streak resets to 0 when a day is missed
+- **player-stats-database.AC7.4 Edge:** Multiple solves on the same day count as one streak day
+
+Note: Streak calculation uses UTC dates (derived from `solved_at` timestamp with timezone).
 
 ## Glossary
 
@@ -127,9 +135,13 @@ export const gameSessions = pgTable("game_sessions", {
 
 The `unique(playerId, gameId)` constraint enforces one session per player per game. The PlayerStore returns distinct results for new vs duplicate submissions, enabling simple fire-and-forget reconciliation from clients.
 
+**Indexes:** `players.claim_code` is implicitly indexed via the unique constraint. Consider adding an index on `game_sessions.solved_at` for date-range queries in streak calculation and recent solves.
+
+Duplicate session detection uses Drizzle's `onConflictDoNothing()` on the `(playerId, gameId)` unique constraint, returning `'exists'` when no row is inserted.
+
 ### DI Integration
 
-The Drizzle instance is registered in `AppSingletonCradle` as a lazy `Promise<Drizzle | null>` via `asValue()`. If `DATABASE_URL` is not set, it resolves to `null`. A `PlayerStore` service wraps the Drizzle instance and is also registered in the singleton container. Routes access it via `request.deps.playerStore`. The PlayerStore checks for null Drizzle and returns appropriate errors when the database is unavailable.
+The Drizzle instance is registered in `AppSingletonCradle` as a lazy `Promise<Drizzle | null>` via `asValue()`. If `DATABASE_URL` is not set, it resolves to `null`. A `PlayerStore` service wraps the Drizzle instance and is also registered in the singleton container. Routes access it via `request.deps.playerStore`. All PlayerStore methods throw a `DatabaseUnavailableError` when the Drizzle instance is `null`. The API layer catches this error and returns 503 Service Unavailable.
 
 The PlayerStore is wrapped with `tracedProxy` for automatic OTEL span creation on every method call, following the existing pattern for `gameGenerator`.
 
@@ -152,19 +164,35 @@ The advisory lock (magic number `42`, arbitrary but consistent) ensures only one
 
 `ADJECTIVE-NOUN-NNNN` format using curated word lists with a nerdy/cryptography theme (e.g., `CIPHER-TURING-7492`, `QUANTUM-HOPPER-3141`, `FRACTAL-ENIGMA-2718`). ~200-300 words per list × 10000 numbers = 500M+ combinations. Word lists bundled as TypeScript arrays. Generated server-side with collision check against the database and retry loop.
 
+Word lists are hardcoded TypeScript arrays in `claim-code.ts`. Adding or removing words is a code change requiring a new deployment.
+
 ### PlayerStore Contract
 
 The PlayerStore exposes these operations to downstream consumers (API routes):
 
 ```typescript
+interface PlayerStats {
+  gamesPlayed: number;
+  gamesSolved: number;
+  winRate: number; // 0-1
+  currentStreak: number;
+  bestStreak: number;
+  bestTime: number | null;
+  averageTime: number | null;
+  recentSolves: Array<{ date: string; completionTime: number }>;
+}
+
 interface PlayerStore {
   createPlayer(): Promise<{ claimCode: string }>;
   recordSession(claimCode: string, gameId: string, completionTime: number): Promise<"created" | "exists">;
   getStats(claimCode: string): Promise<PlayerStats | null>;
+  checkHealth(): Promise<{ status: "connected" | "error"; error?: string }>;
 }
 ```
 
 `recordSession` returns `"created"` for new sessions and `"exists"` for duplicates (unique constraint on `player_id, game_id`). `getStats` returns `null` for unknown claim codes. Stats include `gamesPlayed`, `gamesSolved`, `winRate`, `currentStreak`, `bestStreak`, `bestTime`, `averageTime`, and `recentSolves` (last 30 days).
+
+Note: when the Drizzle instance is `null` (database not configured), the health status `"unconfigured"` is handled at the DI level — `checkHealth()` is only called when a Drizzle instance is present.
 
 ## Existing Patterns
 
@@ -182,10 +210,10 @@ interface PlayerStore {
 
 **Components:**
 - Dependencies added to `api/packages/api/`: `drizzle-orm`, `pg`, `@types/pg`, `drizzle-kit` (dev), `@electric-sql/pglite` (testing), `type-fest`, `@kubiks/otel-drizzle`
-- `@opentelemetry/instrumentation-pg` added to instrumentation.ts for auto-instrumented pg spans
+- `@opentelemetry/instrumentation-pg` added to the `instrumentations` array in `instrumentation.ts` for auto-instrumented pg spans
 - Drizzle schema in `src/domain/player/schema.ts` — `players` and `gameSessions` tables with branded `PlayerId` and `GameSessionId` types via `$type<>()`
 - Branded type definitions in `src/domain/player/types.ts` — `PlayerId`, `GameSessionId`, `StringUUID` using `Tagged` from type-fest and TypeBox `schemaType()`
-- `drizzle.config.ts` at `api/packages/api/` level, migrations output to `db/migrations/`
+- `drizzle.config.ts` at `api/packages/api/` level, migrations output to `db/migrations/`; drizzle-kit generates timestamped migration files (e.g., `0000_migration_name.sql`) in `db/migrations/`
 - `DATABASE_URL` added as optional env var to config schema in `src/config/schema.ts`
 - Connection pool setup in `src/deps/singleton.ts` — registered as `asValue(Promise<Drizzle | null>)`, resolves to `null` when `DATABASE_URL` is not set
 - Migration runner with `pg_advisory_lock(42)` in `src/domain/player/migrator.ts`
@@ -204,8 +232,8 @@ interface PlayerStore {
 - `PlayerStore` service in `src/domain/player/store.ts` — CRUD operations for players and sessions, stats aggregation queries (streak calculation, averages, recent solves)
 - Claim code generator in `src/domain/player/claim-code.ts` — `ADJECTIVE-NOUN-NNNN` format with nerdy/crypto-themed word lists bundled as TypeScript arrays, collision retry loop
 - `PlayerStore` registered in `AppSingletonCradle` and DI container, wrapped with `tracedProxy` for automatic OTEL spans
-- `@kubiks/otel-drizzle` integration via `instrumentDrizzleClient()` for Drizzle-semantic spans
-- Test helpers updated with mock `PlayerStore` in `tests/helpers/`
+- `@kubiks/otel-drizzle` integration via `instrumentDrizzleClient()` wrapping the Drizzle instance during creation in `singleton.ts`, adding Drizzle-semantic spans (operation type, table name)
+- Mock PlayerStore in `tests/helpers/` returns: `createPlayer()` → fixed claim code `TEST-CODE-0000`, `recordSession()` → `"created"`, `getStats()` → fixture data with representative values, `checkHealth()` → `{ status: "connected" }`
 - PGlite-based integration tests for PlayerStore — verify all queries against real SQL, using snapshot/restore for test isolation
 
 **Dependencies:** Phase 1
@@ -218,3 +246,7 @@ interface PlayerStore {
 **Migration deployment:** Migrations auto-run at startup with advisory lock for safe concurrent execution across replicas. The `node dist/index.js migrate` CLI command enables a Kubernetes init container pattern for environments where auto-migration at startup is undesirable. Both paths use the same advisory-locked runner.
 
 **Terraform changes required:** The K8s deployment in `home.coderinserepeat.com/terraform/unquote/` needs a `DATABASE_URL` env var pointing to the CNPG cluster. A CNPG `Cluster` resource is also needed (separate Terraform or manual setup). These are infra concerns outside the scope of this design but required for deployment.
+
+**Connection pool shutdown:** The pg pool should be closed gracefully on SIGTERM, alongside the existing OpenTelemetry SDK shutdown in `instrumentation.ts`.
+
+**Migration rollback:** This design uses forward-only migrations. Drizzle Kit does not generate down migrations by default. If a migration needs to be reversed, a new forward migration should be written.
