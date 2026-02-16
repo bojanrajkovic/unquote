@@ -194,7 +194,7 @@ The `DATABASE_URL` environment variable is added to the config schema as part of
 **Components:**
 - Route schemas in `src/domain/player/routes/schemas.ts` using `schemaType()` and TypeBox
 - `POST /player` route in `src/domain/player/routes/register.ts` — creates player, returns claim code
-- `POST /player/:code/session` route in `src/domain/player/routes/session.ts` — records game session (201 Created new, 200 OK duplicate)
+- `POST /player/:code/session` route in `src/domain/player/routes/session.ts` — records game session (201 Created new, 200 OK duplicate); maps PlayerStore's `"exists"` return value to `"recorded"` in the response schema
 - `GET /player/:code/stats` route in `src/domain/player/routes/stats.ts` — returns aggregated stats and recent solves
 - Route aggregator in `src/domain/player/routes/index.ts` (`registerPlayerRoutes`)
 - Registration in `src/index.ts` under `/player` prefix
