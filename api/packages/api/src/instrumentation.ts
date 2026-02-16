@@ -29,6 +29,7 @@ import { FastifyInstrumentation } from "@opentelemetry/instrumentation-fastify";
 import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
 import { PinoInstrumentation } from "@opentelemetry/instrumentation-pino";
 import { UndiciInstrumentation } from "@opentelemetry/instrumentation-undici";
+import { PgInstrumentation } from "@opentelemetry/instrumentation-pg";
 
 // Read service metadata from package.json using fs for ESM compatibility
 const currentDir = dirname(fileURLToPath(import.meta.url));
@@ -67,6 +68,7 @@ const sdkConfig = {
       },
     }),
     new UndiciInstrumentation(),
+    new PgInstrumentation(),
   ],
 };
 

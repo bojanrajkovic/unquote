@@ -2,10 +2,15 @@ import { createContainer, asValue, asFunction, type AwilixContainer } from "awil
 import type { Logger } from "pino";
 import type { QuoteSource, GameGenerator, KeywordSource } from "@unquote/game-generator";
 import { KeywordCipherGenerator } from "@unquote/game-generator";
+import { Pool } from "pg";
+import { drizzle } from "drizzle-orm/node-postgres";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import { instrumentDrizzleClient } from "@kubiks/otel-drizzle";
 import type { AppConfig } from "../config/index.js";
 import { JsonQuoteSource } from "../sources/json-quote-source.js";
 import { StaticKeywordSource } from "../sources/static-keyword-source.js";
 import { tracedProxy } from "../tracing/traced-proxy.js";
+import { runMigrationsWithLock } from "../domain/player/migrator.js";
 
 /**
  * Singleton cradle containing application-lifetime dependencies.
@@ -19,17 +24,19 @@ export type AppSingletonCradle = {
   gameGenerator: GameGenerator;
 };
 
+type ContainerResult = {
+  container: AwilixContainer<AppSingletonCradle>;
+  shutdown: () => Promise<void>;
+};
+
 /**
  * Configure the singleton DI container with all application dependencies.
  *
  * @param config - Validated application configuration
  * @param logger - Pino logger instance from Fastify
- * @returns Configured Awilix container with typed cradle
+ * @returns Configured Awilix container with typed cradle and shutdown callback
  */
-export async function configureContainer(
-  config: AppConfig,
-  logger: Logger,
-): Promise<AwilixContainer<AppSingletonCradle>> {
+export async function configureContainer(config: AppConfig, logger: Logger): Promise<ContainerResult> {
   const container = createContainer<AppSingletonCradle>({
     strict: true,
   });
@@ -59,5 +66,37 @@ export async function configureContainer(
     ).singleton(),
   });
 
-  return container;
+  // Database setup — local to configureContainer, not registered in cradle
+  let db: NodePgDatabase | null = null;
+  let pool: Pool | null = null;
+
+  if (config.DATABASE_URL) {
+    pool = new Pool({
+      connectionString: config.DATABASE_URL,
+      max: 5,
+    });
+
+    // Handle unexpected pool errors (e.g., idle client disconnects).
+    // The `logger` reference here captures the container-level logger (not request-scoped),
+    // which is correct since pool errors occur outside request context.
+    pool.on("error", (err) => {
+      logger.error({ err }, "unexpected error on idle database client");
+    });
+
+    db = drizzle({ client: pool });
+    instrumentDrizzleClient(db);
+    await runMigrationsWithLock(db);
+    logger.info("database connected and migrations applied");
+  }
+
+  // No db registration — it's an implementation detail consumed only inside this function.
+  // Phase 2 Task 6 will create PgPlayerStore(db) here and register playerStore in the cradle.
+  return {
+    container,
+    shutdown: async () => {
+      if (pool) {
+        await pool.end();
+      }
+    },
+  };
 }
