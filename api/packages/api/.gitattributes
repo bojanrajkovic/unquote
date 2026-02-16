@@ -1,0 +1,2 @@
+# Drizzle Kit auto-generated migration metadata
+db/migrations/meta/*.json linguist-generated=true
