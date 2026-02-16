@@ -28,6 +28,9 @@ export const EnvSchema = Type.Object({
   // Optional: OpenTelemetry OTLP endpoint
   OTEL_EXPORTER_OTLP_ENDPOINT: Type.Optional(Type.String({ format: "uri" })),
 
+  // Optional: PostgreSQL connection string for player stats
+  DATABASE_URL: Type.Optional(Type.String()),
+
   // CORS allowed origins (comma-separated list, or "*" for all)
   CORS_ORIGIN: Type.String({
     default: "*",
