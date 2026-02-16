@@ -2,7 +2,7 @@ import { createContainer, asValue, asFunction, type AwilixContainer } from "awil
 import type { Logger } from "pino";
 import type { QuoteSource, GameGenerator, KeywordSource } from "@unquote/game-generator";
 import { KeywordCipherGenerator } from "@unquote/game-generator";
-import pg from "pg";
+import { Pool } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { instrumentDrizzleClient } from "@kubiks/otel-drizzle";
@@ -71,11 +71,10 @@ export async function configureContainer(config: AppConfig, logger: Logger): Pro
 
   // Database setup — local to configureContainer, not registered in cradle
   let db: NodePgDatabase | null = null;
-  let pool: pg.Pool | null = null;
+  let pool: Pool | null = null;
 
   if (config.DATABASE_URL) {
-    // eslint-disable-next-line import/no-named-as-default-member -- pg uses CJS default export
-    pool = new pg.Pool({
+    pool = new Pool({
       connectionString: config.DATABASE_URL,
       max: 5,
     });
