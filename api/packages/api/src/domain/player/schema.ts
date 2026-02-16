@@ -16,6 +16,7 @@ export const gameSessions = pgTable(
       .references(() => players.id)
       .$type<PlayerId>(),
     gameId: text("game_id").notNull(),
+    /** Solve time in milliseconds. */
     completionTime: integer("completion_time").notNull(),
     solvedAt: timestamp("solved_at", { withTimezone: true }).notNull().defaultNow(),
   },

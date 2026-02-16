@@ -39,9 +39,11 @@ export type PlayerStats = {
   winRate: number;
   currentStreak: number;
   bestStreak: number;
+  /** Best completion time in milliseconds, null if no solves. */
   bestTime: number | null;
+  /** Average completion time in milliseconds, null if no solves. */
   averageTime: number | null;
-  recentSolves: { date: string; completionTime: number }[];
+  recentSolves: { date: string; /** Completion time in milliseconds. */ completionTime: number }[];
 };
 
 /**
@@ -50,6 +52,7 @@ export type PlayerStats = {
  */
 export type PlayerStore = {
   createPlayer(): Promise<{ claimCode: string }>;
+  /** Record a game session. @param completionTime - Solve time in milliseconds. */
   recordSession(claimCode: string, gameId: string, completionTime: number): Promise<"created" | "exists">;
   getStats(claimCode: string): Promise<PlayerStats | null>;
   checkHealth(): Promise<{ status: "connected" | "error"; error?: string }>;
