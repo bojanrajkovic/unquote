@@ -63,8 +63,7 @@ describe("OpenAPI schema", () => {
   });
 
   it("returns OpenAPI specification", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
-    const spec: any = specResponse.json();
+    const spec = specResponse.json();
     expect(spec).toHaveProperty("openapi");
     expect(spec).toHaveProperty("info");
     expect(spec).toHaveProperty("paths");
@@ -72,8 +71,7 @@ describe("OpenAPI schema", () => {
   });
 
   it("OpenAPI spec is valid JSON schema", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
-    const spec: any = specResponse.json();
+    const spec = specResponse.json();
 
     // Verify basic OpenAPI structure
     expect(spec.openapi).toBeTruthy();
@@ -85,8 +83,7 @@ describe("OpenAPI schema", () => {
   });
 
   it("includes operation metadata for GET /game/today", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
-    const spec: any = specResponse.json();
+    const spec = specResponse.json();
     const todayPath = spec.paths["/game/today"];
 
     expect(todayPath).toBeDefined();
@@ -96,8 +93,7 @@ describe("OpenAPI schema", () => {
   });
 
   it("includes operation metadata for GET /game/{date}", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
-    const spec: any = specResponse.json();
+    const spec = specResponse.json();
     const datePath = spec.paths["/game/{date}"];
 
     expect(datePath).toBeDefined();
@@ -107,8 +103,7 @@ describe("OpenAPI schema", () => {
   });
 
   it("includes operation metadata for POST /game/{id}/check", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
-    const spec: any = specResponse.json();
+    const spec = specResponse.json();
     const checkPath = spec.paths["/game/{id}/check"];
 
     expect(checkPath).toBeDefined();
@@ -127,8 +122,7 @@ describe("OpenAPI schema", () => {
   });
 
   it("extracts named schemas to components", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
-    const spec: any = specResponse.json();
+    const spec = specResponse.json();
 
     // Verify schemas are extracted to components
     expect(spec.components?.schemas).toBeDefined();
@@ -138,8 +132,7 @@ describe("OpenAPI schema", () => {
   });
 
   it("includes operation metadata for POST /player", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
-    const spec: any = specResponse.json();
+    const spec = specResponse.json();
     const playerPath = spec.paths["/player"];
 
     expect(playerPath).toBeDefined();
@@ -148,8 +141,7 @@ describe("OpenAPI schema", () => {
   });
 
   it("includes operation metadata for POST /player/{code}/session", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
-    const spec: any = specResponse.json();
+    const spec = specResponse.json();
     const sessionPath = spec.paths["/player/{code}/session"];
 
     expect(sessionPath).toBeDefined();
@@ -158,8 +150,7 @@ describe("OpenAPI schema", () => {
   });
 
   it("includes operation metadata for GET /player/{code}/stats", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
-    const spec: any = specResponse.json();
+    const spec = specResponse.json();
     const statsPath = spec.paths["/player/{code}/stats"];
 
     expect(statsPath).toBeDefined();
@@ -168,8 +159,7 @@ describe("OpenAPI schema", () => {
   });
 
   it("includes operation metadata for GET /health/live", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
-    const spec: any = specResponse.json();
+    const spec = specResponse.json();
     const livePath = spec.paths["/health/live"];
 
     expect(livePath).toBeDefined();
@@ -178,8 +168,7 @@ describe("OpenAPI schema", () => {
   });
 
   it("includes operation metadata for GET /health/ready", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is untyped JSON
-    const spec: any = specResponse.json();
+    const spec = specResponse.json();
     const readyPath = spec.paths["/health/ready"];
 
     expect(readyPath).toBeDefined();
