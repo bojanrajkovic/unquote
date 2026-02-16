@@ -37,15 +37,15 @@ PostgreSQL connectivity is established via Drizzle ORM with `node-postgres`. Dat
 - **player-stats-database.AC4.4 Failure:** `getStats()` with unknown claim code returns `null`
 - **player-stats-database.AC4.5 Failure:** `getStats()` throws `DatabaseUnavailableError` when Drizzle instance is null (database unconfigured)
 
-### player-stats-database.AC6: Health Check
-- **player-stats-database.AC6.1 Success:** `checkHealth()` returns `{ status: "connected" }` when database connection succeeds
-- **player-stats-database.AC6.2 Failure:** `checkHealth()` returns `{ status: "error", error: "<message>" }` when database connection fails
+### player-stats-database.AC5: Health Check
+- **player-stats-database.AC5.1 Success:** `checkHealth()` returns `{ status: "connected" }` when database connection succeeds
+- **player-stats-database.AC5.2 Failure:** `checkHealth()` returns `{ status: "error", error: "<message>" }` when database connection fails
 
-### player-stats-database.AC7: Streak Calculation
-- **player-stats-database.AC7.1 Success:** Current streak increments for consecutive calendar days with a solve
-- **player-stats-database.AC7.2 Success:** Best streak reflects the longest consecutive run in history
-- **player-stats-database.AC7.3 Edge:** Streak resets to 0 when a day is missed
-- **player-stats-database.AC7.4 Edge:** Multiple solves on the same day count as one streak day
+### player-stats-database.AC6: Streak Calculation
+- **player-stats-database.AC6.1 Success:** Current streak increments for consecutive calendar days with a solve
+- **player-stats-database.AC6.2 Success:** Best streak reflects the longest consecutive run in history
+- **player-stats-database.AC6.3 Edge:** Streak resets to 0 when a day is missed
+- **player-stats-database.AC6.4 Edge:** Multiple solves on the same day count as one streak day
 
 Note: Streak calculation uses UTC dates (derived from `solved_at` timestamp with timezone).
 
