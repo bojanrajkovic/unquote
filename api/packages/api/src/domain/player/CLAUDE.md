@@ -15,8 +15,8 @@ Manages player identity, game session recording, and statistics aggregation. Pla
 ## Dependencies
 
 - **Uses**: Drizzle ORM (query builder + migrations), Luxon (streak date calculations), type-fest (branded UUID types), TypeBox (schema definitions)
-- **Used by**: DI container (`src/deps/singleton.ts`), route handlers (via `request.deps.playerStore`)
-- **Boundary**: Pure data access and domain logic. No HTTP or framework concerns.
+- **Used by**: DI container (`src/deps/singleton.ts`)
+- **Boundary**: Data access, domain logic, and HTTP route handlers. Routes in `routes/` follow the same domain route pattern as `src/domain/game/routes/`.
 
 ## Key Decisions
 
@@ -40,3 +40,8 @@ Manages player identity, game session recording, and statistics aggregation. Pla
 - `migrator.ts` - Migration runner with advisory lock + CLI entrypoint
 - `claim-code.ts` - Claim code generator with themed word lists
 - `store.test.integration.ts` - PGlite-based integration tests
+- `routes/index.ts` - Aggregator plugin registering all player sub-routes
+- `routes/schemas.ts` - TypeBox request/response schemas for player endpoints
+- `routes/register.ts` - POST /player (player registration)
+- `routes/session.ts` - POST /player/:code/session (session recording)
+- `routes/stats.ts` - GET /player/:code/stats (statistics retrieval)
