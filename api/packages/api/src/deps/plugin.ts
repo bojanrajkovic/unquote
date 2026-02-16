@@ -7,6 +7,7 @@ import { configureRequestScope } from "./request.js";
 
 export type DependencyInjectionPluginOptions = {
   container: AwilixContainer<AppSingletonCradle>;
+  shutdown?: () => Promise<void>;
 };
 
 /**
@@ -14,9 +15,10 @@ export type DependencyInjectionPluginOptions = {
  * - Attaches singleton container to fastify.diContainer
  * - Creates request-scoped containers in onRequest hook
  * - Disposes request scopes in onResponse hook
+ * - Closes database pool on server close
  */
 const dependencyInjectionPlugin: FastifyPluginAsync<DependencyInjectionPluginOptions> = async (fastify, options) => {
-  const { container } = options;
+  const { container, shutdown = async (): Promise<void> => {} } = options;
 
   // Attach singleton container and deps getter to Fastify instance
   fastify.decorate("diContainer", container);
@@ -47,6 +49,11 @@ const dependencyInjectionPlugin: FastifyPluginAsync<DependencyInjectionPluginOpt
       await request.diScope.dispose();
     }
   });
+
+  // Graceful database pool shutdown
+  if (shutdown) {
+    fastify.addHook("onClose", shutdown);
+  }
 };
 
 /**

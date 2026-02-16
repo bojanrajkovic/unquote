@@ -64,8 +64,8 @@ const buildServer = async (): Promise<FastifyInstance> => {
   await fastify.register(sensible);
 
   // Configure and register DI container
-  const container = await configureContainer(fastify.config, fastify.log as Logger);
-  await fastify.register(registerDependencyInjection, { container });
+  const { container, shutdown } = await configureContainer(fastify.config, fastify.log as Logger);
+  await fastify.register(registerDependencyInjection, { container, shutdown });
 
   await fastify.register(rateLimit, {
     max: fastify.config.RATE_LIMIT_MAX,
@@ -152,4 +152,10 @@ const start = async (): Promise<void> => {
 // eslint-disable-next-line import/exports-last
 export { buildServer };
 
-await start();
+// CLI dispatch: `node dist/index.js migrate` runs migrations and exits
+if (process.argv[2] === "migrate") {
+  const { runMigrateCli } = await import("./domain/player/migrator.js");
+  await runMigrateCli();
+} else {
+  await start();
+}

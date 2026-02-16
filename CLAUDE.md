@@ -1,6 +1,6 @@
 # Unquote
 
-Last verified: 2026-02-14
+Last verified: 2026-02-16
 
 A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encrypted quotes by substituting letters.
 
@@ -9,6 +9,7 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 ## Tech Stack
 
 - **API**: Node.js 24+ / Fastify 5 / TypeScript (pnpm 10 monorepo)
+- **Database**: PostgreSQL via Drizzle ORM + node-postgres (optional, for player stats)
 - **TUI**: Go 1.25.6
 - **Version management & tasks**: mise
 
@@ -48,7 +49,8 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 - **Security**: helmet, cors, rate limiting (per-IP, configurable via env vars), under-pressure
 - **Configuration**: `@fastify/env` with TypeBox schema validation (fail-fast on missing required vars)
 - **DI**: Awilix with singleton + request scopes (see `src/deps/CLAUDE.md`)
-- **Observability**: OpenTelemetry traces (auto-instrumentation + manual spans via `tracedProxy` and game-generator's `@traced`/`withSpan`), Pino log correlation
+- **Database**: Drizzle ORM with node-postgres; optional (enabled when `DATABASE_URL` is set). Migrations via `drizzle-kit` with advisory lock for concurrent safety.
+- **Observability**: OpenTelemetry traces (auto-instrumentation for HTTP, Fastify, pg, Drizzle + manual spans via `tracedProxy` and game-generator's `@traced`/`withSpan`), Pino log correlation
 - **Port**: 3000 (default, configurable via PORT env var)
 
 ### Environment Variables
@@ -60,6 +62,7 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 | `LOG_LEVEL` | No | info | Pino log level |
 | `QUOTES_FILE_PATH` | Yes | - | Path to quotes JSON file |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | No | - | OpenTelemetry collector endpoint |
+| `DATABASE_URL` | No | - | PostgreSQL connection string for player stats |
 | `RATE_LIMIT_MAX` | No | 100 | Max requests per window per IP |
 | `RATE_LIMIT_WINDOW` | No | 1 minute | Rate limit time window |
 
