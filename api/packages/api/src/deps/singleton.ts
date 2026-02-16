@@ -2,7 +2,7 @@ import { createContainer, asValue, asFunction, type AwilixContainer } from "awil
 import type { Logger } from "pino";
 import type { QuoteSource, GameGenerator, KeywordSource } from "@unquote/game-generator";
 import { KeywordCipherGenerator } from "@unquote/game-generator";
-import { Pool } from "pg";
+import pg from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { instrumentDrizzleClient } from "@kubiks/otel-drizzle";
@@ -68,10 +68,11 @@ export async function configureContainer(config: AppConfig, logger: Logger): Pro
 
   // Database setup — local to configureContainer, not registered in cradle
   let db: NodePgDatabase | null = null;
-  let pool: Pool | null = null;
+  let pool: pg.Pool | null = null;
 
   if (config.DATABASE_URL) {
-    pool = new Pool({
+    // eslint-disable-next-line import/no-named-as-default-member -- pg uses CJS default export
+    pool = new pg.Pool({
       connectionString: config.DATABASE_URL,
       max: 5,
     });
@@ -79,7 +80,7 @@ export async function configureContainer(config: AppConfig, logger: Logger): Pro
     // Handle unexpected pool errors (e.g., idle client disconnects).
     // The `logger` reference here captures the container-level logger (not request-scoped),
     // which is correct since pool errors occur outside request context.
-    pool.on("error", (err) => {
+    pool.on("error", (err: Error) => {
       logger.error({ err }, "unexpected error on idle database client");
     });
 

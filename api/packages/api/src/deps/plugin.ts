@@ -51,7 +51,9 @@ const dependencyInjectionPlugin: FastifyPluginAsync<DependencyInjectionPluginOpt
   });
 
   // Graceful database pool shutdown
-  fastify.addHook("onClose", shutdown);
+  if (shutdown) {
+    fastify.addHook("onClose", shutdown);
+  }
 };
 
 /**
