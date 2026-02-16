@@ -176,13 +176,14 @@ export class PgPlayerStore {
       )
       .orderBy(asc(gameSessions.solvedAt));
 
-    // Streak calculation from all distinct solve dates
+    // Streak calculation from all distinct solve dates (group by date to deduplicate)
     const solveDates = await this.db
       .select({
-        date: sql<string>`DISTINCT ${gameSessions.solvedAt}::date::text`,
+        date: sql<string>`${gameSessions.solvedAt}::date::text`,
       })
       .from(gameSessions)
       .where(eq(gameSessions.playerId, playerId))
+      .groupBy(sql`${gameSessions.solvedAt}::date`)
       .orderBy(asc(sql`${gameSessions.solvedAt}::date`));
 
     const { currentStreak, bestStreak } = calculateStreaks(solveDates.map((r) => r.date));
