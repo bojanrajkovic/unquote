@@ -102,12 +102,28 @@ const PlayerStatsResponseSchema = schemaType(
   }, { additionalProperties: false }),
 );
 
+// Path param for :code endpoints
+const ClaimCodeParamsSchema = schemaType(
+  "ClaimCodeParams",
+  Type.Object({
+    code: Type.String({ description: "Player claim code in ADJECTIVE-NOUN-NNNN format" }),
+  }, { additionalProperties: false }),
+);
+
 // POST /player/:code/session request body
 const RecordSessionRequestSchema = schemaType(
   "RecordSessionRequest",
   Type.Object({
     gameId: Type.String({ description: "Opaque game ID from puzzle response" }),
     completionTime: Type.Number({ description: "Solve time in milliseconds" }),
+  }, { additionalProperties: false }),
+);
+
+// POST /player/:code/session response
+const RecordSessionResponseSchema = schemaType(
+  "RecordSessionResponse",
+  Type.Object({
+    status: Type.Union([Type.Literal("created"), Type.Literal("recorded")]),
   }, { additionalProperties: false }),
 );
 ```
@@ -125,11 +141,39 @@ The existing `/health` endpoint is split into liveness and readiness probes:
 { "status": "ok", "database": "error", "databaseError": "connection refused" }
 ```
 
-Readiness always passes (200) because the primary function (puzzle serving) doesn't require the database. The DB status is informational for operators. The K8s deployment Terraform updates `livenessProbe` to `/health/live` and `readinessProbe` to `/health/ready`.
+**TypeBox schemas for health endpoints:**
+
+```typescript
+const HealthLiveResponseSchema = schemaType(
+  "HealthLiveResponse",
+  Type.Object({
+    status: Type.Literal("ok"),
+  }, { additionalProperties: false }),
+);
+
+const HealthReadyResponseSchema = schemaType(
+  "HealthReadyResponse",
+  Type.Object({
+    status: Type.Literal("ok"),
+    database: Type.Union([
+      Type.Literal("unconfigured"),
+      Type.Literal("connected"),
+      Type.Literal("error"),
+    ]),
+    databaseError: Type.Optional(Type.String()),
+  }, { additionalProperties: false }),
+);
+```
+
+This is an intentional deviation from typical readiness probe semantics — since the primary function (puzzle serving) doesn't require the database, readiness always passes. The database status is informational for operators monitoring the player stats feature. The K8s deployment Terraform updates `livenessProbe` to `/health/live` and `readinessProbe` to `/health/ready`.
 
 ### Dependencies
 
 This plan depends on [Player Stats: Database Layer](2026-02-15-player-stats-database.md) for the PlayerStore service, Drizzle schema, and branded types. Routes access the PlayerStore via `request.deps.playerStore` from the DI container.
+
+The `DATABASE_URL` environment variable is added to the config schema as part of the database layer design.
+
+**Error responses:** Error responses use Fastify's standard error format (`{ statusCode, error, message }`). The existing error handler in `src/index.ts` sanitizes 5xx details in production. No custom error schemas are needed.
 
 ## Existing Patterns
 
@@ -138,6 +182,8 @@ This plan depends on [Player Stats: Database Layer](2026-02-15-player-stats-data
 **DI registration:** Services are added to `AppSingletonCradle` type and registered in `configureContainer()`. Test helpers extend `TestContainerOptions` with a mock `PlayerStore`.
 
 **Route schemas:** All schemas use `schemaType()` wrapper from `@eropple/fastify-openapi3` with `Type` from `typebox`. Response types use `Static<typeof Schema>`.
+
+**OpenAPI metadata:** Routes include `oas` fields (operationId, tags, summary) following the game routes pattern.
 
 ## Implementation Phases
 
@@ -152,7 +198,10 @@ This plan depends on [Player Stats: Database Layer](2026-02-15-player-stats-data
 - `GET /player/:code/stats` route in `src/domain/player/routes/stats.ts` — returns aggregated stats and recent solves
 - Route aggregator in `src/domain/player/routes/index.ts` (`registerPlayerRoutes`)
 - Registration in `src/index.ts` under `/player` prefix
-- Health endpoint split: `/health/live` (always 200) and `/health/ready` (200 with DB status in body) replacing existing `/health`
+- Health endpoints remain in `src/routes/health.ts`, updated to export both `/health/live` and `/health/ready` routes replacing existing `/health`
+- PlayerStore registered in `AppSingletonCradle` and accessed via `request.deps.playerStore` in route handlers
+- `TestContainerOptions` in `tests/helpers/test-container.ts` extended with optional `playerStore` override
+- Integration tests: `register.test.integration.ts`, `session.test.integration.ts`, `stats.test.integration.ts` in `src/domain/player/routes/` using mock PlayerStore via `createTestContainer`
 
 **Dependencies:** [Player Stats: Database Layer](2026-02-15-player-stats-database.md) Phase 2 (PlayerStore)
 
@@ -162,3 +211,5 @@ This plan depends on [Player Stats: Database Layer](2026-02-15-player-stats-data
 ## Additional Considerations
 
 **Claim code security:** Claim codes are intentionally not secrets. Rate limiting on the player endpoints (already provided by the global rate limiter) prevents brute-force enumeration. No additional auth is needed given the threat model (puzzle stats are not sensitive).
+
+**K8s probe updates:** AC4.5 requires updating `livenessProbe` and `readinessProbe` paths in the Kubernetes deployment Terraform. This is an infrastructure change that accompanies the API deployment.
