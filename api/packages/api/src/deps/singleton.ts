@@ -11,6 +11,8 @@ import { JsonQuoteSource } from "../sources/json-quote-source.js";
 import { StaticKeywordSource } from "../sources/static-keyword-source.js";
 import { tracedProxy } from "../tracing/traced-proxy.js";
 import { runMigrationsWithLock } from "../domain/player/migrator.js";
+import type { PlayerStore } from "../domain/player/types.js";
+import { PgPlayerStore } from "../domain/player/store.js";
 
 /**
  * Singleton cradle containing application-lifetime dependencies.
@@ -22,6 +24,7 @@ export type AppSingletonCradle = {
   quoteSource: QuoteSource;
   keywordSource: KeywordSource;
   gameGenerator: GameGenerator;
+  playerStore: PlayerStore | null;
 };
 
 type ContainerResult = {
@@ -90,8 +93,13 @@ export async function configureContainer(config: AppConfig, logger: Logger): Pro
     logger.info("database connected and migrations applied");
   }
 
-  // No db registration — it's an implementation detail consumed only inside this function.
-  // Phase 2 Task 6 will create PgPlayerStore(db) here and register playerStore in the cradle.
+  // PlayerStore wraps the Drizzle instance — null when database is not configured
+  const playerStore: PlayerStore | null = db ? tracedProxy<PlayerStore>(new PgPlayerStore(db), "PlayerStore") : null;
+
+  container.register({
+    playerStore: asValue(playerStore),
+  });
+
   return {
     container,
     shutdown: async () => {

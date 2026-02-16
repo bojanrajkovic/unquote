@@ -63,12 +63,8 @@
           "name": "game_sessions_player_id_players_id_fk",
           "tableFrom": "game_sessions",
           "tableTo": "players",
-          "columnsFrom": [
-            "player_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["player_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -78,10 +74,7 @@
         "game_sessions_player_game_unique": {
           "name": "game_sessions_player_game_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "player_id",
-            "game_id"
-          ]
+          "columns": ["player_id", "game_id"]
         }
       },
       "policies": {},
@@ -120,9 +113,7 @@
         "players_claim_code_unique": {
           "name": "players_claim_code_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "claim_code"
-          ]
+          "columns": ["claim_code"]
         }
       },
       "policies": {},
