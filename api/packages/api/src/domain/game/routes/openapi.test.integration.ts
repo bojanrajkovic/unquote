@@ -9,6 +9,8 @@ import { JsonQuoteSource } from "../../../sources/json-quote-source.js";
 import { registerDependencyInjection } from "../../../deps/index.js";
 import { createTestContainer, createSilentLogger, getTestQuotesPath } from "../../../../tests/helpers/index.js";
 import { registerGameRoutes } from "./index.js";
+import { registerPlayerRoutes } from "../../player/routes/index.js";
+import { healthRoutes } from "../../../routes/health.js";
 
 /**
  * OpenAPI schema validation tests.
@@ -45,6 +47,8 @@ describe("OpenAPI schema", () => {
       },
     });
     await fastify.register(registerGameRoutes, { prefix: "/game" });
+    await fastify.register(registerPlayerRoutes, { prefix: "/player" });
+    await fastify.register(healthRoutes, { prefix: "/health" });
     await fastify.ready();
   });
 
@@ -151,5 +155,75 @@ describe("OpenAPI schema", () => {
     expect(spec.components.schemas.PuzzleResponse).toBeDefined();
     expect(spec.components.schemas.CheckRequest).toBeDefined();
     expect(spec.components.schemas.CheckResponse).toBeDefined();
+  });
+
+  it("includes operation metadata for POST /player", async () => {
+    const response = await fastify.inject({
+      method: "GET",
+      url: "/openapi.json",
+    });
+
+    const spec = response.json();
+    const playerPath = spec.paths["/player"];
+
+    expect(playerPath).toBeDefined();
+    expect(playerPath.post.operationId).toBe("createPlayer");
+    expect(playerPath.post.tags).toContain("player");
+  });
+
+  it("includes operation metadata for POST /player/{code}/session", async () => {
+    const response = await fastify.inject({
+      method: "GET",
+      url: "/openapi.json",
+    });
+
+    const spec = response.json();
+    const sessionPath = spec.paths["/player/{code}/session"];
+
+    expect(sessionPath).toBeDefined();
+    expect(sessionPath.post.operationId).toBe("recordSession");
+    expect(sessionPath.post.tags).toContain("player");
+  });
+
+  it("includes operation metadata for GET /player/{code}/stats", async () => {
+    const response = await fastify.inject({
+      method: "GET",
+      url: "/openapi.json",
+    });
+
+    const spec = response.json();
+    const statsPath = spec.paths["/player/{code}/stats"];
+
+    expect(statsPath).toBeDefined();
+    expect(statsPath.get.operationId).toBe("getPlayerStats");
+    expect(statsPath.get.tags).toContain("player");
+  });
+
+  it("includes operation metadata for GET /health/live", async () => {
+    const response = await fastify.inject({
+      method: "GET",
+      url: "/openapi.json",
+    });
+
+    const spec = response.json();
+    const livePath = spec.paths["/health/live"];
+
+    expect(livePath).toBeDefined();
+    expect(livePath.get.operationId).toBe("healthLive");
+    expect(livePath.get.tags).toContain("health");
+  });
+
+  it("includes operation metadata for GET /health/ready", async () => {
+    const response = await fastify.inject({
+      method: "GET",
+      url: "/openapi.json",
+    });
+
+    const spec = response.json();
+    const readyPath = spec.paths["/health/ready"];
+
+    expect(readyPath).toBeDefined();
+    expect(readyPath.get.operationId).toBe("healthReady");
+    expect(readyPath.get.tags).toContain("health");
   });
 });
