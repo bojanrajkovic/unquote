@@ -190,7 +190,7 @@ export function createTestContainer(options: TestContainerOptions = {}): AwilixC
     quoteSource: asValue(quoteSource),
     keywordSource: asValue(keywordSource),
     gameGenerator: asValue(options.gameGenerator ?? createMockGameGenerator()),
-    playerStore: asValue(options.playerStore ?? createMockPlayerStore()),
+    playerStore: asValue("playerStore" in options ? options.playerStore : createMockPlayerStore()),
   });
 
   return container;
