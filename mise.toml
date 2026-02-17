@@ -18,4 +18,4 @@ config_roots = ["api", "tui"]
 
 [tasks.build]
 description = "Build all projects"
-depends = ["//api:build", "//tui:build"]
+depends = ["//api:install", "//api:build", "//tui:install", "//tui:build"]

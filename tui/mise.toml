@@ -1,3 +1,7 @@
+[tasks.install]
+description = "Install dependencies"
+run = "go get"
+
 [tasks.build]
 description = "Build the TUI binary with version info"
 run = """
@@ -24,6 +28,7 @@ run = "go test -v -race -count=1 ./..."
 description = "Run all CI checks"
 run = """
 set -e
+mise run :install
 mise run :fmt
 mise run :vet
 mise run :lint
