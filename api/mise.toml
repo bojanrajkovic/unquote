@@ -1,3 +1,7 @@
+[tasks.install]
+description = "Install deps"
+run = "pnpm install"
+
 [tasks.build]
 description = "Build the API"
 run = "pnpm run build"
@@ -22,6 +26,7 @@ run = "pnpm run test"
 description = "Run all CI checks"
 run = """
 set -e
+mise run :install
 mise run :fmt
 mise run :lint
 mise run :typecheck
