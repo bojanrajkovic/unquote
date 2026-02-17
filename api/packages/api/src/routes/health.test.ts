@@ -81,7 +81,7 @@ describe("health routes", () => {
         });
 
         expect(response.statusCode).toBe(200);
-        expect(response.json()).toEqual({ status: "ok", database: "unconfigured" });
+        expect(response.json()).toEqual({ status: "ok", database: { status: "unconfigured", error: null } });
       });
     });
 
@@ -103,7 +103,7 @@ describe("health routes", () => {
         });
 
         expect(response.statusCode).toBe(200);
-        expect(response.json()).toEqual({ status: "ok", database: "connected" });
+        expect(response.json()).toEqual({ status: "ok", database: { status: "connected", error: null } });
       });
     });
 
@@ -123,7 +123,7 @@ describe("health routes", () => {
         await fastify.close();
       });
 
-      it("returns 200 with database: error and databaseError detail (AC4.4)", async () => {
+      it("returns 200 with database error detail (AC4.4)", async () => {
         const response = await fastify.inject({
           method: "GET",
           url: "/ready",
@@ -132,8 +132,7 @@ describe("health routes", () => {
         expect(response.statusCode).toBe(200);
         expect(response.json()).toEqual({
           status: "ok",
-          database: "error",
-          databaseError: "connection refused",
+          database: { status: "error", error: "connection refused" },
         });
       });
     });

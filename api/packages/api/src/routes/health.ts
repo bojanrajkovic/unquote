@@ -20,8 +20,13 @@ const HealthReadyResponseSchema = schemaType(
   Type.Object(
     {
       status: Type.Literal("ok"),
-      database: Type.Union([Type.Literal("connected"), Type.Literal("error"), Type.Literal("unconfigured")]),
-      databaseError: Type.Optional(Type.String()),
+      database: Type.Object(
+        {
+          status: Type.Union([Type.Literal("connected"), Type.Literal("error"), Type.Literal("unconfigured")]),
+          error: Type.Union([Type.String(), Type.Null()]),
+        },
+        { additionalProperties: false },
+      ),
     },
     { additionalProperties: false },
   ),
@@ -76,23 +81,18 @@ export const healthRoutes: FastifyPluginAsync = async (fastify) => {
       const playerStore: PlayerStore | null = fastify.deps.playerStore;
 
       if (playerStore === null) {
-        return { status: "ok" as const, database: "unconfigured" as const };
+        return { status: "ok" as const, database: { status: "unconfigured" as const, error: null } };
       }
 
       const result = await playerStore.checkHealth();
 
-      if (result.status === "connected") {
-        return { status: "ok" as const, database: "connected" as const };
-      }
-
-      const response: HealthReadyResponse = {
-        status: "ok",
-        database: "error",
+      return {
+        status: "ok" as const,
+        database: {
+          status: result.status,
+          error: result.status === "error" ? (result.error ?? null) : null,
+        },
       };
-      if (result.error !== undefined) {
-        response.databaseError = result.error;
-      }
-      return response;
     },
   });
 };
