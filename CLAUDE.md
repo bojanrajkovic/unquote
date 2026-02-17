@@ -73,10 +73,14 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 
 ### Endpoints
 
-- `GET /health` - Health check (returns `{ status: "ok" }`)
+- `GET /health/live` - Liveness probe (returns `{ status: "ok" }`)
+- `GET /health/ready` - Readiness probe (reports database connectivity status)
 - `GET /game/today` - Retrieve today's cryptoquip puzzle
 - `GET /game/:date` - Retrieve puzzle for a specific date (ISO format: YYYY-MM-DD)
 - `POST /game/:id/check` - Validate a solution attempt using opaque game ID
+- `POST /player` - Register a new player (returns claim code)
+- `POST /player/:code/session` - Record a game session for a player
+- `GET /player/:code/stats` - Retrieve player statistics
 
 ## TUI Architecture
 
