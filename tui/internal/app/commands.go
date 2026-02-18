@@ -189,6 +189,17 @@ func reconcileSessionsCmd(client *api.Client, claimCode string) tea.Cmd {
 	}
 }
 
+// fetchStatsCmd creates a command to fetch player stats from the API
+func fetchStatsCmd(client *api.Client, claimCode string) tea.Cmd {
+	return func() tea.Msg {
+		stats, err := client.FetchStats(claimCode)
+		if err != nil {
+			return errMsg{err: err}
+		}
+		return statsFetchedMsg{stats: stats}
+	}
+}
+
 // saveSolvedSessionCmd creates a command to save the solved session state
 func saveSolvedSessionCmd(gameID string, cells []puzzle.Cell, completionTime time.Duration) tea.Cmd {
 	return func() tea.Msg {
