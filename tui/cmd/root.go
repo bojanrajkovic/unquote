@@ -46,6 +46,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(newRegisterCmd(&insecure))
 	rootCmd.AddCommand(newLinkCmd())
 	rootCmd.AddCommand(newClaimCodeCmd())
+	rootCmd.AddCommand(newStatsCmd(&insecure))
 
 	return rootCmd
 }
