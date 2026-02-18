@@ -210,6 +210,11 @@ func (m Model) handleConfigLoaded(msg configLoadedMsg) (tea.Model, tea.Cmd) {
 		return m, tea.Batch(cmds...)
 	}
 
+	// Allocate a persistent bool pointer for the huh.Confirm binding.
+	// This must survive model value copies — all copies share the same pointer,
+	// so when huh writes the user's selection into it, m.optIn reflects it correctly.
+	m.optIn = new(bool)
+
 	// No config — show onboarding form (AC2.1)
 	m.form = huh.NewForm(
 		huh.NewGroup(
@@ -229,7 +234,7 @@ func (m Model) handleConfigLoaded(msg configLoadedMsg) (tea.Model, tea.Cmd) {
 				Title("Track my stats?").
 				Affirmative("Yes, track my stats").
 				Negative("No thanks").
-				Value(&m.optIn),
+				Value(m.optIn),
 		),
 	).WithShowHelp(false).WithShowErrors(false)
 	m.state = StateOnboarding
@@ -245,7 +250,7 @@ func (m Model) handleOnboardingKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	}
 
 	if m.form.State == huh.StateCompleted {
-		if m.optIn {
+		if m.optIn != nil && *m.optIn {
 			// AC2.2: opt-in — show loading while registering
 			cfg := &config.Config{StatsEnabled: true}
 			m.cfg = cfg

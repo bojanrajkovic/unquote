@@ -91,7 +91,6 @@ func TestHandleOnboardingOptIn_TransitionsToLoading(t *testing.T) {
 func TestHandleOnboardingOptOut_ConfigSavedTransitionsToLoading(t *testing.T) {
 	m := Model{
 		state: StateOnboarding,
-		optIn: false,
 	}
 
 	// Simulate configSavedMsg arriving while still in StateOnboarding (opt-out path)

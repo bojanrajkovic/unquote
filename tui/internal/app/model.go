@@ -41,25 +41,25 @@ type Options struct {
 // Model holds the application state
 type Model struct {
 	startTime      time.Time
-	form           *huh.Form // huh form for onboarding (nil when not in onboarding)
+	optIn          *bool
+	form           *huh.Form
 	puzzle         *api.Puzzle
 	client         *api.Client
 	cfg            *config.Config
-	stats          *api.PlayerStatsResponse // stats data from API (nil until fetched)
-	claimCode      string                   // claim code after registration
+	stats          *api.PlayerStatsResponse
+	claimCode      string
 	errorMsg       string
 	statusMsg      string
-	loadingMsg     string // context-specific loading message
+	loadingMsg     string
 	cells          []puzzle.Cell
-	elapsedAtPause time.Duration
 	state          State
 	cursorPos      int
 	width          int
 	height         int
+	elapsedAtPause time.Duration
 	opts           Options
-	optIn          bool // bound to huh.Confirm value
 	sizeReady      bool
-	statsOnly      bool // true when launched via `unquote stats` subcommand
+	statsOnly      bool
 }
 
 // New creates a new Model with initial state
