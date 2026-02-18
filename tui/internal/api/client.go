@@ -152,6 +152,96 @@ func (c *Client) FetchRandomPuzzle() (*Puzzle, error) {
 	return &puzzle, nil
 }
 
+// RegisterPlayer registers a new player and returns a claim code
+func (c *Client) RegisterPlayer() (*RegisterPlayerResponse, error) {
+	url := fmt.Sprintf("%s/player", c.baseURL)
+
+	req, err := http.NewRequest("POST", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to register player: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("server returned %d: %s", resp.StatusCode, string(body))
+	}
+
+	var result RegisterPlayerResponse
+	if err := json.NewDecoder(io.LimitReader(resp.Body, maxResponseBytes)).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to parse register player response: %w", err)
+	}
+
+	return &result, nil
+}
+
+// RecordSession records a game session for a player
+func (c *Client) RecordSession(claimCode, gameID string, completionTimeMs int64) error {
+	url := fmt.Sprintf("%s/player/%s/session", c.baseURL, claimCode)
+
+	reqBody := RecordSessionRequest{GameID: gameID, CompletionTime: completionTimeMs}
+	jsonBody, err := json.Marshal(reqBody)
+	if err != nil {
+		return fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to record session: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return fmt.Errorf("player not found: invalid claim code")
+	}
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("server returned %d: %s", resp.StatusCode, string(body))
+	}
+
+	return nil
+}
+
+// FetchStats retrieves player statistics for the given claim code
+func (c *Client) FetchStats(claimCode string) (*PlayerStatsResponse, error) {
+	url := fmt.Sprintf("%s/player/%s/stats", c.baseURL, claimCode)
+
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch stats: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, fmt.Errorf("player not found: invalid claim code")
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("server returned %d: %s", resp.StatusCode, string(body))
+	}
+
+	var result PlayerStatsResponse
+	if err := json.NewDecoder(io.LimitReader(resp.Body, maxResponseBytes)).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to parse stats response: %w", err)
+	}
+
+	return &result, nil
+}
+
 // CheckSolution validates the user's solution against the API
 func (c *Client) CheckSolution(gameID, solution string) (*CheckResponse, error) {
 	url := fmt.Sprintf("%s/game/%s/check", c.baseURL, gameID)
