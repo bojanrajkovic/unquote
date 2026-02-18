@@ -328,39 +328,53 @@ func (m Model) viewStats() string {
 	return lipgloss.JoinVertical(lipgloss.Left, header, "", content, "", help)
 }
 
-// viewClaimCodeDisplay renders the claim code in a styled box after registration.
+// viewClaimCodeDisplay renders the claim code as a raffle-ticket style card.
 func (m Model) viewClaimCodeDisplay() string {
-	// innerWidth is the text content area inside the box padding.
-	// All items use this width with Center alignment for a consistent look.
+	// innerWidth is the content area width. All items are constrained to this
+	// so centering is consistent and nothing overflows the double-line border.
 	const innerWidth = 50
 
-	// Reusable centered-text helper: applies consistent width + center alignment.
+	// centered applies a fixed width + center alignment to any style.
 	centered := func(s lipgloss.Style) lipgloss.Style {
 		return s.Width(innerWidth).Align(lipgloss.Center)
 	}
 
-	titleStyle := centered(lipgloss.NewStyle().Bold(true).Foreground(ui.ColorSuccess))
+	// Outer box uses a double border for the "ticket" look.
+	boxStyle := lipgloss.NewStyle().
+		Border(lipgloss.DoubleBorder()).
+		BorderForeground(ui.ColorSuccess).
+		Padding(1, 2).
+		Width(innerWidth)
+
+	// Perforated divider — dashes suggest a tear-off line between sections.
+	divider := centered(lipgloss.NewStyle().Foreground(ui.ColorMuted)).
+		Render(strings.Repeat("┄", innerWidth-4))
+
+	title := centered(lipgloss.NewStyle().Bold(true).Foreground(ui.ColorSuccess)).
+		Render("★  Registration Complete!  ★")
+
+	label := centered(lipgloss.NewStyle().Foreground(ui.ColorMuted).Bold(true)).
+		Render("— YOUR CLAIM CODE —")
 
 	codeStyle := lipgloss.NewStyle().
 		Bold(true).
 		Foreground(ui.ColorPrimary).
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(ui.ColorPrimary).
-		Padding(0, 2)
-
-	boxStyle := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(ui.ColorSuccess).
-		Padding(1, 2).
-		Width(innerWidth)
+		Padding(0, 3)
+	centeredCode := centered(lipgloss.NewStyle()).Render(codeStyle.Render(m.claimCode))
 
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
-		titleStyle.Render("Registration Complete!"),
+		title,
 		"",
-		centered(lipgloss.NewStyle()).Render("Your claim code is:"),
+		divider,
 		"",
-		centered(lipgloss.NewStyle()).Render(codeStyle.Render(m.claimCode)),
+		label,
+		"",
+		centeredCode,
+		"",
+		divider,
 		"",
 		centered(ui.HelpStyle).Render("Save this to access your stats from any device."),
 		"",
