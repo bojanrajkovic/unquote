@@ -26,3 +26,38 @@ type CheckRequest struct {
 type CheckResponse struct {
 	Correct bool `json:"correct"`
 }
+
+// RegisterPlayerResponse represents the response from the register player endpoint
+type RegisterPlayerResponse struct {
+	ClaimCode string `json:"claimCode"`
+}
+
+// RecordSessionRequest represents the request body for recording a game session
+type RecordSessionRequest struct {
+	GameID         string `json:"gameId"`
+	CompletionTime int64  `json:"completionTime"` // milliseconds
+}
+
+// RecordSessionResponse represents the response from the record session endpoint
+type RecordSessionResponse struct {
+	Status string `json:"status"` // "created" or "recorded"
+}
+
+// RecentSolve represents a single recent solve entry in player stats
+type RecentSolve struct {
+	Date           string  `json:"date"`           // YYYY-MM-DD
+	CompletionTime float64 `json:"completionTime"` // milliseconds
+}
+
+// PlayerStatsResponse represents the response from the player stats endpoint
+type PlayerStatsResponse struct {
+	ClaimCode     string        `json:"claimCode"`
+	BestTime      *float64      `json:"bestTime"`    // milliseconds, nullable
+	AverageTime   *float64      `json:"averageTime"` // milliseconds, nullable
+	RecentSolves  []RecentSolve `json:"recentSolves"`
+	WinRate       float64       `json:"winRate"` // 0.0-1.0
+	GamesPlayed   int           `json:"gamesPlayed"`
+	GamesSolved   int           `json:"gamesSolved"`
+	CurrentStreak int           `json:"currentStreak"`
+	BestStreak    int           `json:"bestStreak"`
+}
