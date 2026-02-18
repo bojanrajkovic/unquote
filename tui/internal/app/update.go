@@ -7,18 +7,17 @@ import (
 	"unicode"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh"
 	zone "github.com/lrstanley/bubblezone"
 
+	"github.com/bojanrajkovic/unquote/tui/internal/config"
 	"github.com/bojanrajkovic/unquote/tui/internal/puzzle"
 	"github.com/bojanrajkovic/unquote/tui/internal/ui"
 )
 
 // Init is called when the program starts
 func (m Model) Init() tea.Cmd {
-	if m.opts.Random {
-		return fetchRandomPuzzleCmd(m.client)
-	}
-	return fetchPuzzleCmd(m.client)
+	return loadConfigCmd()
 }
 
 // Update handles incoming messages
@@ -54,6 +53,26 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case sessionLoadedMsg:
 		return m.handleSessionLoaded(msg)
+
+	case configLoadedMsg:
+		return m.handleConfigLoaded(msg)
+
+	case playerRegisteredMsg:
+		m.claimCode = msg.claimCode
+		m.state = StateClaimCodeDisplay
+		return m, nil
+
+	case configSavedMsg:
+		// If we're in claim code display, wait for user keypress.
+		// If we're still in onboarding (opt-out path), proceed to puzzle.
+		if m.state == StateOnboarding {
+			m.state = StateLoading
+			if m.opts.Random {
+				return m, fetchRandomPuzzleCmd(m.client)
+			}
+			return m, fetchPuzzleCmd(m.client)
+		}
+		return m, nil
 	}
 
 	return m, nil
@@ -85,9 +104,93 @@ func (m Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case StateSolved:
 		// No input when solved (just Esc to quit)
 		return m, nil
+
+	case StateOnboarding:
+		return m.handleOnboardingKeyMsg(msg)
+
+	case StateClaimCodeDisplay:
+		// Any keypress proceeds to puzzle loading
+		m.state = StateLoading
+		m.form = nil
+		if m.opts.Random {
+			return m, fetchRandomPuzzleCmd(m.client)
+		}
+		return m, fetchPuzzleCmd(m.client)
 	}
 
 	return m, nil
+}
+
+// handleConfigLoaded processes the result of loading the config from disk.
+// If config exists (AC2.4), skip onboarding and proceed to puzzle loading.
+// If config is nil (AC2.1), show onboarding form.
+func (m Model) handleConfigLoaded(msg configLoadedMsg) (tea.Model, tea.Cmd) {
+	if msg.config != nil {
+		// Config exists — skip onboarding
+		m.cfg = msg.config
+		m.state = StateLoading
+		if m.opts.Random {
+			return m, fetchRandomPuzzleCmd(m.client)
+		}
+		return m, fetchPuzzleCmd(m.client)
+	}
+
+	// No config — show onboarding form (AC2.1)
+	m.form = huh.NewForm(
+		huh.NewGroup(
+			huh.NewNote().
+				Title("Track Your Stats?").
+				Description("Unquote can track your solve times and streaks.\n\n"+
+					"What we store:\n"+
+					"  - Which puzzles you solved\n"+
+					"  - How long each took\n\n"+
+					"What we don't store:\n"+
+					"  - No personal information\n"+
+					"  - No email, no password\n\n"+
+					"You'll get a random claim code (like TIGER-MAPLE-7492)\n"+
+					"that identifies your stats. Save it to access your\n"+
+					"stats from another device.").
+				Next(true).
+				NextLabel("Continue"),
+			huh.NewConfirm().
+				Title("Track my stats?").
+				Affirmative("Yes, track my stats").
+				Negative("No thanks").
+				Value(&m.optIn),
+		),
+	).WithShowHelp(false).WithShowErrors(false)
+	m.state = StateOnboarding
+	return m, m.form.Init()
+}
+
+// handleOnboardingKeyMsg delegates key events to the huh form.
+// When the form completes, it handles opt-in or opt-out.
+func (m Model) handleOnboardingKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	formModel, cmd := m.form.Update(msg)
+	if f, ok := formModel.(*huh.Form); ok {
+		m.form = f
+	}
+
+	if m.form.State == huh.StateCompleted {
+		if m.optIn {
+			// AC2.2: opt-in — save partial config and register player
+			cfg := &config.Config{StatsEnabled: true}
+			m.cfg = cfg
+			return m, m.handleOptIn(cfg)
+		}
+		// AC2.3: opt-out — save config and go to puzzle
+		cfg := &config.Config{StatsEnabled: false}
+		m.cfg = cfg
+		return m, saveConfigCmd(cfg)
+	}
+
+	return m, cmd
+}
+
+// handleOptIn builds the combined command for opt-in: save config + register player.
+// Extracted for testability.
+func (m Model) handleOptIn(cfg *config.Config) tea.Cmd {
+	return tea.Batch(saveConfigCmd(cfg), registerPlayerCmd(m.client))
 }
 
 func (m Model) handleMouseMsg(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
