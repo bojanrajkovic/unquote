@@ -7,6 +7,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/bojanrajkovic/unquote/tui/internal/api"
+	"github.com/bojanrajkovic/unquote/tui/internal/config"
 	"github.com/bojanrajkovic/unquote/tui/internal/puzzle"
 	"github.com/bojanrajkovic/unquote/tui/internal/storage"
 )
@@ -78,6 +79,41 @@ func loadSessionCmd(gameID string) tea.Cmd {
 			return sessionLoadedMsg{session: nil}
 		}
 		return sessionLoadedMsg{session: session}
+	}
+}
+
+// loadConfigCmd creates a command to load the player config from disk.
+// Returns configLoadedMsg{config: nil} if no config file exists.
+func loadConfigCmd() tea.Cmd {
+	return func() tea.Msg {
+		cfg, err := config.Load()
+		if err != nil {
+			return errMsg{err: err}
+		}
+		return configLoadedMsg{config: cfg}
+	}
+}
+
+// registerPlayerCmd creates a command to register a new player via the API.
+// Returns playerRegisteredMsg on success, errMsg on failure.
+func registerPlayerCmd(client *api.Client) tea.Cmd {
+	return func() tea.Msg {
+		resp, err := client.RegisterPlayer()
+		if err != nil {
+			return errMsg{err: err}
+		}
+		return playerRegisteredMsg{claimCode: resp.ClaimCode}
+	}
+}
+
+// saveConfigCmd creates a command to save the player config to disk.
+// Returns configSavedMsg on success, errMsg on failure.
+func saveConfigCmd(cfg *config.Config) tea.Cmd {
+	return func() tea.Msg {
+		if err := config.Save(cfg); err != nil {
+			return errMsg{err: err}
+		}
+		return configSavedMsg{}
 	}
 }
 
