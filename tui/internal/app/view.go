@@ -194,11 +194,10 @@ func (m Model) renderHelp() string {
 	case StateChecking:
 		return ""
 	case StateSolved:
-		help := "[Esc] Quit"
-		if m.claimCode == "" {
-			help += "  · Tip: run 'unquote register' to track your stats"
+		if m.claimCode != "" {
+			return ui.HelpStyle.Render("[s] Stats  [Esc] Quit")
 		}
-		return ui.HelpStyle.Render(help)
+		return ui.HelpStyle.Render("[Esc] Quit  · Tip: run 'unquote register' to track your stats")
 	default:
 		return ui.HelpStyle.Render("[Enter] Submit  [Ctrl+C] Clear  [Esc] Quit")
 	}
