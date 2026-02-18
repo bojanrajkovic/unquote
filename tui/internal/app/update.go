@@ -77,12 +77,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// Forward unhandled messages to huh form during onboarding (e.g. focus,
 	// cursor blink, and other internal messages returned by form.Init()).
+	// Also check for form completion here: huh may complete the form via an
+	// internal message (not a KeyMsg), so we must handle it in both places.
 	if m.state == StateOnboarding && m.form != nil {
 		formModel, cmd := m.form.Update(msg)
 		if f, ok := formModel.(*huh.Form); ok {
 			m.form = f
 		}
-		return m, cmd
+		return m.checkOnboardingComplete(cmd)
 	}
 
 	return m, nil
@@ -242,29 +244,34 @@ func (m Model) handleConfigLoaded(msg configLoadedMsg) (tea.Model, tea.Cmd) {
 }
 
 // handleOnboardingKeyMsg delegates key events to the huh form.
-// When the form completes, it handles opt-in or opt-out.
+// When the form completes, it delegates to checkOnboardingComplete.
 func (m Model) handleOnboardingKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	formModel, cmd := m.form.Update(msg)
 	if f, ok := formModel.(*huh.Form); ok {
 		m.form = f
 	}
+	return m.checkOnboardingComplete(cmd)
+}
 
-	if m.form.State == huh.StateCompleted {
-		if m.optIn != nil && *m.optIn {
-			// AC2.2: opt-in — show loading while registering
-			cfg := &config.Config{StatsEnabled: true}
-			m.cfg = cfg
-			m.state = StateLoading
-			m.loadingMsg = "Registering..."
-			return m, registerPlayerCmd(m.client)
-		}
-		// AC2.3: opt-out — save config and go to puzzle
-		cfg := &config.Config{StatsEnabled: false}
-		m.cfg = cfg
-		return m, saveConfigCmd(cfg)
+// checkOnboardingComplete checks if the huh form has finished and handles opt-in/opt-out.
+// Called from both handleOnboardingKeyMsg and the catch-all non-key message handler,
+// because huh may finalize the form via an internal message rather than the key event itself.
+func (m Model) checkOnboardingComplete(fallbackCmd tea.Cmd) (tea.Model, tea.Cmd) {
+	if m.form.State != huh.StateCompleted {
+		return m, fallbackCmd
 	}
-
-	return m, cmd
+	if m.optIn != nil && *m.optIn {
+		// AC2.2: opt-in — show loading while registering
+		cfg := &config.Config{StatsEnabled: true}
+		m.cfg = cfg
+		m.state = StateLoading
+		m.loadingMsg = "Registering..."
+		return m, registerPlayerCmd(m.client)
+	}
+	// AC2.3: opt-out — save config and go to puzzle
+	cfg := &config.Config{StatsEnabled: false}
+	m.cfg = cfg
+	return m, saveConfigCmd(cfg)
 }
 
 func (m Model) handleMouseMsg(msg tea.MouseMsg) (tea.Model, tea.Cmd) {

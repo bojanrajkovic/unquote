@@ -330,32 +330,43 @@ func (m Model) viewStats() string {
 
 // viewClaimCodeDisplay renders the claim code in a styled box after registration.
 func (m Model) viewClaimCodeDisplay() string {
+	// innerWidth is the text content area; all items are constrained to this width.
+	// boxStyle adds Padding(1,2) = 4 chars horizontal, Border = 2 chars → outer width = innerWidth + 6.
+	const innerWidth = 50
+
 	titleStyle := lipgloss.NewStyle().
 		Bold(true).
 		Foreground(ui.ColorSuccess).
-		MarginBottom(1)
+		Width(innerWidth).
+		Align(lipgloss.Center)
 
 	codeStyle := lipgloss.NewStyle().
 		Bold(true).
 		Foreground(ui.ColorPrimary).
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(ui.ColorPrimary).
-		Padding(0, 2).
-		MarginTop(1).
-		MarginBottom(1)
+		Padding(0, 2)
+
+	// Center the claim code box within innerWidth.
+	centeredCode := lipgloss.NewStyle().
+		Width(innerWidth).
+		Align(lipgloss.Center).
+		Render(codeStyle.Render(m.claimCode))
 
 	boxStyle := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(ui.ColorSuccess).
 		Padding(1, 2).
-		Width(50)
+		Width(innerWidth)
 
 	content := lipgloss.JoinVertical(
-		lipgloss.Center,
+		lipgloss.Left,
 		titleStyle.Render("Registration Complete!"),
+		"",
 		"Your claim code is:",
-		codeStyle.Render(m.claimCode),
-		ui.HelpStyle.Render("Save this code to access your stats from another device."),
+		centeredCode,
+		"",
+		ui.HelpStyle.Render("Save this to access your stats from another device."),
 		"",
 		ui.HelpStyle.Render("Press any key to continue..."),
 	)
