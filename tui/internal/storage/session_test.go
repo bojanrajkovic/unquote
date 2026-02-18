@@ -219,6 +219,58 @@ func TestSessionExists(t *testing.T) {
 	}
 }
 
+func TestSaveAndLoadSession_Uploaded(t *testing.T) {
+	tmpDir := t.TempDir()
+	t.Setenv("XDG_STATE_HOME", tmpDir)
+
+	tests := []struct {
+		name           string
+		session        GameSession
+		expectUploaded bool
+	}{
+		{
+			name: "uploaded true persists",
+			session: GameSession{
+				GameID:         "uploaded-true-test",
+				Inputs:         map[string]string{"A": "X"},
+				Solved:         true,
+				CompletionTime: 120 * time.Second,
+				Uploaded:       true,
+			},
+			expectUploaded: true,
+		},
+		{
+			name: "uploaded false is default",
+			session: GameSession{
+				GameID: "uploaded-false-test",
+				Inputs: map[string]string{"B": "Y"},
+				Solved: false,
+			},
+			expectUploaded: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := SaveSession(&tt.session); err != nil {
+				t.Fatalf("SaveSession failed: %v", err)
+			}
+
+			loaded, err := LoadSession(tt.session.GameID)
+			if err != nil {
+				t.Fatalf("LoadSession failed: %v", err)
+			}
+			if loaded == nil {
+				t.Fatal("LoadSession returned nil")
+			}
+
+			if loaded.Uploaded != tt.expectUploaded {
+				t.Errorf("Uploaded: expected %v, got %v", tt.expectUploaded, loaded.Uploaded)
+			}
+		})
+	}
+}
+
 func TestSaveSession_EmptyGameID(t *testing.T) {
 	session := &GameSession{
 		GameID: "",

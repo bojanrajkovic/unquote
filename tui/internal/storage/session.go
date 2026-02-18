@@ -21,6 +21,7 @@ type GameSession struct {
 	ElapsedTime    time.Duration     `json:"elapsed_time"`
 	CompletionTime time.Duration     `json:"completion_time"`
 	Solved         bool              `json:"solved"`
+	Uploaded       bool              `json:"uploaded"`
 }
 
 // sessionsDir returns the absolute path to the sessions directory (~/.local/state/unquote/sessions/).
