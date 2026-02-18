@@ -20,7 +20,9 @@ func (m Model) Init() tea.Cmd {
 	return loadConfigCmd()
 }
 
-// Update handles incoming messages
+// Update handles incoming messages.
+//
+//nolint:gocyclo // Bubble Tea's Update is a central message dispatcher — each message type needs its own case.
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -58,24 +60,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.handleConfigLoaded(msg)
 
 	case playerRegisteredMsg:
-		m.claimCode = msg.claimCode
-		m.state = StateClaimCodeDisplay
-		return m, tea.Batch(
-			saveConfigCmd(&config.Config{ClaimCode: msg.claimCode, StatsEnabled: true}),
-			reconcileSessionsCmd(m.client, msg.claimCode),
-		)
+		return m.handlePlayerRegistered(msg)
 
 	case configSavedMsg:
-		// If we're in claim code display, wait for user keypress.
-		// If we're still in onboarding (opt-out path), proceed to puzzle.
-		if m.state == StateOnboarding {
-			m.state = StateLoading
-			if m.opts.Random {
-				return m, fetchRandomPuzzleCmd(m.client)
-			}
-			return m, fetchPuzzleCmd(m.client)
-		}
-		return m, nil
+		return m.handleConfigSaved()
 
 	case sessionRecordedMsg:
 		return m.handleSessionRecorded(msg)
@@ -85,6 +73,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case statsFetchedMsg:
 		return m.handleStatsFetched(msg)
+	}
+
+	// Forward unhandled messages to huh form during onboarding (e.g. focus,
+	// cursor blink, and other internal messages returned by form.Init()).
+	if m.state == StateOnboarding && m.form != nil {
+		formModel, cmd := m.form.Update(msg)
+		if f, ok := formModel.(*huh.Form); ok {
+			m.form = f
+		}
+		return m, cmd
 	}
 
 	return m, nil
@@ -127,12 +125,9 @@ func (m Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m.handlePlayingKeyMsg(msg)
 
 	case StateSolved:
-		switch msg.String() {
-		case "s":
-			if m.claimCode != "" {
-				m.state = StateLoading
-				return m, fetchStatsCmd(m.client, m.claimCode)
-			}
+		if msg.String() == "s" && m.claimCode != "" {
+			m.state = StateLoading
+			return m, fetchStatsCmd(m.client, m.claimCode)
 		}
 		return m, nil
 
@@ -149,6 +144,28 @@ func (m Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, fetchPuzzleCmd(m.client)
 	}
 
+	return m, nil
+}
+
+func (m Model) handlePlayerRegistered(msg playerRegisteredMsg) (tea.Model, tea.Cmd) {
+	m.claimCode = msg.claimCode
+	m.state = StateClaimCodeDisplay
+	return m, tea.Batch(
+		saveConfigCmd(&config.Config{ClaimCode: msg.claimCode, StatsEnabled: true}),
+		reconcileSessionsCmd(m.client, msg.claimCode),
+	)
+}
+
+func (m Model) handleConfigSaved() (tea.Model, tea.Cmd) {
+	// If we're in claim code display, wait for user keypress.
+	// If we're still in onboarding (opt-out path), proceed to puzzle.
+	if m.state == StateOnboarding {
+		m.state = StateLoading
+		if m.opts.Random {
+			return m, fetchRandomPuzzleCmd(m.client)
+		}
+		return m, fetchPuzzleCmd(m.client)
+	}
 	return m, nil
 }
 
@@ -203,6 +220,8 @@ func (m Model) handleConfigLoaded(msg configLoadedMsg) (tea.Model, tea.Cmd) {
 					"stats from another device.").
 				Next(true).
 				NextLabel("Continue"),
+		),
+		huh.NewGroup(
 			huh.NewConfirm().
 				Title("Track my stats?").
 				Affirmative("Yes, track my stats").

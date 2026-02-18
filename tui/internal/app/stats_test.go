@@ -11,8 +11,8 @@ import (
 
 // sampleStats returns a populated PlayerStatsResponse for testing.
 func sampleStats() *api.PlayerStatsResponse {
-	bestTime := 128000.0   // 2:08
-	avgTime := 195000.0    // 3:15
+	bestTime := 128000.0 // 2:08
+	avgTime := 195000.0  // 3:15
 	return &api.PlayerStatsResponse{
 		ClaimCode:     "TIGER-MAPLE-7492",
 		GamesPlayed:   42,
@@ -47,15 +47,15 @@ func statsModel(stats *api.PlayerStatsResponse, statsOnly bool) Model {
 func TestFormatMs(t *testing.T) {
 	tests := []struct {
 		name     string
-		ms       float64
 		expected string
+		ms       float64
 	}{
-		{"zero", 0, "0:00"},
-		{"one minute", 60000, "1:00"},
-		{"2:08", 128000, "2:08"},
-		{"3:15", 195000, "3:15"},
-		{"10:00", 600000, "10:00"},
-		{"partial seconds truncated", 128500, "2:08"},
+		{name: "zero", ms: 0, expected: "0:00"},
+		{name: "one minute", ms: 60000, expected: "1:00"},
+		{name: "2:08", ms: 128000, expected: "2:08"},
+		{name: "3:15", ms: 195000, expected: "3:15"},
+		{name: "10:00", ms: 600000, expected: "10:00"},
+		{name: "partial seconds truncated", ms: 128500, expected: "2:08"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

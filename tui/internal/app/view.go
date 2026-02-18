@@ -242,12 +242,15 @@ func (m Model) viewStats() string {
 		points[i] = math.NaN()
 	}
 
-	// Fill points from recentSolves (API returns them ordered; use date map)
-	for i, s := range m.stats.RecentSolves {
-		if i >= dayWindow {
-			break
-		}
-		points[dayWindow-len(m.stats.RecentSolves)+i] = s.CompletionTime / 60000.0
+	// Fill points from recentSolves (API returns them ordered; use date map).
+	// Cap to dayWindow entries and right-align in the points array.
+	n := len(m.stats.RecentSolves)
+	if n > dayWindow {
+		n = dayWindow
+	}
+	offset := dayWindow - n
+	for i := range n {
+		points[offset+i] = m.stats.RecentSolves[len(m.stats.RecentSolves)-n+i].CompletionTime / 60000.0
 		hasData = true
 	}
 
