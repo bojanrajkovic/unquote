@@ -38,6 +38,10 @@ func (m Model) View() string {
 		return m.viewError()
 	case StatePlaying, StateChecking, StateSolved:
 		return m.viewPlaying()
+	case StateOnboarding:
+		return m.viewOnboarding()
+	case StateClaimCodeDisplay:
+		return m.viewClaimCodeDisplay()
 	default:
 		return "Unknown state"
 	}
@@ -190,4 +194,48 @@ func (m Model) renderHelp() string {
 	default:
 		return ui.HelpStyle.Render("[Enter] Submit  [Ctrl+C] Clear  [Esc] Quit")
 	}
+}
+
+// viewOnboarding renders the huh onboarding form centered in the terminal.
+func (m Model) viewOnboarding() string {
+	if m.form == nil {
+		return ""
+	}
+	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, m.form.View())
+}
+
+// viewClaimCodeDisplay renders the claim code in a styled box after registration.
+func (m Model) viewClaimCodeDisplay() string {
+	titleStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(ui.ColorSuccess).
+		MarginBottom(1)
+
+	codeStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(ui.ColorPrimary).
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(ui.ColorPrimary).
+		Padding(0, 2).
+		MarginTop(1).
+		MarginBottom(1)
+
+	boxStyle := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(ui.ColorSuccess).
+		Padding(1, 2).
+		Width(50)
+
+	content := lipgloss.JoinVertical(
+		lipgloss.Center,
+		titleStyle.Render("Registration Complete!"),
+		"Your claim code is:",
+		codeStyle.Render(m.claimCode),
+		ui.HelpStyle.Render("Save this code to access your stats from another device."),
+		"",
+		ui.HelpStyle.Render("Press any key to continue..."),
+	)
+
+	box := boxStyle.Render(content)
+	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, box)
 }
