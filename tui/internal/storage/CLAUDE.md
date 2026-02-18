@@ -1,6 +1,6 @@
 # Storage
 
-Last verified: 2026-02-08
+Last verified: 2026-02-17
 
 ## Purpose
 
@@ -8,8 +8,10 @@ Provides best-effort session persistence so players can resume puzzles across TU
 
 ## Contracts
 
-- **Exposes**: `GameSession`, `SaveSession()`, `LoadSession()`, `SessionExists()`
+- **Exposes**: `GameSession`, `SaveSession()`, `LoadSession()`, `SessionExists()`, `ListSolvedSessions()`
+- **GameSession fields**: `SavedAt`, `Inputs`, `GameID`, `ElapsedTime`, `CompletionTime`, `Solved`, `Uploaded`
 - **Guarantees**: Atomic writes (temp file + rename). `LoadSession` returns nil, nil for missing files. All file operations confined to sessions directory via `os.Root` (kernel-enforced).
+- **ListSolvedSessions**: Returns all sessions where `Solved=true` and `Uploaded=false` (reconciliation candidates). Returns empty slice (not error) if directory missing. Uses `os.Open` for enumeration (os.Root has no ReadDir), then `os.Root` for confined reads.
 - **Expects**: Writable XDG state directory.
 
 ## Dependencies
