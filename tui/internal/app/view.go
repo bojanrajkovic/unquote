@@ -348,7 +348,7 @@ func (m Model) viewClaimCodeDisplay() string {
 
 	// Perforated divider — dashes suggest a tear-off line between sections.
 	divider := centered(lipgloss.NewStyle().Foreground(ui.ColorMuted)).
-		Render(strings.Repeat("┄", innerWidth-4))
+		Render(strings.Repeat("─", innerWidth-4))
 
 	title := centered(lipgloss.NewStyle().Bold(true).Foreground(ui.ColorSuccess)).
 		Render("★  Registration Complete!  ★")
@@ -365,16 +365,20 @@ func (m Model) viewClaimCodeDisplay() string {
 	//
 	// The ) and ( sit at the same column as the first/last ─, with corners
 	// offset outward by one space — this gives the scalloped/carved edge look.
-	bs := lipgloss.NewStyle().Foreground(ui.ColorPrimary)
-	codeText := lipgloss.NewStyle().Bold(true).Foreground(ui.ColorPrimary).Render(m.claimCode)
-	codeWidth := lipgloss.Width(codeText)
+	//
+	// Build as plain text first, then apply a single style so lipgloss can
+	// measure the entire block reliably (no interleaved ANSI sequences).
 	const codePad = 3
-	// n: all rows = n+2 wide; derived from mid row = 1+1+codePad+codeWidth+codePad+1+1.
-	n := codeWidth + 2*codePad + 2
-	scallTop := bs.Render("┌" + strings.Repeat("─", n) + "┐")
-	scallMid := " " + bs.Render(")") + strings.Repeat(" ", codePad) + codeText + strings.Repeat(" ", codePad) + bs.Render("(") + " "
-	scallBot := bs.Render("└" + strings.Repeat("─", n) + "┘")
-	scallopedCode := strings.Join([]string{scallTop, scallMid, scallBot}, "\n")
+	// Claim codes are ASCII (A-Z, 0-9, -) so len == visible width.
+	codeLen := len(m.claimCode)
+	// n: all rows = n+2 wide; derived from mid row = 1+1+codePad+codeLen+codePad+1+1.
+	n := codeLen + 2*codePad + 2
+	plainBox := strings.Join([]string{
+		"┌" + strings.Repeat("─", n) + "┐",
+		" )" + strings.Repeat(" ", codePad) + m.claimCode + strings.Repeat(" ", codePad) + "( ",
+		"└" + strings.Repeat("─", n) + "┘",
+	}, "\n")
+	scallopedCode := lipgloss.NewStyle().Bold(true).Foreground(ui.ColorPrimary).Render(plainBox)
 	centeredCode := centered(lipgloss.NewStyle()).Render(scallopedCode)
 
 	content := lipgloss.JoinVertical(
