@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/bojanrajkovic/unquote/tui/internal/api"
+	"github.com/bojanrajkovic/unquote/tui/internal/config"
 	"github.com/bojanrajkovic/unquote/tui/internal/storage"
 )
 
@@ -29,3 +30,16 @@ type tickMsg time.Time
 type sessionLoadedMsg struct {
 	session *storage.GameSession
 }
+
+// configLoadedMsg is sent when the config has been loaded from disk
+type configLoadedMsg struct {
+	config *config.Config // nil if no config file exists
+}
+
+// playerRegisteredMsg is sent when a player has been registered via the API
+type playerRegisteredMsg struct {
+	claimCode string
+}
+
+// configSavedMsg is sent when the config has been saved to disk
+type configSavedMsg struct{}
