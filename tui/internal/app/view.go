@@ -356,13 +356,26 @@ func (m Model) viewClaimCodeDisplay() string {
 	label := centered(lipgloss.NewStyle().Foreground(ui.ColorMuted).Bold(true)).
 		Render("— YOUR CLAIM CODE —")
 
-	codeStyle := lipgloss.NewStyle().
-		Bold(true).
-		Foreground(ui.ColorPrimary).
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(ui.ColorPrimary).
-		Padding(0, 3)
-	centeredCode := centered(lipgloss.NewStyle()).Render(codeStyle.Render(m.claimCode))
+	// Build the scalloped claim code box.
+	// All three rows share the same visible width so they align correctly.
+	//
+	//   ┌──────────────────────────────┐   ← top: ┌ + ─*n + ┐  (width = n+2)
+	//    )   FRACTAL-CIPHER-3734   (       ← mid: sp + ) + pad + code + pad + ( + sp (= n+2)
+	//   └──────────────────────────────┘   ← bot: └ + ─*n + ┘  (width = n+2)
+	//
+	// The ) and ( sit at the same column as the first/last ─, with corners
+	// offset outward by one space — this gives the scalloped/carved edge look.
+	bs := lipgloss.NewStyle().Foreground(ui.ColorPrimary)
+	codeText := lipgloss.NewStyle().Bold(true).Foreground(ui.ColorPrimary).Render(m.claimCode)
+	codeWidth := lipgloss.Width(codeText)
+	const codePad = 3
+	// n: all rows = n+2 wide; derived from mid row = 1+1+codePad+codeWidth+codePad+1+1.
+	n := codeWidth + 2*codePad + 2
+	scallTop := bs.Render("┌" + strings.Repeat("─", n) + "┐")
+	scallMid := " " + bs.Render(")") + strings.Repeat(" ", codePad) + codeText + strings.Repeat(" ", codePad) + bs.Render("(") + " "
+	scallBot := bs.Render("└" + strings.Repeat("─", n) + "┘")
+	scallopedCode := strings.Join([]string{scallTop, scallMid, scallBot}, "\n")
+	centeredCode := centered(lipgloss.NewStyle()).Render(scallopedCode)
 
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
