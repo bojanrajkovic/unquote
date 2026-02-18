@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"testing"
 	"time"
+
+	"github.com/adrg/xdg"
 )
 
 func TestGameSessionSerialization(t *testing.T) {
@@ -287,6 +289,78 @@ func TestLoadSession_EmptyGameID(t *testing.T) {
 	_, err := LoadSession("")
 	if err == nil {
 		t.Error("LoadSession should error for empty game ID")
+	}
+}
+
+func TestListSolvedSessions(t *testing.T) {
+	tmpDir := t.TempDir()
+	t.Setenv("XDG_STATE_HOME", tmpDir)
+	xdg.Reload()
+	t.Cleanup(xdg.Reload) // restore xdg paths when test finishes
+
+	// Create sessions covering all combinations
+	sessions := []GameSession{
+		{
+			GameID:         "solved-not-uploaded",
+			Inputs:         map[string]string{"A": "X"},
+			Solved:         true,
+			CompletionTime: 60 * time.Second,
+			Uploaded:       false,
+		},
+		{
+			GameID:         "solved-and-uploaded",
+			Inputs:         map[string]string{"B": "Y"},
+			Solved:         true,
+			CompletionTime: 90 * time.Second,
+			Uploaded:       true,
+		},
+		{
+			GameID:   "unsolved-not-uploaded",
+			Inputs:   map[string]string{"C": "Z"},
+			Solved:   false,
+			Uploaded: false,
+		},
+	}
+
+	for i := range sessions {
+		if err := SaveSession(&sessions[i]); err != nil {
+			t.Fatalf("SaveSession failed for %q: %v", sessions[i].GameID, err)
+		}
+	}
+
+	result, err := ListSolvedSessions()
+	if err != nil {
+		t.Fatalf("ListSolvedSessions failed: %v", err)
+	}
+
+	// Only the solved+not-uploaded session should be returned
+	if len(result) != 1 {
+		t.Fatalf("expected 1 session, got %d", len(result))
+	}
+	if result[0].GameID != "solved-not-uploaded" {
+		t.Errorf("expected game ID %q, got %q", "solved-not-uploaded", result[0].GameID)
+	}
+	if !result[0].Solved {
+		t.Error("returned session should be solved")
+	}
+	if result[0].Uploaded {
+		t.Error("returned session should not be uploaded")
+	}
+}
+
+func TestListSolvedSessions_EmptyDir(t *testing.T) {
+	tmpDir := t.TempDir()
+	t.Setenv("XDG_STATE_HOME", tmpDir)
+	xdg.Reload()
+	t.Cleanup(xdg.Reload) // restore xdg paths when test finishes
+
+	// No sessions saved — directory doesn't exist yet
+	result, err := ListSolvedSessions()
+	if err != nil {
+		t.Fatalf("ListSolvedSessions should not error for empty/missing dir: %v", err)
+	}
+	if len(result) != 0 {
+		t.Errorf("expected 0 sessions, got %d", len(result))
 	}
 }
 

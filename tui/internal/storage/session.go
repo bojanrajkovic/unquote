@@ -121,6 +121,64 @@ func LoadSession(gameID string) (*GameSession, error) {
 	return &session, nil
 }
 
+// ListSolvedSessions returns all sessions that are solved but not yet uploaded.
+// These are candidates for reconciliation with the server.
+// Returns an empty slice (not an error) if the sessions directory doesn't exist.
+// os.Root does not expose ReadDir; use os.Open for enumeration, os.OpenRoot for confined reads.
+func ListSolvedSessions() ([]GameSession, error) {
+	dir, err := sessionsDir()
+	if err != nil {
+		return nil, fmt.Errorf("getting sessions directory: %w", err)
+	}
+
+	// Use os.Open for enumeration (os.Root has no ReadDir)
+	// os.Root does not expose ReadDir; use os.Open for enumeration, os.OpenRoot for confined reads
+	f, err := os.Open(dir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return []GameSession{}, nil
+		}
+		return nil, fmt.Errorf("opening sessions directory: %w", err)
+	}
+	defer f.Close()
+
+	entries, err := f.ReadDir(-1)
+	if err != nil {
+		return nil, fmt.Errorf("reading sessions directory: %w", err)
+	}
+
+	root, err := sessionsRoot()
+	if err != nil {
+		return nil, fmt.Errorf("opening sessions root: %w", err)
+	}
+	defer root.Close()
+
+	var result []GameSession
+	for _, entry := range entries {
+		name := entry.Name()
+		// Skip non-JSON files and the .keep probe file
+		if entry.IsDir() || name == ".keep" || filepath.Ext(name) != ".json" {
+			continue
+		}
+
+		data, err := root.ReadFile(name)
+		if err != nil {
+			return nil, fmt.Errorf("reading session file %q: %w", name, err)
+		}
+
+		var session GameSession
+		if err := json.Unmarshal(data, &session); err != nil {
+			return nil, fmt.Errorf("unmarshaling session file %q: %w", name, err)
+		}
+
+		if session.Solved && !session.Uploaded {
+			result = append(result, session)
+		}
+	}
+
+	return result, nil
+}
+
 // SessionExists checks if a session file exists for the given game ID.
 func SessionExists(gameID string) (bool, error) {
 	if gameID == "" {
