@@ -2,10 +2,12 @@ package app
 
 import (
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/guptarohit/asciigraph"
 	zone "github.com/lrstanley/bubblezone"
 
 	"github.com/bojanrajkovic/unquote/tui/internal/puzzle"
@@ -42,6 +44,8 @@ func (m Model) View() string {
 		return m.viewOnboarding()
 	case StateClaimCodeDisplay:
 		return m.viewClaimCodeDisplay()
+	case StateStats:
+		return m.viewStats()
 	default:
 		return "Unknown state"
 	}
@@ -206,6 +210,116 @@ func (m Model) viewOnboarding() string {
 		return ""
 	}
 	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, m.form.View())
+}
+
+// formatMs formats milliseconds as M:SS (e.g. 128000 → "2:08").
+func formatMs(ms float64) string {
+	minutes := int(ms) / 60000
+	seconds := (int(ms) % 60000) / 1000
+	return fmt.Sprintf("%d:%02d", minutes, seconds)
+}
+
+// viewStats renders the stats screen with a solve-time graph and summary sidebar.
+func (m Model) viewStats() string {
+	header := m.renderHeader()
+
+	if m.stats == nil {
+		help := ui.HelpStyle.Render("[Esc] Quit")
+		return lipgloss.JoinVertical(lipgloss.Left, header, "", ui.ErrorStyle.Render("Failed to load stats."), "", help)
+	}
+
+	const sidebarWidth = 28
+	const dayWindow = 30
+
+	// Build solve-time data points (last 30 days, NaN for missing days)
+	solveMap := make(map[string]float64, len(m.stats.RecentSolves))
+	for _, s := range m.stats.RecentSolves {
+		solveMap[s.Date] = s.CompletionTime
+	}
+
+	points := make([]float64, dayWindow)
+	hasData := false
+	for i := range dayWindow {
+		points[i] = math.NaN()
+	}
+
+	// Fill points from recentSolves (API returns them ordered; use date map)
+	for i, s := range m.stats.RecentSolves {
+		if i >= dayWindow {
+			break
+		}
+		points[dayWindow-len(m.stats.RecentSolves)+i] = s.CompletionTime / 60000.0
+		hasData = true
+	}
+
+	// Build graph panel
+	graphWidth := m.width - sidebarWidth - 6
+	if graphWidth < 20 {
+		graphWidth = 20
+	}
+
+	var graphPanel string
+	if !hasData {
+		graphPanel = ui.HelpStyle.Render("No solve history in the last 30 days.")
+	} else {
+		plot := asciigraph.Plot(points,
+			asciigraph.Height(10),
+			asciigraph.Width(graphWidth),
+			asciigraph.Precision(1),
+			asciigraph.LowerBound(0),
+			asciigraph.Caption("Solve Times (last 30 days, minutes)"),
+		)
+		graphPanel = plot
+	}
+
+	// Build sidebar panel
+	labelStyle := lipgloss.NewStyle().Foreground(ui.ColorMuted)
+	valueStyle := lipgloss.NewStyle().Foreground(ui.ColorPrimary).Bold(true)
+
+	formatOptMs := func(ms *float64) string {
+		if ms == nil {
+			return "—"
+		}
+		return formatMs(*ms)
+	}
+
+	winRatePct := fmt.Sprintf("%.1f%%", m.stats.WinRate*100)
+
+	lines := []string{
+		labelStyle.Render("Games Played"),
+		valueStyle.Render(fmt.Sprintf("%d", m.stats.GamesPlayed)),
+		"",
+		labelStyle.Render("Games Solved"),
+		valueStyle.Render(fmt.Sprintf("%d", m.stats.GamesSolved)),
+		"",
+		labelStyle.Render("Win Rate"),
+		valueStyle.Render(winRatePct),
+		"",
+		labelStyle.Render("Current Streak"),
+		valueStyle.Render(fmt.Sprintf("%d", m.stats.CurrentStreak)),
+		"",
+		labelStyle.Render("Best Streak"),
+		valueStyle.Render(fmt.Sprintf("%d", m.stats.BestStreak)),
+		"",
+		labelStyle.Render("Best Time"),
+		valueStyle.Render(formatOptMs(m.stats.BestTime)),
+		"",
+		labelStyle.Render("Avg Time"),
+		valueStyle.Render(formatOptMs(m.stats.AverageTime)),
+	}
+
+	sidebarContent := strings.Join(lines, "\n")
+	sidebarPanel := lipgloss.NewStyle().Width(sidebarWidth).Padding(0, 2).Render(sidebarContent)
+
+	content := lipgloss.JoinHorizontal(lipgloss.Top, graphPanel, "  ", sidebarPanel)
+
+	helpText := "[Esc] Quit"
+	if !m.statsOnly {
+		helpText = "[Esc] Back"
+	}
+	help := ui.HelpStyle.Render(helpText)
+
+	return lipgloss.JoinVertical(lipgloss.Left, header, "", content, "", help)
 }
 
 // viewClaimCodeDisplay renders the claim code in a styled box after registration.
