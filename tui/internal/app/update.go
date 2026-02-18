@@ -217,11 +217,7 @@ func (m Model) handleConfigLoaded(msg configLoadedMsg) (tea.Model, tea.Cmd) {
 					"  - No email, no password\n\n"+
 					"You'll get a random claim code (like TIGER-MAPLE-7492)\n"+
 					"that identifies your stats. Save it to access your\n"+
-					"stats from another device.").
-				Next(true).
-				NextLabel("Continue"),
-		),
-		huh.NewGroup(
+					"stats from another device."),
 			huh.NewConfirm().
 				Title("Track my stats?").
 				Affirmative("Yes, track my stats").
