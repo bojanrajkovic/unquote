@@ -250,8 +250,9 @@ func TestRegisterPlayer_Success(t *testing.T) {
 		if r.Method != "POST" {
 			t.Errorf("expected POST method, got %s", r.Method)
 		}
-		if r.Header.Get("Content-Type") != "application/json" {
-			t.Errorf("expected Content-Type application/json, got %s", r.Header.Get("Content-Type"))
+		// POST /player has no body, so no Content-Type header should be sent
+		if ct := r.Header.Get("Content-Type"); ct != "" {
+			t.Errorf("expected no Content-Type header, got %s", ct)
 		}
 
 		w.Header().Set("Content-Type", "application/json")

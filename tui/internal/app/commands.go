@@ -143,7 +143,7 @@ func saveSessionCmd(gameID string, cells []puzzle.Cell, elapsed time.Duration) t
 }
 
 // recordSessionCmd creates a command to record a solved session to the server
-func recordSessionCmd(client *api.Client, claimCode string, gameID string, completionTime time.Duration) tea.Cmd {
+func recordSessionCmd(client *api.Client, claimCode, gameID string, completionTime time.Duration) tea.Cmd {
 	return func() tea.Msg {
 		err := client.RecordSession(claimCode, gameID, completionTime.Milliseconds())
 		if err != nil {

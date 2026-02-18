@@ -148,6 +148,12 @@ func (m Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) handlePlayerRegistered(msg playerRegisteredMsg) (tea.Model, tea.Cmd) {
+	if msg.claimCode == "" {
+		m.state = StateError
+		m.errorMsg = "Registration failed: server returned an empty claim code"
+		m.loadingMsg = ""
+		return m, nil
+	}
 	m.claimCode = msg.claimCode
 	m.state = StateClaimCodeDisplay
 	m.loadingMsg = ""
@@ -290,9 +296,18 @@ func (m Model) handleMouseMsg(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 
 func (m Model) handleErrorKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	if msg.String() == "r" {
-		// Retry on error
 		m.state = StateLoading
 		m.errorMsg = ""
+		// If registration was in-flight (opted in but not yet registered), retry it.
+		if m.cfg != nil && m.cfg.StatsEnabled && m.claimCode == "" {
+			m.loadingMsg = "Registering..."
+			return m, registerPlayerCmd(m.client)
+		}
+		m.loadingMsg = ""
+		// Stats mode: retry fetching stats.
+		if m.opts.StatsMode {
+			return m, fetchStatsCmd(m.client, m.claimCode)
+		}
 		if m.opts.Random {
 			return m, fetchRandomPuzzleCmd(m.client)
 		}

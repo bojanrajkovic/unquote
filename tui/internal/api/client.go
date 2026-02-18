@@ -156,11 +156,10 @@ func (c *Client) FetchRandomPuzzle() (*Puzzle, error) {
 func (c *Client) RegisterPlayer() (*RegisterPlayerResponse, error) {
 	url := fmt.Sprintf("%s/player", c.baseURL)
 
-	req, err := http.NewRequest("POST", url, nil)
+	req, err := http.NewRequest("POST", url, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
-	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
