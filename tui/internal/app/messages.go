@@ -43,3 +43,11 @@ type playerRegisteredMsg struct {
 
 // configSavedMsg is sent when the config has been saved to disk
 type configSavedMsg struct{}
+
+// sessionRecordedMsg is sent when a session has been successfully uploaded to the server
+type sessionRecordedMsg struct {
+	gameID string
+}
+
+// reconciliationDoneMsg is sent when session reconciliation has completed
+type reconciliationDoneMsg struct{}

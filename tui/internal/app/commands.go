@@ -142,6 +142,53 @@ func saveSessionCmd(gameID string, cells []puzzle.Cell, elapsed time.Duration) t
 	}
 }
 
+// recordSessionCmd creates a command to record a solved session to the server
+func recordSessionCmd(client *api.Client, claimCode string, gameID string, completionTime time.Duration) tea.Cmd {
+	return func() tea.Msg {
+		err := client.RecordSession(claimCode, gameID, completionTime.Milliseconds())
+		if err != nil {
+			// Silently ignore — stats recording is best-effort (AC3.4)
+			return nil
+		}
+		return sessionRecordedMsg{gameID: gameID}
+	}
+}
+
+// markSessionUploadedCmd creates a command to mark a session as uploaded in local storage
+func markSessionUploadedCmd(gameID string) tea.Cmd {
+	return func() tea.Msg {
+		session, err := storage.LoadSession(gameID)
+		if err != nil || session == nil {
+			return nil
+		}
+		session.Uploaded = true
+		_ = storage.SaveSession(session)
+		return nil
+	}
+}
+
+// reconcileSessionsCmd creates a command to upload all solved-but-not-uploaded sessions
+func reconcileSessionsCmd(client *api.Client, claimCode string) tea.Cmd {
+	return func() tea.Msg {
+		sessions, err := storage.ListSolvedSessions()
+		if err != nil || len(sessions) == 0 {
+			return reconciliationDoneMsg{}
+		}
+		for _, s := range sessions {
+			err := client.RecordSession(claimCode, s.GameID, s.CompletionTime.Milliseconds())
+			if err != nil {
+				// Silently ignore individual failures (AC5.5)
+				continue
+			}
+			// Mark as uploaded — s is a range copy, but that's fine since we only
+			// need to persist the change via SaveSession, not update the original slice
+			s.Uploaded = true
+			_ = storage.SaveSession(&s)
+		}
+		return reconciliationDoneMsg{}
+	}
+}
+
 // saveSolvedSessionCmd creates a command to save the solved session state
 func saveSolvedSessionCmd(gameID string, cells []puzzle.Cell, completionTime time.Duration) tea.Cmd {
 	return func() tea.Msg {
