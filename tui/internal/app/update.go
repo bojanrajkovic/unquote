@@ -60,7 +60,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case playerRegisteredMsg:
 		m.claimCode = msg.claimCode
 		m.state = StateClaimCodeDisplay
-		return m, nil
+		return m, tea.Batch(
+			saveConfigCmd(&config.Config{ClaimCode: msg.claimCode, StatsEnabled: true}),
+			reconcileSessionsCmd(m.client, msg.claimCode),
+		)
 
 	case configSavedMsg:
 		// If we're in claim code display, wait for user keypress.
@@ -72,6 +75,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, fetchPuzzleCmd(m.client)
 		}
+		return m, nil
+
+	case sessionRecordedMsg:
+		return m.handleSessionRecorded(msg)
+
+	case reconciliationDoneMsg:
 		return m, nil
 	}
 
@@ -128,11 +137,21 @@ func (m Model) handleConfigLoaded(msg configLoadedMsg) (tea.Model, tea.Cmd) {
 	if msg.config != nil {
 		// Config exists — skip onboarding
 		m.cfg = msg.config
+		m.claimCode = msg.config.ClaimCode
 		m.state = StateLoading
+
+		var fetchCmd tea.Cmd
 		if m.opts.Random {
-			return m, fetchRandomPuzzleCmd(m.client)
+			fetchCmd = fetchRandomPuzzleCmd(m.client)
+		} else {
+			fetchCmd = fetchPuzzleCmd(m.client)
 		}
-		return m, fetchPuzzleCmd(m.client)
+
+		cmds := []tea.Cmd{fetchCmd}
+		if m.claimCode != "" {
+			cmds = append(cmds, reconcileSessionsCmd(m.client, m.claimCode))
+		}
+		return m, tea.Batch(cmds...)
 	}
 
 	// No config — show onboarding form (AC2.1)
@@ -336,12 +355,23 @@ func (m Model) handleSolutionChecked(msg solutionCheckedMsg) (tea.Model, tea.Cmd
 		m.statusMsg = ""
 		// Capture final elapsed time
 		m.elapsedAtPause += time.Since(m.startTime)
-		// Save solved state
-		return m, saveSolvedSessionCmd(m.puzzle.ID, m.cells, m.elapsedAtPause)
+
+		cmds := []tea.Cmd{saveSolvedSessionCmd(m.puzzle.ID, m.cells, m.elapsedAtPause)}
+
+		if m.claimCode != "" {
+			cmds = append(cmds, recordSessionCmd(m.client, m.claimCode, m.puzzle.ID, m.elapsedAtPause))
+		}
+
+		return m, tea.Batch(cmds...)
 	}
 	m.state = StatePlaying
 	m.statusMsg = "Not quite right. Keep trying!"
 	return m, nil
+}
+
+func (m Model) handleSessionRecorded(msg sessionRecordedMsg) (tea.Model, tea.Cmd) {
+	// Mark session as uploaded in background — fire and forget
+	return m, markSessionUploadedCmd(msg.gameID)
 }
 
 func (m Model) handlePuzzleFetched(msg puzzleFetchedMsg) (tea.Model, tea.Cmd) {
