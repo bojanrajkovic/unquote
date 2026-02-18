@@ -51,3 +51,8 @@ type sessionRecordedMsg struct {
 
 // reconciliationDoneMsg is sent when session reconciliation has completed
 type reconciliationDoneMsg struct{}
+
+// statsFetchedMsg is sent when player stats have been loaded from the API
+type statsFetchedMsg struct {
+	stats *api.PlayerStatsResponse
+}

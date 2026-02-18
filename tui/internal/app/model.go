@@ -28,12 +28,14 @@ const (
 	StateError
 	StateOnboarding
 	StateClaimCodeDisplay
+	StateStats
 )
 
 // Options configures the application behavior.
 type Options struct {
-	Insecure bool
-	Random   bool
+	Insecure  bool
+	Random    bool
+	StatsMode bool
 }
 
 // Model holds the application state
@@ -43,7 +45,8 @@ type Model struct {
 	puzzle         *api.Puzzle
 	client         *api.Client
 	cfg            *config.Config
-	claimCode      string // claim code after registration
+	stats          *api.PlayerStatsResponse // stats data from API (nil until fetched)
+	claimCode      string                   // claim code after registration
 	errorMsg       string
 	statusMsg      string
 	cells          []puzzle.Cell
@@ -55,6 +58,7 @@ type Model struct {
 	opts           Options
 	optIn          bool // bound to huh.Confirm value
 	sizeReady      bool
+	statsOnly      bool // true when launched via `unquote stats` subcommand
 }
 
 // New creates a new Model with initial state
