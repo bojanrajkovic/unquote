@@ -340,11 +340,14 @@ func (m Model) viewClaimCodeDisplay() string {
 	}
 
 	// Outer box uses a double border for the "ticket" look.
+	// Width must be innerWidth + 2*horizontalPadding so the effective text area
+	// inside the padding equals innerWidth (matching the centered() item widths).
+	const hPad = 2
 	boxStyle := lipgloss.NewStyle().
 		Border(lipgloss.DoubleBorder()).
 		BorderForeground(ui.ColorSuccess).
-		Padding(1, 2).
-		Width(innerWidth)
+		Padding(1, hPad).
+		Width(innerWidth + 2*hPad)
 
 	// Perforated divider — dashes suggest a tear-off line between sections.
 	divider := centered(lipgloss.NewStyle().Foreground(ui.ColorMuted)).
@@ -381,6 +384,12 @@ func (m Model) viewClaimCodeDisplay() string {
 	scallopedCode := lipgloss.NewStyle().Bold(true).Foreground(ui.ColorPrimary).Render(plainBox)
 	centeredCode := centered(lipgloss.NewStyle()).Render(scallopedCode)
 
+	// Use a plain muted style (no PaddingTop) for the note/prompt lines. The
+	// blank "" entries in JoinVertical already provide vertical separation, and
+	// ui.HelpStyle's PaddingTop(1) causes lipgloss to word-wrap text that would
+	// otherwise fit on a single line when combined with Width(innerWidth).
+	noteStyle := lipgloss.NewStyle().Foreground(ui.ColorMuted)
+
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
 		title,
@@ -393,9 +402,9 @@ func (m Model) viewClaimCodeDisplay() string {
 		"",
 		divider,
 		"",
-		centered(ui.HelpStyle).Render("Save this to access your stats from any device."),
+		centered(noteStyle).Render("Save this to access your stats from any device."),
 		"",
-		centered(ui.HelpStyle).Render("Press any key to continue..."),
+		centered(noteStyle).Render("Press any key to continue..."),
 	)
 
 	box := boxStyle.Render(content)
