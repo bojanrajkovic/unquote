@@ -239,10 +239,11 @@ func (m Model) handleOnboardingKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	if m.form.State == huh.StateCompleted {
 		if m.optIn {
-			// AC2.2: opt-in — save partial config and register player
+			// AC2.2: opt-in — show loading while registering
 			cfg := &config.Config{StatsEnabled: true}
 			m.cfg = cfg
-			return m, m.handleOptIn(cfg)
+			m.state = StateLoading
+			return m, registerPlayerCmd(m.client)
 		}
 		// AC2.3: opt-out — save config and go to puzzle
 		cfg := &config.Config{StatsEnabled: false}
@@ -251,12 +252,6 @@ func (m Model) handleOnboardingKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, cmd
-}
-
-// handleOptIn builds the combined command for opt-in: save config + register player.
-// Extracted for testability.
-func (m Model) handleOptIn(cfg *config.Config) tea.Cmd {
-	return tea.Batch(saveConfigCmd(cfg), registerPlayerCmd(m.client))
 }
 
 func (m Model) handleMouseMsg(msg tea.MouseMsg) (tea.Model, tea.Cmd) {

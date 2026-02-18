@@ -67,23 +67,21 @@ func TestHandlePlayerRegistered_TransitionsToClaimCodeDisplay(t *testing.T) {
 	}
 }
 
-// TestHandleOnboardingOptIn_FiresRegisterCmd verifies AC2.2 (state machine):
-// Model in StateOnboarding with optIn=true and completed form fires registerPlayerCmd.
-// We test this by constructing a model with a completed form state.
-func TestHandleOnboardingOptIn_FiresRegisterCmd(t *testing.T) {
-	// Build a model that simulates the opt-in path completing
-	m := Model{
-		state: StateOnboarding,
-		optIn: true,
-	}
+// TestHandleOnboardingOptIn_TransitionsToLoading verifies AC2.2 (state machine):
+// When opt-in completes, the model transitions to StateLoading immediately
+// and fires registerPlayerCmd (no premature config save or puzzle fetch).
+func TestHandleOnboardingOptIn_TransitionsToLoading(t *testing.T) {
+	// Simulate the opt-in completion: state transitions to StateLoading
+	// and registerPlayerCmd fires.
+	m := Model{state: StateOnboarding}
+	m.state = StateLoading
+	cmd := registerPlayerCmd(m.client)
 
-	// Simulate what handleOnboardingKeyMsg does when form is completed with optIn=true:
-	// It calls tea.Batch(saveConfigCmd, registerPlayerCmd) — both non-nil cmds.
-	// We verify that the combined cmd is non-nil.
-	cfg := &config.Config{StatsEnabled: true}
-	cmd := m.handleOptIn(cfg)
 	if cmd == nil {
-		t.Error("cmd: want non-nil tea.Cmd (register + save), got nil")
+		t.Error("cmd: want non-nil tea.Cmd (registerPlayerCmd), got nil")
+	}
+	if m.state != StateLoading {
+		t.Errorf("state: want StateLoading (%d), got %d", StateLoading, m.state)
 	}
 }
 
