@@ -43,6 +43,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.PersistentFlags().BoolVar(&random, "random", false, "play a random puzzle instead of today's")
 
 	rootCmd.AddCommand(newVersionCmd())
+	rootCmd.AddCommand(newRegisterCmd(&insecure))
 
 	return rootCmd
 }
