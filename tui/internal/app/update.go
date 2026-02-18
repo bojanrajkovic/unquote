@@ -150,6 +150,7 @@ func (m Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 func (m Model) handlePlayerRegistered(msg playerRegisteredMsg) (tea.Model, tea.Cmd) {
 	m.claimCode = msg.claimCode
 	m.state = StateClaimCodeDisplay
+	m.loadingMsg = ""
 	return m, tea.Batch(
 		saveConfigCmd(&config.Config{ClaimCode: msg.claimCode, StatsEnabled: true}),
 		reconcileSessionsCmd(m.client, msg.claimCode),
@@ -243,6 +244,7 @@ func (m Model) handleOnboardingKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			cfg := &config.Config{StatsEnabled: true}
 			m.cfg = cfg
 			m.state = StateLoading
+			m.loadingMsg = "Registering..."
 			return m, registerPlayerCmd(m.client)
 		}
 		// AC2.3: opt-out — save config and go to puzzle

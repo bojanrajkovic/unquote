@@ -71,7 +71,11 @@ func (m Model) viewTooSmall() string {
 
 func (m Model) viewLoading() string {
 	header := m.renderHeader()
-	content := ui.LoadingStyle.Render("Loading puzzle...")
+	msg := m.loadingMsg
+	if msg == "" {
+		msg = "Loading puzzle..."
+	}
+	content := ui.LoadingStyle.Render(msg)
 	help := ui.HelpStyle.Render("[Esc] Quit")
 
 	return lipgloss.JoinVertical(

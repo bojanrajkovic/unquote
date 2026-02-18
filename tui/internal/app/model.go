@@ -49,6 +49,7 @@ type Model struct {
 	claimCode      string                   // claim code after registration
 	errorMsg       string
 	statusMsg      string
+	loadingMsg     string // context-specific loading message
 	cells          []puzzle.Cell
 	elapsedAtPause time.Duration
 	state          State
