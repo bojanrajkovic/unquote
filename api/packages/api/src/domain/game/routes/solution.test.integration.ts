@@ -17,15 +17,13 @@ import { encodeGameId } from "../game-id.js";
  * Uses real gameGenerator and quoteSource to verify end-to-end solution checking.
  */
 describe("solution routes integration", () => {
-  // Helper to create DateTime from ISO string
-  const isoDate = (dateStr: string): DateTime => DateTime.fromISO(dateStr, { zone: "utc" });
   let fastify: FastifyInstance;
   let quoteSource: JsonQuoteSource;
   let gameGenerator: KeywordCipherGenerator;
 
   beforeAll(async () => {
+    // arrange (shared): real quote source + game generator with test data
     const quotesPath = getTestQuotesPath();
-
     quoteSource = new JsonQuoteSource(quotesPath);
     const keywordSource: KeywordSource = { getKeywords: async () => KEYWORDS };
     gameGenerator = new KeywordCipherGenerator(quoteSource, keywordSource);
@@ -53,98 +51,99 @@ describe("solution routes integration", () => {
     await fastify.close();
   });
 
-  describe("POST /:id/check", () => {
-    it("returns correct: true when solution decrypts to original quote", async () => {
-      // Get a puzzle for a known date
-      const dateTime = isoDate("2020-05-15");
+  it("POST /:id/check returns correct: true for correct solution", async () => {
+    // arrange
+    const dateTime = DateTime.fromISO("2020-05-15", { zone: "utc" });
+    const puzzle = await gameGenerator.generateDailyPuzzle(dateTime);
+    const quote = await quoteSource.getQuote(puzzle.quoteId);
+    const gameId = encodeGameId(dateTime);
 
-      // Generate the puzzle to know the original text
-      const puzzle = await gameGenerator.generateDailyPuzzle(dateTime);
-      const quote = await quoteSource.getQuote(puzzle.quoteId);
-
-      // Encode the game ID
-      const gameId = encodeGameId(dateTime);
-
-      // Submit the correct solution
-      const response = await fastify.inject({
-        method: "POST",
-        url: `/${gameId}/check`,
-        payload: {
-          solution: quote?.text ?? "",
-        },
-      });
-
-      expect(response.statusCode).toBe(200);
-      expect(response.json()).toEqual({ correct: true });
+    // act
+    const response = await fastify.inject({
+      method: "POST",
+      url: `/${gameId}/check`,
+      payload: {
+        solution: quote?.text ?? "",
+      },
     });
 
-    it("returns correct: false for wrong solution", async () => {
-      const dateTime = isoDate("2020-05-15");
-      const gameId = encodeGameId(dateTime);
+    // assert
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ correct: true });
+  });
 
-      const response = await fastify.inject({
-        method: "POST",
-        url: `/${gameId}/check`,
-        payload: {
-          solution: "This is definitely not the correct answer to any quote.",
-        },
-      });
+  it("POST /:id/check returns correct: false for wrong solution", async () => {
+    // arrange
+    const dateTime = DateTime.fromISO("2020-05-15", { zone: "utc" });
+    const gameId = encodeGameId(dateTime);
 
-      expect(response.statusCode).toBe(200);
-      expect(response.json()).toEqual({ correct: false });
+    // act
+    const response = await fastify.inject({
+      method: "POST",
+      url: `/${gameId}/check`,
+      payload: {
+        solution: "This is definitely not the correct answer to any quote.",
+      },
     });
 
-    it("validates solution case-insensitively", async () => {
-      const dateTime = isoDate("2020-05-15");
+    // assert
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ correct: false });
+  });
 
-      const puzzle = await gameGenerator.generateDailyPuzzle(dateTime);
-      const quote = await quoteSource.getQuote(puzzle.quoteId);
+  it("POST /:id/check validates solution case-insensitively", async () => {
+    // arrange
+    const dateTime = DateTime.fromISO("2020-05-15", { zone: "utc" });
+    const puzzle = await gameGenerator.generateDailyPuzzle(dateTime);
+    const quote = await quoteSource.getQuote(puzzle.quoteId);
+    const gameId = encodeGameId(dateTime);
 
-      const gameId = encodeGameId(dateTime);
-
-      // Submit solution in all uppercase
-      const response = await fastify.inject({
-        method: "POST",
-        url: `/${gameId}/check`,
-        payload: {
-          solution: (quote?.text ?? "").toUpperCase(),
-        },
-      });
-
-      expect(response.statusCode).toBe(200);
-      expect(response.json()).toEqual({ correct: true });
+    // act
+    const response = await fastify.inject({
+      method: "POST",
+      url: `/${gameId}/check`,
+      payload: {
+        solution: (quote?.text ?? "").toUpperCase(),
+      },
     });
 
-    it("returns 404 for invalid game ID", async () => {
-      const response = await fastify.inject({
-        method: "POST",
-        url: "/definitely-invalid-id/check",
-        payload: {
-          solution: "Any solution",
-        },
-      });
+    // assert
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ correct: true });
+  });
 
-      expect(response.statusCode).toBe(404);
+  it("POST /:id/check returns 404 for invalid game ID", async () => {
+    // act
+    const response = await fastify.inject({
+      method: "POST",
+      url: "/definitely-invalid-id/check",
+      payload: {
+        solution: "Any solution",
+      },
     });
 
-    it("integrates correctly: get puzzle then check solution", async () => {
-      // 1. Get today's puzzle (need to use puzzle routes for this)
-      const dateTime = DateTime.utc().startOf("day");
-      const puzzle = await gameGenerator.generateDailyPuzzle(dateTime);
-      const quote = await quoteSource.getQuote(puzzle.quoteId);
-      const gameId = encodeGameId(dateTime);
+    // assert
+    expect(response.statusCode).toBe(404);
+  });
 
-      // 2. Check the solution
-      const checkResponse = await fastify.inject({
-        method: "POST",
-        url: `/${gameId}/check`,
-        payload: {
-          solution: quote?.text ?? "",
-        },
-      });
+  it("POST /:id/check works end-to-end for today's puzzle", async () => {
+    // arrange
+    const dateTime = DateTime.utc().startOf("day");
+    const puzzle = await gameGenerator.generateDailyPuzzle(dateTime);
+    const quote = await quoteSource.getQuote(puzzle.quoteId);
+    const gameId = encodeGameId(dateTime);
 
-      expect(checkResponse.statusCode).toBe(200);
-      expect(checkResponse.json()).toEqual({ correct: true });
+    // act
+    const response = await fastify.inject({
+      method: "POST",
+      url: `/${gameId}/check`,
+      payload: {
+        solution: quote?.text ?? "",
+      },
     });
+
+    // assert
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ correct: true });
   });
 });

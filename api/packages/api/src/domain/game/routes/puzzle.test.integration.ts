@@ -16,16 +16,13 @@ import { puzzleRoutes } from "./puzzle.js";
  */
 describe("puzzle routes integration", () => {
   let fastify: FastifyInstance;
-  let quoteSource: JsonQuoteSource;
-  let gameGenerator: KeywordCipherGenerator;
 
   beforeAll(async () => {
-    // Use real quote source with test quotes
+    // arrange (shared): real quote source + game generator with test data
     const quotesPath = getTestQuotesPath();
-
-    quoteSource = new JsonQuoteSource(quotesPath);
+    const quoteSource = new JsonQuoteSource(quotesPath);
     const keywordSource: KeywordSource = { getKeywords: async () => KEYWORDS };
-    gameGenerator = new KeywordCipherGenerator(quoteSource, keywordSource);
+    const gameGenerator = new KeywordCipherGenerator(quoteSource, keywordSource);
 
     const container = createTestContainer({
       quoteSource,
@@ -50,110 +47,94 @@ describe("puzzle routes integration", () => {
     await fastify.close();
   });
 
-  describe("GET /today", () => {
-    it("returns a real puzzle with valid structure", async () => {
-      const response = await fastify.inject({
-        method: "GET",
-        url: "/today",
-      });
-
-      expect(response.statusCode).toBe(200);
-
-      const body = response.json();
-
-      // Verify structure
-      expect(body).toHaveProperty("id");
-      expect(body).toHaveProperty("date");
-      expect(body).toHaveProperty("encryptedText");
-      expect(body).toHaveProperty("author");
-      expect(body).toHaveProperty("difficulty");
-      expect(body).toHaveProperty("hints");
-
-      // Verify types
-      expect(typeof body.id).toBe("string");
-      expect(typeof body.date).toBe("string");
-      expect(typeof body.encryptedText).toBe("string");
-      expect(typeof body.author).toBe("string");
-      expect(typeof body.difficulty).toBe("number");
-      expect(Array.isArray(body.hints)).toBe(true);
-
-      // Verify hints structure
-      for (const hint of body.hints) {
-        expect(hint).toHaveProperty("cipherLetter");
-        expect(hint).toHaveProperty("plainLetter");
-        expect(hint.cipherLetter).toMatch(/^[A-Z]$/);
-        expect(hint.plainLetter).toMatch(/^[A-Z]$/);
-      }
-
-      // Verify no cipher mapping exposed
-      expect(body).not.toHaveProperty("mapping");
-      expect(body).not.toHaveProperty("cipherMapping");
+  it("GET /today returns a puzzle with valid structure", async () => {
+    // act
+    const response = await fastify.inject({
+      method: "GET",
+      url: "/today",
     });
 
-    it("returns same puzzle on repeated calls (deterministic)", async () => {
-      const response1 = await fastify.inject({
-        method: "GET",
-        url: "/today",
-      });
-      const response2 = await fastify.inject({
-        method: "GET",
-        url: "/today",
-      });
+    // assert
+    expect(response.statusCode).toBe(200);
 
-      const body1 = response1.json();
-      const body2 = response2.json();
+    const body = response.json();
 
-      expect(body1.id).toBe(body2.id);
-      expect(body1.encryptedText).toBe(body2.encryptedText);
-      expect(body1.author).toBe(body2.author);
-    });
+    expect(body).toHaveProperty("id");
+    expect(body).toHaveProperty("date");
+    expect(body).toHaveProperty("encryptedText");
+    expect(body).toHaveProperty("author");
+    expect(body).toHaveProperty("difficulty");
+    expect(body).toHaveProperty("hints");
+
+    expect(typeof body.id).toBe("string");
+    expect(typeof body.date).toBe("string");
+    expect(typeof body.encryptedText).toBe("string");
+    expect(typeof body.author).toBe("string");
+    expect(typeof body.difficulty).toBe("number");
+    expect(Array.isArray(body.hints)).toBe(true);
+
+    for (const hint of body.hints) {
+      expect(hint).toHaveProperty("cipherLetter");
+      expect(hint).toHaveProperty("plainLetter");
+      expect(hint.cipherLetter).toMatch(/^[A-Z]$/);
+      expect(hint.plainLetter).toMatch(/^[A-Z]$/);
+    }
+
+    expect(body).not.toHaveProperty("mapping");
+    expect(body).not.toHaveProperty("cipherMapping");
   });
 
-  describe("GET /:date", () => {
-    it("returns puzzle for valid past date", async () => {
-      const response = await fastify.inject({
-        method: "GET",
-        url: "/2020-01-01",
-      });
+  it("GET /today returns same puzzle on repeated calls (deterministic)", async () => {
+    // act
+    const response1 = await fastify.inject({ method: "GET", url: "/today" });
+    const response2 = await fastify.inject({ method: "GET", url: "/today" });
 
-      expect(response.statusCode).toBe(200);
+    // assert
+    const body1 = response1.json();
+    const body2 = response2.json();
 
-      const body = response.json();
-      expect(body.date).toBe("2020-01-01");
-      expect(body.encryptedText).toBeTruthy();
+    expect(body1.id).toBe(body2.id);
+    expect(body1.encryptedText).toBe(body2.encryptedText);
+    expect(body1.author).toBe(body2.author);
+  });
+
+  it("GET /:date returns puzzle for valid past date", async () => {
+    // act
+    const response = await fastify.inject({
+      method: "GET",
+      url: "/2020-01-01",
     });
 
-    it("returns different puzzles for different dates", async () => {
-      const response1 = await fastify.inject({
-        method: "GET",
-        url: "/2020-01-01",
-      });
-      const response2 = await fastify.inject({
-        method: "GET",
-        url: "/2020-01-02",
-      });
+    // assert
+    expect(response.statusCode).toBe(200);
 
-      const body1 = response1.json();
-      const body2 = response2.json();
+    const body = response.json();
+    expect(body.date).toBe("2020-01-01");
+    expect(body.encryptedText).toBeTruthy();
+  });
 
-      expect(body1.id).not.toBe(body2.id);
-    });
+  it("GET /:date returns different puzzles for different dates", async () => {
+    // act
+    const response1 = await fastify.inject({ method: "GET", url: "/2020-01-01" });
+    const response2 = await fastify.inject({ method: "GET", url: "/2020-01-02" });
 
-    it("returns same puzzle for same date (deterministic)", async () => {
-      const response1 = await fastify.inject({
-        method: "GET",
-        url: "/2020-06-15",
-      });
-      const response2 = await fastify.inject({
-        method: "GET",
-        url: "/2020-06-15",
-      });
+    // assert
+    const body1 = response1.json();
+    const body2 = response2.json();
 
-      const body1 = response1.json();
-      const body2 = response2.json();
+    expect(body1.id).not.toBe(body2.id);
+  });
 
-      expect(body1.id).toBe(body2.id);
-      expect(body1.encryptedText).toBe(body2.encryptedText);
-    });
+  it("GET /:date returns same puzzle for same date (deterministic)", async () => {
+    // act
+    const response1 = await fastify.inject({ method: "GET", url: "/2020-06-15" });
+    const response2 = await fastify.inject({ method: "GET", url: "/2020-06-15" });
+
+    // assert
+    const body1 = response1.json();
+    const body2 = response2.json();
+
+    expect(body1.id).toBe(body2.id);
+    expect(body1.encryptedText).toBe(body2.encryptedText);
   });
 });
