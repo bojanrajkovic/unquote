@@ -32,18 +32,15 @@ describe("Integration Tests", () => {
 
   describe("end-to-end puzzle flow", () => {
     it("generates puzzle that can be solved", async () => {
-      // Get a quote
+      // arrange
       const quote = await quoteSource.getRandomQuote("test-seed");
 
-      // Generate puzzle
+      // act
       const puzzle = await generator.generatePuzzle(quote, "test-seed");
-
-      // Decrypt using the mapping
       const reverseMapping: Record<string, string> = {};
       for (const [plain, cipher] of Object.entries(puzzle.mapping)) {
         reverseMapping[cipher] = plain;
       }
-
       const decrypted = [...puzzle.encryptedText]
         .map((char) => {
           if (char in reverseMapping) {
@@ -53,62 +50,74 @@ describe("Integration Tests", () => {
         })
         .join("");
 
-      // Validate the solution
+      // assert
       const isValid = validateSolution(decrypted, quote.text);
       expect(isValid).toBe(true);
     });
 
     it("validates correct solution submission", async () => {
+      // arrange
       const quote = allQuotes[0]!;
 
-      // Simulate player typing the correct answer
+      // act
       const isValid = validateSolution(quote.text, quote.text);
+
+      // assert
       expect(isValid).toBe(true);
     });
 
     it("rejects incorrect solution submission", async () => {
+      // arrange
       const quote = allQuotes[0]!;
 
-      // Simulate player typing wrong answer
+      // act
       const isValid = validateSolution("Wrong answer entirely", quote.text);
+
+      // assert
       expect(isValid).toBe(false);
     });
   });
 
   describe("daily puzzle determinism", () => {
     it("generates same puzzle for same date", async () => {
+      // arrange
       const date = DateTime.fromISO("2026-01-29");
 
+      // act
       const puzzle1 = await generator.generateDailyPuzzle(date);
       const puzzle2 = await generator.generateDailyPuzzle(date);
 
+      // assert
       expect(puzzle1.quoteId).toBe(puzzle2.quoteId);
       expect(puzzle1.encryptedText).toBe(puzzle2.encryptedText);
       expect(puzzle1.mapping).toEqual(puzzle2.mapping);
-      // Verify hints are also deterministic
       expect(puzzle1.hints).toEqual(puzzle2.hints);
     });
 
     it("generates different puzzles for different dates", async () => {
+      // arrange
       const date1 = DateTime.fromISO("2026-01-29");
       const date2 = DateTime.fromISO("2026-01-30");
 
+      // act
       const puzzle1 = await generator.generateDailyPuzzle(date1);
       const puzzle2 = await generator.generateDailyPuzzle(date2);
 
-      // At least one of quoteId or encryptedText should differ
+      // assert
       const isDifferent = puzzle1.quoteId !== puzzle2.quoteId || puzzle1.encryptedText !== puzzle2.encryptedText;
       expect(isDifferent).toBe(true);
     });
 
     it("generates consistent puzzles across multiple calls", async () => {
-      // Test with multiple dates to verify seed consistency
+      // arrange
       const dates = [DateTime.fromISO("2026-01-01"), DateTime.fromISO("2026-06-15"), DateTime.fromISO("2026-12-31")];
 
+      // act
       const puzzleResults = await Promise.all(
         dates.flatMap((date) => [generator.generateDailyPuzzle(date), generator.generateDailyPuzzle(date)]),
       );
 
+      // assert
       // eslint-disable-next-line @typescript-eslint/no-magic-numbers
       for (let i = 0; i < puzzleResults.length; i += 2) {
         const puzzle1 = puzzleResults[i];
@@ -123,8 +132,7 @@ describe("Integration Tests", () => {
 
   describe("cipher roundtrip property", () => {
     it("decryption with mapping recovers original for any quote", async () => {
-      // Test a representative sample across the full range (52 quotes)
-      // Sample quotes at even intervals across the 52 quotes
+      // arrange — sample quotes at even intervals across the 52 quotes
       // eslint-disable-next-line @typescript-eslint/no-magic-numbers
       const sampleQuotes = [
         allQuotes[0],
@@ -142,15 +150,12 @@ describe("Integration Tests", () => {
       ];
 
       for (const quote of sampleQuotes) {
+        // act
         const puzzle = await generator.generatePuzzle(quote!, `seed-${quote!.id}`);
-
-        // Build reverse mapping
         const reverseMapping: Record<string, string> = {};
         for (const [plain, cipher] of Object.entries(puzzle.mapping)) {
           reverseMapping[cipher] = plain;
         }
-
-        // Decrypt
         const decrypted = [...puzzle.encryptedText]
           .map((char) => {
             if (char in reverseMapping) {
@@ -160,12 +165,13 @@ describe("Integration Tests", () => {
           })
           .join("");
 
-        // Verify roundtrip
+        // assert
         expect(validateSolution(decrypted, quote!.text)).toBe(true);
       }
     });
 
     it("all letters are mapped bijectively", async () => {
+      // arrange
       const quote = {
         id: "test",
         text: "The quick brown fox jumps over the lazy dog",
@@ -174,12 +180,11 @@ describe("Integration Tests", () => {
         difficulty: 50,
       };
 
+      // act
       const puzzle = await generator.generatePuzzle(quote, "bijection-test");
 
-      // Check all 26 letters are mapped
+      // assert
       expect(Object.keys(puzzle.mapping).length).toBe(26);
-
-      // Check all values are unique (bijective)
       const cipherLetters = new Set(Object.values(puzzle.mapping));
       expect(cipherLetters.size).toBe(26);
     });
@@ -187,16 +192,24 @@ describe("Integration Tests", () => {
 
   describe("hints verification", () => {
     it("puzzles include hints", async () => {
+      // arrange
       const quote = await quoteSource.getRandomQuote("hint-test");
+
+      // act
       const puzzle = await generator.generatePuzzle(quote, "hint-test");
 
+      // assert
       expect(puzzle.hints.length).toBeGreaterThan(0);
     });
 
     it("hints are valid mappings", async () => {
+      // arrange
       const quote = await quoteSource.getRandomQuote("hint-valid");
+
+      // act
       const puzzle = await generator.generatePuzzle(quote, "hint-valid");
 
+      // assert
       for (const hint of puzzle.hints) {
         expect(puzzle.mapping[hint.plainLetter]).toBe(hint.cipherLetter);
       }
