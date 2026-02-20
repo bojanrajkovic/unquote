@@ -2,10 +2,12 @@ package app
 
 import (
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/guptarohit/asciigraph"
 	zone "github.com/lrstanley/bubblezone"
 
 	"github.com/bojanrajkovic/unquote/tui/internal/puzzle"
@@ -38,6 +40,12 @@ func (m Model) View() string {
 		return m.viewError()
 	case StatePlaying, StateChecking, StateSolved:
 		return m.viewPlaying()
+	case StateOnboarding:
+		return m.viewOnboarding()
+	case StateClaimCodeDisplay:
+		return m.viewClaimCodeDisplay()
+	case StateStats:
+		return m.viewStats()
 	default:
 		return "Unknown state"
 	}
@@ -63,7 +71,11 @@ func (m Model) viewTooSmall() string {
 
 func (m Model) viewLoading() string {
 	header := m.renderHeader()
-	content := ui.LoadingStyle.Render("Loading puzzle...")
+	msg := m.loadingMsg
+	if msg == "" {
+		msg = "Loading puzzle..."
+	}
+	content := ui.LoadingStyle.Render(msg)
 	help := ui.HelpStyle.Render("[Esc] Quit")
 
 	return lipgloss.JoinVertical(
@@ -186,8 +198,205 @@ func (m Model) renderHelp() string {
 	case StateChecking:
 		return ""
 	case StateSolved:
-		return ui.HelpStyle.Render("[Esc] Quit")
+		if m.claimCode != "" {
+			return ui.HelpStyle.Render("[s] Stats  [Esc] Quit")
+		}
+		return ui.HelpStyle.Render("[Esc] Quit  · Tip: run 'unquote register' to track your stats")
 	default:
 		return ui.HelpStyle.Render("[Enter] Submit  [Ctrl+C] Clear  [Esc] Quit")
 	}
+}
+
+// viewOnboarding renders the huh onboarding form centered in the terminal.
+func (m Model) viewOnboarding() string {
+	if m.form == nil {
+		return ""
+	}
+	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, m.form.View())
+}
+
+// formatMs formats milliseconds as M:SS (e.g. 128000 → "2:08").
+func formatMs(ms float64) string {
+	minutes := int(ms) / 60000
+	seconds := (int(ms) % 60000) / 1000
+	return fmt.Sprintf("%d:%02d", minutes, seconds)
+}
+
+// viewStats renders the stats screen with a solve-time graph and summary sidebar.
+func (m Model) viewStats() string {
+	header := m.renderHeader()
+
+	if m.stats == nil {
+		help := ui.HelpStyle.Render("[Esc] Quit")
+		return lipgloss.JoinVertical(lipgloss.Left, header, "", ui.ErrorStyle.Render("Failed to load stats."), "", help)
+	}
+
+	const sidebarWidth = 28
+	const dayWindow = 30
+
+	// Build solve-time data points (last 30 days, NaN for missing days)
+	solveMap := make(map[string]float64, len(m.stats.RecentSolves))
+	for _, s := range m.stats.RecentSolves {
+		solveMap[s.Date] = s.CompletionTime
+	}
+
+	points := make([]float64, dayWindow)
+	hasData := false
+	for i := range dayWindow {
+		points[i] = math.NaN()
+	}
+
+	// Fill points from recentSolves (API returns them ordered; use date map).
+	// Cap to dayWindow entries and right-align in the points array.
+	n := min(len(m.stats.RecentSolves), dayWindow)
+	offset := dayWindow - n
+	for i := range n {
+		points[offset+i] = m.stats.RecentSolves[len(m.stats.RecentSolves)-n+i].CompletionTime / 60000.0
+		hasData = true
+	}
+
+	// Build graph panel
+	graphWidth := max(m.width-sidebarWidth-6, 20)
+
+	var graphPanel string
+	if !hasData {
+		graphPanel = ui.HelpStyle.Render("No solve history in the last 30 days.")
+	} else {
+		plot := asciigraph.Plot(points,
+			asciigraph.Height(10),
+			asciigraph.Width(graphWidth),
+			asciigraph.Precision(1),
+			asciigraph.LowerBound(0),
+			asciigraph.Caption("Solve Times (last 30 days, minutes)"),
+		)
+		graphPanel = plot
+	}
+
+	// Build sidebar panel
+	labelStyle := lipgloss.NewStyle().Foreground(ui.ColorMuted)
+	valueStyle := lipgloss.NewStyle().Foreground(ui.ColorPrimary).Bold(true)
+
+	formatOptMs := func(ms *float64) string {
+		if ms == nil {
+			return "—"
+		}
+		return formatMs(*ms)
+	}
+
+	winRatePct := fmt.Sprintf("%.1f%%", m.stats.WinRate*100)
+
+	lines := []string{
+		labelStyle.Render("Games Played"),
+		valueStyle.Render(fmt.Sprintf("%d", m.stats.GamesPlayed)),
+		"",
+		labelStyle.Render("Games Solved"),
+		valueStyle.Render(fmt.Sprintf("%d", m.stats.GamesSolved)),
+		"",
+		labelStyle.Render("Win Rate"),
+		valueStyle.Render(winRatePct),
+		"",
+		labelStyle.Render("Current Streak"),
+		valueStyle.Render(fmt.Sprintf("%d", m.stats.CurrentStreak)),
+		"",
+		labelStyle.Render("Best Streak"),
+		valueStyle.Render(fmt.Sprintf("%d", m.stats.BestStreak)),
+		"",
+		labelStyle.Render("Best Time"),
+		valueStyle.Render(formatOptMs(m.stats.BestTime)),
+		"",
+		labelStyle.Render("Avg Time"),
+		valueStyle.Render(formatOptMs(m.stats.AverageTime)),
+	}
+
+	sidebarContent := strings.Join(lines, "\n")
+	sidebarPanel := lipgloss.NewStyle().Width(sidebarWidth).Padding(0, 2).Render(sidebarContent)
+
+	content := lipgloss.JoinHorizontal(lipgloss.Top, graphPanel, "  ", sidebarPanel)
+
+	help := ui.HelpStyle.Render("[Esc] Back")
+
+	return lipgloss.JoinVertical(lipgloss.Left, header, "", content, "", help)
+}
+
+// viewClaimCodeDisplay renders the claim code as a raffle-ticket style card.
+func (m Model) viewClaimCodeDisplay() string {
+	// innerWidth is the content area width. All items are constrained to this
+	// so centering is consistent and nothing overflows the double-line border.
+	const innerWidth = 50
+
+	// centered applies a fixed width + center alignment to any style.
+	centered := func(s lipgloss.Style) lipgloss.Style {
+		return s.Width(innerWidth).Align(lipgloss.Center)
+	}
+
+	// Outer box uses a double border for the "ticket" look.
+	// Width must be innerWidth + 2*horizontalPadding so the effective text area
+	// inside the padding equals innerWidth (matching the centered() item widths).
+	const hPad = 2
+	boxStyle := lipgloss.NewStyle().
+		Border(lipgloss.DoubleBorder()).
+		BorderForeground(ui.ColorSuccess).
+		Padding(1, hPad).
+		Width(innerWidth + 2*hPad)
+
+	// Perforated divider — dashes suggest a tear-off line between sections.
+	divider := centered(lipgloss.NewStyle().Foreground(ui.ColorMuted)).
+		Render(strings.Repeat("─", innerWidth-4))
+
+	title := centered(lipgloss.NewStyle().Bold(true).Foreground(ui.ColorSuccess)).
+		Render("★  Registration Complete!  ★")
+
+	label := centered(lipgloss.NewStyle().Foreground(ui.ColorMuted).Bold(true)).
+		Render("— YOUR CLAIM CODE —")
+
+	// Build the scalloped claim code box.
+	// All three rows share the same visible width so they align correctly.
+	//
+	//   ┌──────────────────────────────┐   ← top: ┌ + ─*n + ┐  (width = n+2)
+	//    )   FRACTAL-CIPHER-3734   (       ← mid: sp + ) + pad + code + pad + ( + sp (= n+2)
+	//   └──────────────────────────────┘   ← bot: └ + ─*n + ┘  (width = n+2)
+	//
+	// The ) and ( sit at the same column as the first/last ─, with corners
+	// offset outward by one space — this gives the scalloped/carved edge look.
+	//
+	// Build as plain text first, then apply a single style so lipgloss can
+	// measure the entire block reliably (no interleaved ANSI sequences).
+	const codePad = 3
+	// Claim codes are ASCII (A-Z, 0-9, -) so len == visible width.
+	codeLen := len(m.claimCode)
+	// n: all rows = n+2 wide; derived from mid row = 1+1+codePad+codeLen+codePad+1+1.
+	n := codeLen + 2*codePad + 2
+	plainBox := strings.Join([]string{
+		"┌" + strings.Repeat("─", n) + "┐",
+		" )" + strings.Repeat(" ", codePad) + m.claimCode + strings.Repeat(" ", codePad) + "( ",
+		"└" + strings.Repeat("─", n) + "┘",
+	}, "\n")
+	scallopedCode := lipgloss.NewStyle().Bold(true).Foreground(ui.ColorPrimary).Render(plainBox)
+	centeredCode := centered(lipgloss.NewStyle()).Render(scallopedCode)
+
+	// Use a plain muted style (no PaddingTop) for the note/prompt lines. The
+	// blank "" entries in JoinVertical already provide vertical separation, and
+	// ui.HelpStyle's PaddingTop(1) causes lipgloss to word-wrap text that would
+	// otherwise fit on a single line when combined with Width(innerWidth).
+	noteStyle := lipgloss.NewStyle().Foreground(ui.ColorMuted)
+
+	content := lipgloss.JoinVertical(
+		lipgloss.Left,
+		title,
+		"",
+		divider,
+		"",
+		label,
+		"",
+		centeredCode,
+		"",
+		divider,
+		"",
+		centered(noteStyle).Render("Save this to access your stats from any device."),
+		"",
+		centered(noteStyle).Render("Press any key to continue..."),
+	)
+
+	box := boxStyle.Render(content)
+	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, box)
 }

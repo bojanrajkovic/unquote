@@ -1,5 +1,5 @@
-// Package version provides build-time version information.
-package version
+// Package versioninfo provides build-time version information.
+package versioninfo
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 // These variables are set via ldflags during build.
-// Example: -ldflags "-X 'github.com/bojanrajkovic/unquote/tui/internal/version.Version=v1.0.0'"
+// Example: -ldflags "-X 'github.com/bojanrajkovic/unquote/tui/internal/versioninfo.Version=v1.0.0'"
 var (
 	Version = "dev"
 	Branch  = ""

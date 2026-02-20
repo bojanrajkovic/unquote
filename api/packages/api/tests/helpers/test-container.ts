@@ -10,6 +10,7 @@ import {
 import { InMemoryQuoteSource } from "@unquote/game-generator/testing";
 import type { AppConfig } from "../../src/config/index.js";
 import type { AppSingletonCradle } from "../../src/deps/index.js";
+import type { PlayerStore } from "../../src/domain/player/types.js";
 
 /**
  * Default test configuration.
@@ -119,6 +120,31 @@ export function createMockGameGenerator(): GameGenerator {
 }
 
 /**
+ * Create a mock PlayerStore for route tests.
+ * Returns fixed data without database access.
+ */
+export function createMockPlayerStore(): PlayerStore {
+  return {
+    createPlayer: async () => ({ claimCode: "TEST-CODE-0000" }),
+    recordSession: async () => "created" as const,
+    getStats: async () => ({
+      gamesPlayed: 5,
+      gamesSolved: 5,
+      winRate: 1,
+      currentStreak: 3,
+      bestStreak: 5,
+      bestTime: 45,
+      averageTime: 120,
+      recentSolves: [
+        { date: "2026-02-14", completionTime: 60 },
+        { date: "2026-02-15", completionTime: 45 },
+      ],
+    }),
+    checkHealth: async () => ({ status: "connected" as const }),
+  };
+}
+
+/**
  * Options for creating a test container with partial overrides.
  */
 export type TestContainerOptions = {
@@ -127,6 +153,7 @@ export type TestContainerOptions = {
   quoteSource?: QuoteSource;
   keywordSource?: KeywordSource;
   gameGenerator?: GameGenerator;
+  playerStore?: PlayerStore | null;
 };
 
 /**
@@ -163,6 +190,7 @@ export function createTestContainer(options: TestContainerOptions = {}): AwilixC
     quoteSource: asValue(quoteSource),
     keywordSource: asValue(keywordSource),
     gameGenerator: asValue(options.gameGenerator ?? createMockGameGenerator()),
+    playerStore: asValue("playerStore" in options ? options.playerStore : createMockPlayerStore()),
   });
 
   return container;

@@ -1,6 +1,6 @@
 # Unquote
 
-Last verified: 2026-02-14
+Last verified: 2026-02-17
 
 A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encrypted quotes by substituting letters.
 
@@ -9,6 +9,7 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 ## Tech Stack
 
 - **API**: Node.js 24+ / Fastify 5 / TypeScript (pnpm 10 monorepo)
+- **Database**: PostgreSQL via Drizzle ORM + node-postgres (optional, for player stats)
 - **TUI**: Go 1.25.6
 - **Version management & tasks**: mise
 
@@ -48,7 +49,8 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 - **Security**: helmet, cors, rate limiting (per-IP, configurable via env vars), under-pressure
 - **Configuration**: `@fastify/env` with TypeBox schema validation (fail-fast on missing required vars)
 - **DI**: Awilix with singleton + request scopes (see `src/deps/CLAUDE.md`)
-- **Observability**: OpenTelemetry traces (auto-instrumentation + manual spans via `tracedProxy` and game-generator's `@traced`/`withSpan`), Pino log correlation
+- **Database**: Drizzle ORM with node-postgres; optional (enabled when `DATABASE_URL` is set). Migrations via `drizzle-kit` with advisory lock for concurrent safety.
+- **Observability**: OpenTelemetry traces (auto-instrumentation for HTTP, Fastify, pg, Drizzle + manual spans via `tracedProxy` and game-generator's `@traced`/`withSpan`), Pino log correlation
 - **Port**: 3000 (default, configurable via PORT env var)
 
 ### Environment Variables
@@ -60,6 +62,7 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 | `LOG_LEVEL` | No | info | Pino log level |
 | `QUOTES_FILE_PATH` | Yes | - | Path to quotes JSON file |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | No | - | OpenTelemetry collector endpoint |
+| `DATABASE_URL` | No | - | PostgreSQL connection string for player stats |
 | `RATE_LIMIT_MAX` | No | 100 | Max requests per window per IP |
 | `RATE_LIMIT_WINDOW` | No | 1 minute | Rate limit time window |
 
@@ -70,15 +73,21 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 
 ### Endpoints
 
-- `GET /health` - Health check (returns `{ status: "ok" }`)
+- `GET /health/live` - Liveness probe (returns `{ status: "ok" }`)
+- `GET /health/ready` - Readiness probe (reports database connectivity status)
 - `GET /game/today` - Retrieve today's cryptoquip puzzle
 - `GET /game/:date` - Retrieve puzzle for a specific date (ISO format: YYYY-MM-DD)
 - `POST /game/:id/check` - Validate a solution attempt using opaque game ID
+- `POST /player` - Register a new player (returns claim code)
+- `POST /player/:code/session` - Record a game session for a player
+- `GET /player/:code/stats` - Retrieve player statistics
 
 ## TUI Architecture
 
 - **Framework**: Bubble Tea (Elm architecture for Go)
+- **CLI**: Cobra (subcommands: `version`, `register`, `link`, `claim-code`, `stats`)
 - **Styling**: Lip Gloss
+- **Forms**: huh (interactive onboarding)
 - **Configuration**: `UNQUOTE_API_URL` env var (default: `https://unquote.gaur-kardashev.ts.net`)
 
 ### TUI Development (run from `tui/`)
@@ -86,12 +95,14 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 - `go test ./...` - Run all tests
 
 ### Package Structure
-- `internal/api/` - API client for REST communication
+- `cmd/` - Cobra CLI commands (root, version, register, link, claim-code, stats)
+- `internal/api/` - API client for REST communication (game + player endpoints)
 - `internal/app/` - Bubble Tea model, update loop, and views
+- `internal/config/` - Player config persistence (claim code, stats preference; XDG config directory)
 - `internal/puzzle/` - Domain logic (cells, navigation, solution assembly)
 - `internal/storage/` - Session persistence (XDG state directory)
 - `internal/ui/` - Styling and text wrapping utilities
-- `internal/version/` - Build-time version info (ldflags injection)
+- `internal/versioninfo/` - Build-time version info (ldflags injection)
 
 ## Commit Messages
 

@@ -1,7 +1,11 @@
+[tasks.install]
+description = "Install dependencies"
+run = "go get"
+
 [tasks.build]
 description = "Build the TUI binary with version info"
 run = """
-go build -ldflags "-X 'github.com/bojanrajkovic/unquote/tui/internal/version.Version=dev' -X 'github.com/bojanrajkovic/unquote/tui/internal/version.Branch=$(git rev-parse --abbrev-ref HEAD)'" -o bin/unquote .
+go build -ldflags "-X 'github.com/bojanrajkovic/unquote/tui/internal/versioninfo.Version=dev' -X 'github.com/bojanrajkovic/unquote/tui/internal/versioninfo.Branch=$(git rev-parse --abbrev-ref HEAD)'" -o bin/unquote .
 """
 
 [tasks.fmt]
@@ -24,6 +28,7 @@ run = "go test -v -race -count=1 ./..."
 description = "Run all CI checks"
 run = """
 set -e
+mise run :install
 mise run :fmt
 mise run :vet
 mise run :lint

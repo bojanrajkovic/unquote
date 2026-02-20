@@ -7,21 +7,22 @@ import (
 	"unicode"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh"
 	zone "github.com/lrstanley/bubblezone"
 
+	"github.com/bojanrajkovic/unquote/tui/internal/config"
 	"github.com/bojanrajkovic/unquote/tui/internal/puzzle"
 	"github.com/bojanrajkovic/unquote/tui/internal/ui"
 )
 
 // Init is called when the program starts
 func (m Model) Init() tea.Cmd {
-	if m.opts.Random {
-		return fetchRandomPuzzleCmd(m.client)
-	}
-	return fetchPuzzleCmd(m.client)
+	return loadConfigCmd()
 }
 
-// Update handles incoming messages
+// Update handles incoming messages.
+//
+//nolint:gocyclo // Bubble Tea's Update is a central message dispatcher — each message type needs its own case.
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -54,12 +55,52 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case sessionLoadedMsg:
 		return m.handleSessionLoaded(msg)
+
+	case configLoadedMsg:
+		return m.handleConfigLoaded(msg)
+
+	case playerRegisteredMsg:
+		return m.handlePlayerRegistered(msg)
+
+	case configSavedMsg:
+		return m.handleConfigSaved()
+
+	case sessionRecordedMsg:
+		return m.handleSessionRecorded(msg)
+
+	case reconciliationDoneMsg:
+		return m, nil
+
+	case statsFetchedMsg:
+		return m.handleStatsFetched(msg)
+	}
+
+	// Forward unhandled messages to huh form during onboarding (e.g. focus,
+	// cursor blink, and other internal messages returned by form.Init()).
+	// Also check for form completion here: huh may complete the form via an
+	// internal message (not a KeyMsg), so we must handle it in both places.
+	if m.state == StateOnboarding && m.form != nil {
+		formModel, cmd := m.form.Update(msg)
+		if f, ok := formModel.(*huh.Form); ok {
+			m.form = f
+		}
+		return m.checkOnboardingComplete(cmd)
 	}
 
 	return m, nil
 }
 
 func (m Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	// Stats screen intercepts Esc/b before the global quit handler
+	if m.state == StateStats {
+		switch msg.String() {
+		case "esc", "b":
+			m.state = StateSolved
+			return m, nil
+		}
+		return m, nil
+	}
+
 	// Global keybindings (always work)
 	if msg.String() == "esc" {
 		return m, tea.Quit
@@ -83,11 +124,141 @@ func (m Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m.handlePlayingKeyMsg(msg)
 
 	case StateSolved:
-		// No input when solved (just Esc to quit)
+		if msg.String() == "s" && m.claimCode != "" {
+			m.state = StateLoading
+			return m, fetchStatsCmd(m.client, m.claimCode)
+		}
 		return m, nil
+
+	case StateOnboarding:
+		return m.handleOnboardingKeyMsg(msg)
+
+	case StateClaimCodeDisplay:
+		// Any keypress proceeds to puzzle loading
+		m.state = StateLoading
+		m.form = nil
+		if m.opts.Random {
+			return m, fetchRandomPuzzleCmd(m.client)
+		}
+		return m, fetchPuzzleCmd(m.client)
 	}
 
 	return m, nil
+}
+
+func (m Model) handlePlayerRegistered(msg playerRegisteredMsg) (tea.Model, tea.Cmd) {
+	if msg.claimCode == "" {
+		m.state = StateError
+		m.errorMsg = "Registration failed: server returned an empty claim code"
+		m.loadingMsg = ""
+		return m, nil
+	}
+	m.claimCode = msg.claimCode
+	m.state = StateClaimCodeDisplay
+	m.loadingMsg = ""
+	return m, tea.Batch(
+		saveConfigCmd(&config.Config{ClaimCode: msg.claimCode, StatsEnabled: true}),
+		reconcileSessionsCmd(m.client, msg.claimCode),
+	)
+}
+
+func (m Model) handleConfigSaved() (tea.Model, tea.Cmd) {
+	// If we're in claim code display, wait for user keypress.
+	// If we're still in onboarding (opt-out path), proceed to puzzle.
+	if m.state == StateOnboarding {
+		m.state = StateLoading
+		if m.opts.Random {
+			return m, fetchRandomPuzzleCmd(m.client)
+		}
+		return m, fetchPuzzleCmd(m.client)
+	}
+	return m, nil
+}
+
+// handleConfigLoaded processes the result of loading the config from disk.
+// If config exists (AC2.4), skip onboarding and proceed to puzzle loading.
+// If config is nil (AC2.1), show onboarding form.
+func (m Model) handleConfigLoaded(msg configLoadedMsg) (tea.Model, tea.Cmd) {
+	if msg.config != nil {
+		// Config exists — skip onboarding
+		m.cfg = msg.config
+		m.claimCode = msg.config.ClaimCode
+		m.state = StateLoading
+
+		var fetchCmd tea.Cmd
+		if m.opts.Random {
+			fetchCmd = fetchRandomPuzzleCmd(m.client)
+		} else {
+			fetchCmd = fetchPuzzleCmd(m.client)
+		}
+
+		cmds := []tea.Cmd{fetchCmd}
+		if m.claimCode != "" {
+			cmds = append(cmds, reconcileSessionsCmd(m.client, m.claimCode))
+		}
+		return m, tea.Batch(cmds...)
+	}
+
+	// Allocate a persistent bool pointer for the huh.Confirm binding.
+	// This must survive model value copies — all copies share the same pointer,
+	// so when huh writes the user's selection into it, m.optIn reflects it correctly.
+	m.optIn = new(bool)
+
+	// No config — show onboarding form (AC2.1)
+	m.form = huh.NewForm(
+		huh.NewGroup(
+			huh.NewNote().
+				Title("Track Your Stats?").
+				Description("Unquote can track your solve times and streaks.\n\n"+
+					"What we store:\n"+
+					"  - Which puzzles you solved\n"+
+					"  - How long each took\n\n"+
+					"What we don't store:\n"+
+					"  - No personal information\n"+
+					"  - No email, no password\n\n"+
+					"You'll get a random claim code (like TIGER-MAPLE-7492)\n"+
+					"that identifies your stats. Save it to access your\n"+
+					"stats from another device."),
+			huh.NewConfirm().
+				Title("Track my stats?").
+				Affirmative("Yes, track my stats").
+				Negative("No thanks").
+				Value(m.optIn),
+		),
+	).WithShowHelp(false).WithShowErrors(false)
+	m.state = StateOnboarding
+	return m, m.form.Init()
+}
+
+// handleOnboardingKeyMsg delegates key events to the huh form.
+// When the form completes, it delegates to checkOnboardingComplete.
+func (m Model) handleOnboardingKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	formModel, cmd := m.form.Update(msg)
+	if f, ok := formModel.(*huh.Form); ok {
+		m.form = f
+	}
+	return m.checkOnboardingComplete(cmd)
+}
+
+// checkOnboardingComplete checks if the huh form has finished and handles opt-in/opt-out.
+// Called from both handleOnboardingKeyMsg and the catch-all non-key message handler,
+// because huh may finalize the form via an internal message rather than the key event itself.
+func (m Model) checkOnboardingComplete(fallbackCmd tea.Cmd) (tea.Model, tea.Cmd) {
+	if m.form.State != huh.StateCompleted {
+		return m, fallbackCmd
+	}
+	if m.optIn != nil && *m.optIn {
+		// AC2.2: opt-in — show loading while registering
+		cfg := &config.Config{StatsEnabled: true}
+		m.cfg = cfg
+		m.state = StateLoading
+		m.loadingMsg = "Registering..."
+		return m, registerPlayerCmd(m.client)
+	}
+	// AC2.3: opt-out — save config and go to puzzle
+	cfg := &config.Config{StatsEnabled: false}
+	m.cfg = cfg
+	return m, saveConfigCmd(cfg)
 }
 
 func (m Model) handleMouseMsg(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
@@ -124,9 +295,14 @@ func (m Model) handleMouseMsg(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 
 func (m Model) handleErrorKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	if msg.String() == "r" {
-		// Retry on error
 		m.state = StateLoading
 		m.errorMsg = ""
+		// If registration was in-flight (opted in but not yet registered), retry it.
+		if m.cfg != nil && m.cfg.StatsEnabled && m.claimCode == "" {
+			m.loadingMsg = "Registering..."
+			return m, registerPlayerCmd(m.client)
+		}
+		m.loadingMsg = ""
 		if m.opts.Random {
 			return m, fetchRandomPuzzleCmd(m.client)
 		}
@@ -233,12 +409,23 @@ func (m Model) handleSolutionChecked(msg solutionCheckedMsg) (tea.Model, tea.Cmd
 		m.statusMsg = ""
 		// Capture final elapsed time
 		m.elapsedAtPause += time.Since(m.startTime)
-		// Save solved state
-		return m, saveSolvedSessionCmd(m.puzzle.ID, m.cells, m.elapsedAtPause)
+
+		cmds := []tea.Cmd{saveSolvedSessionCmd(m.puzzle.ID, m.cells, m.elapsedAtPause)}
+
+		if m.claimCode != "" {
+			cmds = append(cmds, recordSessionCmd(m.client, m.claimCode, m.puzzle.ID, m.elapsedAtPause))
+		}
+
+		return m, tea.Batch(cmds...)
 	}
 	m.state = StatePlaying
 	m.statusMsg = "Not quite right. Keep trying!"
 	return m, nil
+}
+
+func (m Model) handleSessionRecorded(msg sessionRecordedMsg) (tea.Model, tea.Cmd) {
+	// Mark session as uploaded in background — fire and forget
+	return m, markSessionUploadedCmd(msg.gameID)
 }
 
 func (m Model) handlePuzzleFetched(msg puzzleFetchedMsg) (tea.Model, tea.Cmd) {
@@ -303,6 +490,12 @@ func (m Model) handleSessionLoaded(msg sessionLoadedMsg) (tea.Model, tea.Cmd) {
 	m.startTime = time.Now()
 
 	return m, tickCmd()
+}
+
+func (m Model) handleStatsFetched(msg statsFetchedMsg) (tea.Model, tea.Cmd) {
+	m.stats = msg.stats
+	m.state = StateStats
+	return m, nil
 }
 
 func (m Model) handleError(msg errMsg) (tea.Model, tea.Cmd) {

@@ -9,6 +9,8 @@ import { JsonQuoteSource } from "../../../sources/json-quote-source.js";
 import { registerDependencyInjection } from "../../../deps/index.js";
 import { createTestContainer, createSilentLogger, getTestQuotesPath } from "../../../../tests/helpers/index.js";
 import { registerGameRoutes } from "./index.js";
+import { registerPlayerRoutes } from "../../player/routes/index.js";
+import { healthRoutes } from "../../../routes/health.js";
 
 /**
  * OpenAPI schema validation tests.
@@ -16,6 +18,7 @@ import { registerGameRoutes } from "./index.js";
  */
 describe("OpenAPI schema", () => {
   let fastify: FastifyInstance;
+  let specResponse: Awaited<ReturnType<FastifyInstance["inject"]>>;
 
   beforeAll(async () => {
     const quotesPath = getTestQuotesPath();
@@ -45,35 +48,30 @@ describe("OpenAPI schema", () => {
       },
     });
     await fastify.register(registerGameRoutes, { prefix: "/game" });
+    await fastify.register(registerPlayerRoutes, { prefix: "/player" });
+    await fastify.register(healthRoutes, { prefix: "/health" });
     await fastify.ready();
+
+    specResponse = await fastify.inject({
+      method: "GET",
+      url: "/openapi.json",
+    });
   });
 
   afterAll(async () => {
     await fastify.close();
   });
 
-  it("returns OpenAPI specification", async () => {
-    const response = await fastify.inject({
-      method: "GET",
-      url: "/openapi.json",
-    });
-
-    expect(response.statusCode).toBe(200);
-
-    const spec = response.json();
+  it("returns OpenAPI specification", () => {
+    const spec = specResponse.json();
     expect(spec).toHaveProperty("openapi");
     expect(spec).toHaveProperty("info");
     expect(spec).toHaveProperty("paths");
     expect(spec.info.title).toBe("Unquote API");
   });
 
-  it("OpenAPI spec is valid JSON schema", async () => {
-    const response = await fastify.inject({
-      method: "GET",
-      url: "/openapi.json",
-    });
-
-    const spec = response.json();
+  it("OpenAPI spec is valid JSON schema", () => {
+    const spec = specResponse.json();
 
     // Verify basic OpenAPI structure
     expect(spec.openapi).toBeTruthy();
@@ -84,13 +82,8 @@ describe("OpenAPI schema", () => {
     expect(typeof spec).toBe("object");
   });
 
-  it("includes operation metadata for GET /game/today", async () => {
-    const response = await fastify.inject({
-      method: "GET",
-      url: "/openapi.json",
-    });
-
-    const spec = response.json();
+  it("includes operation metadata for GET /game/today", () => {
+    const spec = specResponse.json();
     const todayPath = spec.paths["/game/today"];
 
     expect(todayPath).toBeDefined();
@@ -99,13 +92,8 @@ describe("OpenAPI schema", () => {
     expect(todayPath.get.tags).toContain("game");
   });
 
-  it("includes operation metadata for GET /game/{date}", async () => {
-    const response = await fastify.inject({
-      method: "GET",
-      url: "/openapi.json",
-    });
-
-    const spec = response.json();
+  it("includes operation metadata for GET /game/{date}", () => {
+    const spec = specResponse.json();
     const datePath = spec.paths["/game/{date}"];
 
     expect(datePath).toBeDefined();
@@ -114,13 +102,8 @@ describe("OpenAPI schema", () => {
     expect(datePath.get.tags).toContain("game");
   });
 
-  it("includes operation metadata for POST /game/{id}/check", async () => {
-    const response = await fastify.inject({
-      method: "GET",
-      url: "/openapi.json",
-    });
-
-    const spec = response.json();
+  it("includes operation metadata for POST /game/{id}/check", () => {
+    const spec = specResponse.json();
     const checkPath = spec.paths["/game/{id}/check"];
 
     expect(checkPath).toBeDefined();
@@ -138,18 +121,58 @@ describe("OpenAPI schema", () => {
     expect(response.statusCode).toBe(200);
   });
 
-  it("extracts named schemas to components", async () => {
-    const response = await fastify.inject({
-      method: "GET",
-      url: "/openapi.json",
-    });
-
-    const spec = response.json();
+  it("extracts named schemas to components", () => {
+    const spec = specResponse.json();
 
     // Verify schemas are extracted to components
     expect(spec.components?.schemas).toBeDefined();
     expect(spec.components.schemas.PuzzleResponse).toBeDefined();
     expect(spec.components.schemas.CheckRequest).toBeDefined();
     expect(spec.components.schemas.CheckResponse).toBeDefined();
+  });
+
+  it("includes operation metadata for POST /player", () => {
+    const spec = specResponse.json();
+    const playerPath = spec.paths["/player"];
+
+    expect(playerPath).toBeDefined();
+    expect(playerPath.post.operationId).toBe("createPlayer");
+    expect(playerPath.post.tags).toContain("player");
+  });
+
+  it("includes operation metadata for POST /player/{code}/session", () => {
+    const spec = specResponse.json();
+    const sessionPath = spec.paths["/player/{code}/session"];
+
+    expect(sessionPath).toBeDefined();
+    expect(sessionPath.post.operationId).toBe("recordSession");
+    expect(sessionPath.post.tags).toContain("player");
+  });
+
+  it("includes operation metadata for GET /player/{code}/stats", () => {
+    const spec = specResponse.json();
+    const statsPath = spec.paths["/player/{code}/stats"];
+
+    expect(statsPath).toBeDefined();
+    expect(statsPath.get.operationId).toBe("getPlayerStats");
+    expect(statsPath.get.tags).toContain("player");
+  });
+
+  it("includes operation metadata for GET /health/live", () => {
+    const spec = specResponse.json();
+    const livePath = spec.paths["/health/live"];
+
+    expect(livePath).toBeDefined();
+    expect(livePath.get.operationId).toBe("healthLive");
+    expect(livePath.get.tags).toContain("health");
+  });
+
+  it("includes operation metadata for GET /health/ready", () => {
+    const spec = specResponse.json();
+    const readyPath = spec.paths["/health/ready"];
+
+    expect(readyPath).toBeDefined();
+    expect(readyPath.get.operationId).toBe("healthReady");
+    expect(readyPath.get.tags).toContain("health");
   });
 });

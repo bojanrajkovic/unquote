@@ -379,9 +379,9 @@ func TestRenderInputCellStylePrecedence(t *testing.T) {
 //nolint:govet
 func TestFindDuplicateInputs(t *testing.T) {
 	tests := []struct {
+		expected map[rune]bool
 		name     string
 		cells    []puzzle.Cell
-		expected map[rune]bool
 	}{
 		{
 			name:     "no cells",
@@ -482,13 +482,13 @@ func TestFindDuplicateInputs(t *testing.T) {
 //nolint:govet
 func TestRenderInputCellDuplicateStyle(t *testing.T) {
 	tests := []struct {
+		duplicateInputs map[rune]bool
 		name            string
+		expectedContent string
+		description     string
 		cell            puzzle.Cell
 		cursorPos       int
 		highlightChar   rune
-		duplicateInputs map[rune]bool
-		expectedContent string
-		description     string
 	}{
 		{
 			name:            "duplicate input renders with warning style",
@@ -571,12 +571,12 @@ func TestRenderInputCellDuplicateStyle(t *testing.T) {
 func TestRenderInputCellHintStyle(t *testing.T) {
 	//nolint:govet
 	tests := []struct {
-		cell            puzzle.Cell
-		cursorPos       int
-		highlightChar   rune
 		duplicateInputs map[rune]bool
 		name            string
 		expectedContent string
+		cell            puzzle.Cell
+		cursorPos       int
+		highlightChar   rune
 	}{
 		{
 			cell:            puzzle.Cell{Index: 1, Char: 'A', Input: 'X', Kind: puzzle.CellHint},
