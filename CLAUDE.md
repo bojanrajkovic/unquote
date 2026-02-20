@@ -1,6 +1,6 @@
 # Unquote
 
-Last verified: 2026-02-16
+Last verified: 2026-02-17
 
 A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encrypted quotes by substituting letters.
 
@@ -85,7 +85,9 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 ## TUI Architecture
 
 - **Framework**: Bubble Tea (Elm architecture for Go)
+- **CLI**: Cobra (subcommands: `version`, `register`, `link`, `claim-code`, `stats`)
 - **Styling**: Lip Gloss
+- **Forms**: huh (interactive onboarding)
 - **Configuration**: `UNQUOTE_API_URL` env var (default: `https://unquote.gaur-kardashev.ts.net`)
 
 ### TUI Development (run from `tui/`)
@@ -93,8 +95,10 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 - `go test ./...` - Run all tests
 
 ### Package Structure
-- `internal/api/` - API client for REST communication
+- `cmd/` - Cobra CLI commands (root, version, register, link, claim-code, stats)
+- `internal/api/` - API client for REST communication (game + player endpoints)
 - `internal/app/` - Bubble Tea model, update loop, and views
+- `internal/config/` - Player config persistence (claim code, stats preference; XDG config directory)
 - `internal/puzzle/` - Domain logic (cells, navigation, solution assembly)
 - `internal/storage/` - Session persistence (XDG state directory)
 - `internal/ui/` - Styling and text wrapping utilities

@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/charmbracelet/huh"
+
 	"github.com/bojanrajkovic/unquote/tui/internal/api"
+	"github.com/bojanrajkovic/unquote/tui/internal/config"
 	"github.com/bojanrajkovic/unquote/tui/internal/puzzle"
 )
 
@@ -23,6 +26,9 @@ const (
 	StateChecking
 	StateSolved
 	StateError
+	StateOnboarding
+	StateClaimCodeDisplay
+	StateStats
 )
 
 // Options configures the application behavior.
@@ -34,18 +40,24 @@ type Options struct {
 // Model holds the application state
 type Model struct {
 	startTime      time.Time
+	optIn          *bool
+	form           *huh.Form
 	puzzle         *api.Puzzle
 	client         *api.Client
+	cfg            *config.Config
+	stats          *api.PlayerStatsResponse
+	claimCode      string
 	errorMsg       string
 	statusMsg      string
+	loadingMsg     string
 	cells          []puzzle.Cell
 	state          State
 	cursorPos      int
 	width          int
 	height         int
 	elapsedAtPause time.Duration
-	sizeReady      bool
 	opts           Options
+	sizeReady      bool
 }
 
 // New creates a new Model with initial state
