@@ -14,7 +14,8 @@ import type { AppSingletonCradle } from "../../src/deps/index.js";
  */
 export async function createTestFastify(
   container: AwilixContainer<AppSingletonCradle>,
-  routePlugin: Parameters<FastifyInstance["register"]>[0],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- route plugins have varied generic signatures
+  routePlugin: any,
 ): Promise<FastifyInstance> {
   const fastify = Fastify({
     logger: false,
