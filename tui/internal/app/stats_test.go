@@ -31,16 +31,14 @@ func sampleStats() *api.PlayerStatsResponse {
 }
 
 // statsModel creates a Model in StateStats with the given stats data.
-func statsModel(stats *api.PlayerStatsResponse, statsOnly bool) Model {
-	m := Model{
+func statsModel(stats *api.PlayerStatsResponse) Model {
+	return Model{
 		state:     StateStats,
 		stats:     stats,
-		statsOnly: statsOnly,
 		width:     120,
 		height:    40,
 		sizeReady: true,
 	}
-	return m
 }
 
 // TestFormatMs verifies millisecond-to-M:SS formatting.
@@ -69,7 +67,7 @@ func TestFormatMs(t *testing.T) {
 
 // TestViewStats_ContainsSidebarLabels verifies the stats view renders sidebar labels.
 func TestViewStats_ContainsSidebarLabels(t *testing.T) {
-	m := statsModel(sampleStats(), false)
+	m := statsModel(sampleStats())
 	view := m.viewStats()
 
 	labels := []string{"Games Played", "Games Solved", "Win Rate", "Current Streak", "Best Streak", "Best Time", "Avg Time"}
@@ -82,20 +80,15 @@ func TestViewStats_ContainsSidebarLabels(t *testing.T) {
 
 // TestViewStats_ContainsFormattedValues verifies the stats view renders formatted values.
 func TestViewStats_ContainsFormattedValues(t *testing.T) {
-	m := statsModel(sampleStats(), false)
+	m := statsModel(sampleStats())
 	view := m.viewStats()
 
-	// Win rate should appear as 95.7%
 	if !strings.Contains(view, "95.7%") {
 		t.Errorf("viewStats() missing win rate '95.7%%', got view of length %d", len(view))
 	}
-
-	// Best time 128000ms → 2:08
 	if !strings.Contains(view, "2:08") {
 		t.Errorf("viewStats() missing best time '2:08'")
 	}
-
-	// Avg time 195000ms → 3:15
 	if !strings.Contains(view, "3:15") {
 		t.Errorf("viewStats() missing avg time '3:15'")
 	}
@@ -103,10 +96,9 @@ func TestViewStats_ContainsFormattedValues(t *testing.T) {
 
 // TestViewStats_ContainsGraphCharacters verifies the graph is rendered when solves exist.
 func TestViewStats_ContainsGraphCharacters(t *testing.T) {
-	m := statsModel(sampleStats(), false)
+	m := statsModel(sampleStats())
 	view := m.viewStats()
 
-	// asciigraph renders box-drawing characters like ┤ or the axis labels
 	graphChars := []string{"┤", "Solve Times"}
 	found := false
 	for _, ch := range graphChars {
@@ -125,7 +117,7 @@ func TestViewStats_NilBestTime(t *testing.T) {
 	stats := sampleStats()
 	stats.BestTime = nil
 	stats.AverageTime = nil
-	m := statsModel(stats, false)
+	m := statsModel(stats)
 	view := m.viewStats()
 
 	if !strings.Contains(view, "—") {
@@ -137,7 +129,7 @@ func TestViewStats_NilBestTime(t *testing.T) {
 func TestViewStats_EmptyRecentSolves(t *testing.T) {
 	stats := sampleStats()
 	stats.RecentSolves = nil
-	m := statsModel(stats, false)
+	m := statsModel(stats)
 	view := m.viewStats()
 
 	if !strings.Contains(view, "No solve history") {
@@ -147,7 +139,7 @@ func TestViewStats_EmptyRecentSolves(t *testing.T) {
 
 // TestViewStats_NilStats verifies error message when stats is nil.
 func TestViewStats_NilStats(t *testing.T) {
-	m := statsModel(nil, false)
+	m := statsModel(nil)
 	view := m.viewStats()
 
 	if !strings.Contains(view, "Failed to load stats") {
@@ -155,23 +147,13 @@ func TestViewStats_NilStats(t *testing.T) {
 	}
 }
 
-// TestViewStats_HelpBar_StatsOnly verifies the help bar shows [Esc] Quit in stats-only mode.
-func TestViewStats_HelpBar_StatsOnly(t *testing.T) {
-	m := statsModel(sampleStats(), true)
-	view := m.viewStats()
-
-	if !strings.Contains(view, "[Esc] Quit") {
-		t.Errorf("viewStats() statsOnly=true should show '[Esc] Quit'")
-	}
-}
-
-// TestViewStats_HelpBar_NotStatsOnly verifies the help bar shows [Esc] Back when not stats-only.
-func TestViewStats_HelpBar_NotStatsOnly(t *testing.T) {
-	m := statsModel(sampleStats(), false)
+// TestViewStats_HelpBar verifies the help bar shows [Esc] Back.
+func TestViewStats_HelpBar(t *testing.T) {
+	m := statsModel(sampleStats())
 	view := m.viewStats()
 
 	if !strings.Contains(view, "[Esc] Back") {
-		t.Errorf("viewStats() statsOnly=false should show '[Esc] Back'")
+		t.Errorf("viewStats() should show '[Esc] Back'")
 	}
 }
 
@@ -217,11 +199,10 @@ func TestHandleKeyMsg_StatsSolved_SKeyNoClaimCode(t *testing.T) {
 	}
 }
 
-// TestHandleKeyMsg_StateStats_EscNotStatsOnly verifies Esc on stats screen returns to solved.
-func TestHandleKeyMsg_StateStats_EscNotStatsOnly(t *testing.T) {
+// TestHandleKeyMsg_StateStats_EscReturnsToSolved verifies Esc on stats screen returns to solved.
+func TestHandleKeyMsg_StateStats_EscReturnsToSolved(t *testing.T) {
 	m := Model{
 		state:     StateStats,
-		statsOnly: false,
 		sizeReady: true,
 	}
 
@@ -229,18 +210,17 @@ func TestHandleKeyMsg_StateStats_EscNotStatsOnly(t *testing.T) {
 	result := model.(Model)
 
 	if result.state != StateSolved {
-		t.Errorf("expected StateSolved after Esc on stats (statsOnly=false), got %v", result.state)
+		t.Errorf("expected StateSolved after Esc on stats, got %v", result.state)
 	}
 	if cmd != nil {
 		t.Error("expected nil cmd")
 	}
 }
 
-// TestHandleKeyMsg_StateStats_BNotStatsOnly verifies 'b' on stats screen returns to solved.
-func TestHandleKeyMsg_StateStats_BNotStatsOnly(t *testing.T) {
+// TestHandleKeyMsg_StateStats_BReturnsToSolved verifies 'b' on stats screen returns to solved.
+func TestHandleKeyMsg_StateStats_BReturnsToSolved(t *testing.T) {
 	m := Model{
 		state:     StateStats,
-		statsOnly: false,
 		sizeReady: true,
 	}
 
@@ -248,30 +228,10 @@ func TestHandleKeyMsg_StateStats_BNotStatsOnly(t *testing.T) {
 	result := model.(Model)
 
 	if result.state != StateSolved {
-		t.Errorf("expected StateSolved after 'b' on stats (statsOnly=false), got %v", result.state)
+		t.Errorf("expected StateSolved after 'b' on stats, got %v", result.state)
 	}
 	if cmd != nil {
 		t.Error("expected nil cmd")
-	}
-}
-
-// TestHandleKeyMsg_StateStats_EscStatsOnly verifies Esc on stats screen quits in stats-only mode.
-func TestHandleKeyMsg_StateStats_EscStatsOnly(t *testing.T) {
-	m := Model{
-		state:     StateStats,
-		statsOnly: true,
-		sizeReady: true,
-	}
-
-	_, cmd := m.handleKeyMsg(tea.KeyMsg{Type: tea.KeyEsc})
-	if cmd == nil {
-		t.Fatal("expected non-nil cmd (tea.Quit) for Esc in statsOnly mode")
-	}
-
-	// tea.Quit is a Cmd that returns a QuitMsg when invoked
-	msg := cmd()
-	if _, ok := msg.(tea.QuitMsg); !ok {
-		t.Errorf("expected cmd to return tea.QuitMsg, got %T", msg)
 	}
 }
 

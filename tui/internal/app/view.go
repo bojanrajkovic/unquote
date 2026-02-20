@@ -319,11 +319,7 @@ func (m Model) viewStats() string {
 
 	content := lipgloss.JoinHorizontal(lipgloss.Top, graphPanel, "  ", sidebarPanel)
 
-	helpText := "[Esc] Quit"
-	if !m.statsOnly {
-		helpText = "[Esc] Back"
-	}
-	help := ui.HelpStyle.Render(helpText)
+	help := ui.HelpStyle.Render("[Esc] Back")
 
 	return lipgloss.JoinVertical(lipgloss.Left, header, "", content, "", help)
 }

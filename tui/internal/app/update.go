@@ -95,9 +95,6 @@ func (m Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	if m.state == StateStats {
 		switch msg.String() {
 		case "esc", "b":
-			if m.statsOnly {
-				return m, tea.Quit
-			}
 			m.state = StateSolved
 			return m, nil
 		}
@@ -187,16 +184,6 @@ func (m Model) handleConfigLoaded(msg configLoadedMsg) (tea.Model, tea.Cmd) {
 		m.cfg = msg.config
 		m.claimCode = msg.config.ClaimCode
 		m.state = StateLoading
-
-		// StatsMode: fetch stats instead of puzzle
-		if m.opts.StatsMode {
-			if m.claimCode == "" {
-				m.state = StateError
-				m.errorMsg = "No claim code found. Run 'unquote register' first."
-				return m, nil
-			}
-			return m, fetchStatsCmd(m.client, m.claimCode)
-		}
 
 		var fetchCmd tea.Cmd
 		if m.opts.Random {
@@ -316,10 +303,6 @@ func (m Model) handleErrorKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return m, registerPlayerCmd(m.client)
 		}
 		m.loadingMsg = ""
-		// Stats mode: retry fetching stats.
-		if m.opts.StatsMode {
-			return m, fetchStatsCmd(m.client, m.claimCode)
-		}
 		if m.opts.Random {
 			return m, fetchRandomPuzzleCmd(m.client)
 		}
@@ -511,7 +494,6 @@ func (m Model) handleSessionLoaded(msg sessionLoadedMsg) (tea.Model, tea.Cmd) {
 
 func (m Model) handleStatsFetched(msg statsFetchedMsg) (tea.Model, tea.Cmd) {
 	m.stats = msg.stats
-	m.statsOnly = m.opts.StatsMode
 	m.state = StateStats
 	return m, nil
 }

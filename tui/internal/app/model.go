@@ -33,9 +33,8 @@ const (
 
 // Options configures the application behavior.
 type Options struct {
-	Insecure  bool
-	Random    bool
-	StatsMode bool
+	Insecure bool
+	Random   bool
 }
 
 // Model holds the application state
@@ -59,7 +58,6 @@ type Model struct {
 	elapsedAtPause time.Duration
 	opts           Options
 	sizeReady      bool
-	statsOnly      bool
 }
 
 // New creates a new Model with initial state
