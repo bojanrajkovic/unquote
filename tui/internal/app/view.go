@@ -248,10 +248,7 @@ func (m Model) viewStats() string {
 
 	// Fill points from recentSolves (API returns them ordered; use date map).
 	// Cap to dayWindow entries and right-align in the points array.
-	n := len(m.stats.RecentSolves)
-	if n > dayWindow {
-		n = dayWindow
-	}
+	n := min(len(m.stats.RecentSolves), dayWindow)
 	offset := dayWindow - n
 	for i := range n {
 		points[offset+i] = m.stats.RecentSolves[len(m.stats.RecentSolves)-n+i].CompletionTime / 60000.0
@@ -259,10 +256,7 @@ func (m Model) viewStats() string {
 	}
 
 	// Build graph panel
-	graphWidth := m.width - sidebarWidth - 6
-	if graphWidth < 20 {
-		graphWidth = 20
-	}
+	graphWidth := max(m.width-sidebarWidth-6, 20)
 
 	var graphPanel string
 	if !hasData {
