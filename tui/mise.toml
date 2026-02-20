@@ -5,7 +5,7 @@ run = "go get"
 [tasks.build]
 description = "Build the TUI binary with version info"
 run = """
-go build -ldflags "-X 'github.com/bojanrajkovic/unquote/tui/internal/version.Version=dev' -X 'github.com/bojanrajkovic/unquote/tui/internal/version.Branch=$(git rev-parse --abbrev-ref HEAD)'" -o bin/unquote .
+go build -ldflags "-X 'github.com/bojanrajkovic/unquote/tui/internal/versioninfo.Version=dev' -X 'github.com/bojanrajkovic/unquote/tui/internal/versioninfo.Branch=$(git rev-parse --abbrev-ref HEAD)'" -o bin/unquote .
 """
 
 [tasks.fmt]

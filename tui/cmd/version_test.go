@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bojanrajkovic/unquote/tui/internal/version"
+	"github.com/bojanrajkovic/unquote/tui/internal/versioninfo"
 )
 
 func TestVersionCmd_OutputContainsUnquote(t *testing.T) {
@@ -22,7 +22,7 @@ func TestVersionCmd_OutputMatchesVersionGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected no error, got: %v", err)
 	}
-	expected := version.Get().String()
+	expected := versioninfo.Get().String()
 	if !strings.Contains(output, expected) {
 		t.Errorf("expected output to contain %q, got: %q", expected, output)
 	}

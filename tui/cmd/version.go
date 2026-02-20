@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/bojanrajkovic/unquote/tui/internal/version"
+	"github.com/bojanrajkovic/unquote/tui/internal/versioninfo"
 )
 
 // newVersionCmd returns a command that prints the build version information.
@@ -14,7 +14,7 @@ func newVersionCmd() *cobra.Command {
 		Use:   "version",
 		Short: "Print version information",
 		Run: func(cmd *cobra.Command, _ []string) {
-			fmt.Fprintln(cmd.OutOrStdout(), version.Get())
+			fmt.Fprintln(cmd.OutOrStdout(), versioninfo.Get())
 		},
 	}
 }

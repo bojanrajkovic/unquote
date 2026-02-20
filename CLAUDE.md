@@ -102,7 +102,7 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 - `internal/puzzle/` - Domain logic (cells, navigation, solution assembly)
 - `internal/storage/` - Session persistence (XDG state directory)
 - `internal/ui/` - Styling and text wrapping utilities
-- `internal/version/` - Build-time version info (ldflags injection)
+- `internal/versioninfo/` - Build-time version info (ldflags injection)
 
 ## Commit Messages
 
