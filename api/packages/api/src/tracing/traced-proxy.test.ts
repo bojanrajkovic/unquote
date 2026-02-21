@@ -109,8 +109,8 @@ describe("tracedProxy", () => {
       expect(spans[0]?.status?.code).toBe(SpanStatusCode.ERROR);
 
       // Check that exception was recorded
-      const events = (spans[0] as any).events || [];
-      const hasException = events.some((e: any) => e.name === "exception");
+      const events = spans[0]?.events || [];
+      const hasException = events.some((e: { name: string }) => e.name === "exception");
       expect(hasException).toBe(true);
     });
   });
