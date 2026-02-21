@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeAll, beforeEach, afterEach } from "vitest";
+import { eq } from "drizzle-orm";
 import { DateTime } from "luxon";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
@@ -85,6 +86,30 @@ describe("recordSession", () => {
   it("AC3.3: throws PlayerNotFoundError for unknown claim code", async () => {
     // act + assert
     await expect(store.recordSession("UNKNOWN-CODE-0000", "game-2026-02-15", 120)).rejects.toThrow(PlayerNotFoundError);
+  });
+
+  it("AC3.4: persists the provided solvedAt timestamp instead of server time", async () => {
+    // arrange
+    const { claimCode } = await store.createPlayer();
+    const solvedAt = new Date("2026-01-15T10:30:00.000Z");
+
+    // act
+    await store.recordSession(claimCode, "game-2026-01-15", 120, solvedAt);
+
+    // assert — query the row directly to verify the timestamp
+    const [playerRow] = await db.select({ id: players.id }).from(players);
+    if (!playerRow) {
+      throw new Error("expected player row");
+    }
+
+    const [sessionRow] = await db
+      .select({ solvedAt: gameSessions.solvedAt })
+      .from(gameSessions)
+      .where(eq(gameSessions.playerId, playerRow.id));
+
+    expect(sessionRow?.solvedAt).toBeInstanceOf(Date);
+    // Allow 1-second tolerance for timestamp precision
+    expect(Math.abs((sessionRow?.solvedAt?.getTime() ?? 0) - solvedAt.getTime())).toBeLessThan(1000);
   });
 });
 

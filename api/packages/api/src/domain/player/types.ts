@@ -52,8 +52,13 @@ export type PlayerStats = {
  */
 export type PlayerStore = {
   createPlayer(): Promise<{ claimCode: string }>;
-  /** Record a game session. @param completionTime - Solve time in milliseconds. */
-  recordSession(claimCode: string, gameId: string, completionTime: number): Promise<"created" | "exists">;
+  /** Record a game session. @param completionTime - Solve time in milliseconds. @param solvedAt - When the puzzle was solved; defaults to server time if omitted. */
+  recordSession(
+    claimCode: string,
+    gameId: string,
+    completionTime: number,
+    solvedAt?: Date,
+  ): Promise<"created" | "exists">;
   getStats(claimCode: string): Promise<PlayerStats | null>;
   checkHealth(): Promise<{ status: "connected" | "error"; error?: string }>;
 };

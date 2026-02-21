@@ -40,6 +40,12 @@ export const RecordSessionRequestSchema = schemaType(
     {
       gameId: Type.String({ description: "Opaque game ID from puzzle response" }),
       completionTime: Type.Number({ description: "Solve time in milliseconds" }),
+      solvedAt: Type.Optional(
+        Type.String({
+          format: "date-time",
+          description: "ISO 8601 timestamp when the puzzle was solved; defaults to server time if omitted",
+        }),
+      ),
     },
     { additionalProperties: false },
   ),

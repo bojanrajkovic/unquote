@@ -108,7 +108,12 @@ export class PgPlayerStore {
    * Returns "created" for new sessions, "exists" for already-recorded ones.
    * Throws PlayerNotFoundError if the claim code does not match any player.
    */
-  async recordSession(claimCode: string, gameId: string, completionTime: number): Promise<"created" | "exists"> {
+  async recordSession(
+    claimCode: string,
+    gameId: string,
+    completionTime: number,
+    solvedAt?: Date,
+  ): Promise<"created" | "exists"> {
     const player = await this.db
       .select({ id: players.id })
       .from(players)
@@ -122,7 +127,7 @@ export class PgPlayerStore {
 
     const result = await this.db
       .insert(gameSessions)
-      .values({ playerId: found.id, gameId, completionTime })
+      .values({ playerId: found.id, gameId, completionTime, ...(solvedAt ? { solvedAt } : {}) })
       .onConflictDoNothing()
       .returning({ id: gameSessions.id });
 

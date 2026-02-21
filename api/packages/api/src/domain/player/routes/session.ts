@@ -48,7 +48,7 @@ export const sessionRoute: FastifyPluginAsync = async (fastify) => {
       }
 
       const { code } = request.params;
-      const { gameId, completionTime } = request.body;
+      const { gameId, completionTime, solvedAt } = request.body;
 
       // Server-side validation: ensure gameId encodes a valid date
       const decoded = decodeGameId(gameId);
@@ -57,7 +57,12 @@ export const sessionRoute: FastifyPluginAsync = async (fastify) => {
       }
 
       try {
-        const result = await playerStore.recordSession(code, gameId, completionTime);
+        const result = await playerStore.recordSession(
+          code,
+          gameId,
+          completionTime,
+          solvedAt ? new Date(solvedAt) : undefined,
+        );
         if (result === "created") {
           return reply.status(201).send({ status: "created" });
         } else {
