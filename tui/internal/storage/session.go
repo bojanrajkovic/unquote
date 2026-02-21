@@ -16,6 +16,7 @@ const appName = "unquote"
 // GameSession represents the persisted state of a puzzle game
 type GameSession struct {
 	SavedAt        time.Time         `json:"saved_at"`
+	SolvedAt       *time.Time        `json:"solved_at,omitempty"`
 	Inputs         map[string]string `json:"inputs"`
 	GameID         string            `json:"game_id"`
 	ElapsedTime    time.Duration     `json:"elapsed_time"`

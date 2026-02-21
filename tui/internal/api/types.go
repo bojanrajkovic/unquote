@@ -35,6 +35,7 @@ type RegisterPlayerResponse struct {
 // RecordSessionRequest represents the request body for recording a game session
 type RecordSessionRequest struct {
 	GameID         string `json:"gameId"`
+	SolvedAt       string `json:"solvedAt"`       // RFC3339 timestamp when the puzzle was solved
 	CompletionTime int64  `json:"completionTime"` // milliseconds
 }
 

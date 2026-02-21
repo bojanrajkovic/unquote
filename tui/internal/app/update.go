@@ -407,13 +407,14 @@ func (m Model) handleSolutionChecked(msg solutionCheckedMsg) (tea.Model, tea.Cmd
 	if msg.correct {
 		m.state = StateSolved
 		m.statusMsg = ""
-		// Capture final elapsed time
+		// Capture final elapsed time and solve timestamp atomically
 		m.elapsedAtPause += time.Since(m.startTime)
+		solvedAt := time.Now()
 
-		cmds := []tea.Cmd{saveSolvedSessionCmd(m.puzzle.ID, m.cells, m.elapsedAtPause)}
+		cmds := []tea.Cmd{saveSolvedSessionCmd(m.puzzle.ID, m.cells, m.elapsedAtPause, solvedAt)}
 
 		if m.claimCode != "" {
-			cmds = append(cmds, recordSessionCmd(m.client, m.claimCode, m.puzzle.ID, m.elapsedAtPause))
+			cmds = append(cmds, recordSessionCmd(m.client, m.claimCode, m.puzzle.ID, m.elapsedAtPause, solvedAt))
 		}
 
 		return m, tea.Batch(cmds...)

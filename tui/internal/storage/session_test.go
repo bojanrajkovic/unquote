@@ -50,6 +50,19 @@ func TestGameSessionSerialization(t *testing.T) {
 				SavedAt:        time.Date(2026, 2, 3, 12, 0, 0, 0, time.UTC),
 			},
 		},
+		{
+			name: "solved session with explicit SolvedAt",
+			session: GameSession{
+				GameID:  "test-game-4",
+				Inputs:  map[string]string{"A": "X"},
+				Solved:  true,
+				SavedAt: time.Date(2026, 2, 3, 12, 0, 0, 0, time.UTC),
+				SolvedAt: func() *time.Time {
+					t := time.Date(2026, 1, 15, 10, 30, 0, 0, time.UTC)
+					return &t
+				}(),
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -87,7 +100,44 @@ func TestGameSessionSerialization(t *testing.T) {
 					t.Errorf("Inputs[%q]: expected %q, got %q", k, v, decoded.Inputs[k])
 				}
 			}
+			// SolvedAt: nil should decode as nil; non-nil should round-trip
+			if tt.session.SolvedAt == nil {
+				if decoded.SolvedAt != nil {
+					t.Errorf("SolvedAt: expected nil, got %v", decoded.SolvedAt)
+				}
+			} else {
+				if decoded.SolvedAt == nil {
+					t.Errorf("SolvedAt: expected %v, got nil", tt.session.SolvedAt)
+				} else if !decoded.SolvedAt.Equal(*tt.session.SolvedAt) {
+					t.Errorf("SolvedAt: expected %v, got %v", tt.session.SolvedAt, decoded.SolvedAt)
+				}
+			}
 		})
+	}
+}
+
+func TestGameSession_SolvedAtNilForLegacySessions(t *testing.T) {
+	// JSON without solved_at field (legacy sessions) must deserialize with SolvedAt == nil
+	legacyJSON := `{
+		"saved_at": "2026-01-15T10:00:00Z",
+		"inputs": {"A": "X"},
+		"game_id": "legacy-game",
+		"elapsed_time": 120000000000,
+		"completion_time": 120000000000,
+		"solved": true,
+		"uploaded": false
+	}`
+
+	var session GameSession
+	if err := json.Unmarshal([]byte(legacyJSON), &session); err != nil {
+		t.Fatalf("failed to unmarshal legacy session: %v", err)
+	}
+
+	if session.SolvedAt != nil {
+		t.Errorf("SolvedAt should be nil for legacy session without solved_at field, got %v", session.SolvedAt)
+	}
+	if session.GameID != "legacy-game" {
+		t.Errorf("GameID: expected %q, got %q", "legacy-game", session.GameID)
 	}
 }
 

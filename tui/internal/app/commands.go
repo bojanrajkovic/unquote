@@ -143,9 +143,9 @@ func saveSessionCmd(gameID string, cells []puzzle.Cell, elapsed time.Duration) t
 }
 
 // recordSessionCmd creates a command to record a solved session to the server
-func recordSessionCmd(client *api.Client, claimCode, gameID string, completionTime time.Duration) tea.Cmd {
+func recordSessionCmd(client *api.Client, claimCode, gameID string, completionTime time.Duration, solvedAt time.Time) tea.Cmd {
 	return func() tea.Msg {
-		err := client.RecordSession(claimCode, gameID, completionTime.Milliseconds())
+		err := client.RecordSession(claimCode, gameID, completionTime.Milliseconds(), solvedAt)
 		if err != nil {
 			// Silently ignore — stats recording is best-effort (AC3.4)
 			return nil
@@ -175,7 +175,13 @@ func reconcileSessionsCmd(client *api.Client, claimCode string) tea.Cmd {
 			return reconciliationDoneMsg{}
 		}
 		for _, s := range sessions {
-			err := client.RecordSession(claimCode, s.GameID, s.CompletionTime.Milliseconds())
+			// Use the dedicated solved timestamp if present (set since this fix was
+			// introduced); fall back to SavedAt for sessions recorded before the fix.
+			solvedAt := s.SavedAt
+			if s.SolvedAt != nil {
+				solvedAt = *s.SolvedAt
+			}
+			err := client.RecordSession(claimCode, s.GameID, s.CompletionTime.Milliseconds(), solvedAt)
 			if err != nil {
 				// Silently ignore individual failures (AC5.5)
 				continue
@@ -201,7 +207,7 @@ func fetchStatsCmd(client *api.Client, claimCode string) tea.Cmd {
 }
 
 // saveSolvedSessionCmd creates a command to save the solved session state
-func saveSolvedSessionCmd(gameID string, cells []puzzle.Cell, completionTime time.Duration) tea.Cmd {
+func saveSolvedSessionCmd(gameID string, cells []puzzle.Cell, completionTime time.Duration, solvedAt time.Time) tea.Cmd {
 	return func() tea.Msg {
 		// Build inputs map from cells
 		inputs := make(map[string]string)
@@ -217,6 +223,7 @@ func saveSolvedSessionCmd(gameID string, cells []puzzle.Cell, completionTime tim
 			ElapsedTime:    completionTime,
 			Solved:         true,
 			CompletionTime: completionTime,
+			SolvedAt:       &solvedAt,
 		}
 
 		// Silently ignore errors - persistence is best-effort and shouldn't

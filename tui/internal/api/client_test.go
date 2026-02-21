@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 func TestFetchTodaysPuzzle(t *testing.T) {
@@ -323,9 +324,37 @@ func TestRecordSession_Created(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error creating client: %v", err)
 	}
-	err = client.RecordSession("ABCD-1234", "test-game-id", 12345)
+	err = client.RecordSession("ABCD-1234", "test-game-id", 12345, time.Now())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestRecordSession_SendsSolvedAtTimestamp(t *testing.T) {
+	solvedAt := time.Date(2026, 1, 15, 10, 30, 0, 0, time.UTC)
+	var capturedSolvedAt string
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req RecordSessionRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			t.Fatalf("failed to decode request body: %v", err)
+		}
+		capturedSolvedAt = req.SolvedAt
+		w.WriteHeader(http.StatusCreated)
+	}))
+	defer server.Close()
+
+	client, err := NewClientWithURL(server.URL, true)
+	if err != nil {
+		t.Fatalf("unexpected error creating client: %v", err)
+	}
+	if err = client.RecordSession("ABCD-1234", "test-game-id", 12345, solvedAt); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expected := solvedAt.UTC().Format(time.RFC3339)
+	if capturedSolvedAt != expected {
+		t.Errorf("expected solvedAt %q, got %q", expected, capturedSolvedAt)
 	}
 }
 
@@ -339,7 +368,7 @@ func TestRecordSession_AlreadyRecorded(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error creating client: %v", err)
 	}
-	err = client.RecordSession("ABCD-1234", "test-game-id", 12345)
+	err = client.RecordSession("ABCD-1234", "test-game-id", 12345, time.Now())
 	if err != nil {
 		t.Fatalf("unexpected error on already recorded: %v", err)
 	}
@@ -356,7 +385,7 @@ func TestRecordSession_PlayerNotFound(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error creating client: %v", err)
 	}
-	err = client.RecordSession("INVALID", "test-game-id", 12345)
+	err = client.RecordSession("INVALID", "test-game-id", 12345, time.Now())
 	if err == nil {
 		t.Fatal("expected error for player not found, got nil")
 	}
@@ -373,7 +402,7 @@ func TestRecordSession_ServerError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error creating client: %v", err)
 	}
-	err = client.RecordSession("ABCD-1234", "test-game-id", 12345)
+	err = client.RecordSession("ABCD-1234", "test-game-id", 12345, time.Now())
 	if err == nil {
 		t.Fatal("expected error on server error, got nil")
 	}

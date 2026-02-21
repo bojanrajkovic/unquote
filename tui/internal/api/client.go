@@ -181,10 +181,10 @@ func (c *Client) RegisterPlayer() (*RegisterPlayerResponse, error) {
 }
 
 // RecordSession records a game session for a player
-func (c *Client) RecordSession(claimCode, gameID string, completionTimeMs int64) error {
+func (c *Client) RecordSession(claimCode, gameID string, completionTimeMs int64, solvedAt time.Time) error {
 	url := fmt.Sprintf("%s/player/%s/session", c.baseURL, claimCode)
 
-	reqBody := RecordSessionRequest{GameID: gameID, CompletionTime: completionTimeMs}
+	reqBody := RecordSessionRequest{GameID: gameID, CompletionTime: completionTimeMs, SolvedAt: solvedAt.UTC().Format(time.RFC3339)}
 	jsonBody, err := json.Marshal(reqBody)
 	if err != nil {
 		return fmt.Errorf("failed to marshal request: %w", err)
