@@ -18,9 +18,11 @@ import { healthRoutes } from "../../../routes/health.js";
  */
 describe("OpenAPI schema", () => {
   let fastify: FastifyInstance;
-  let specResponse: Awaited<ReturnType<FastifyInstance["inject"]>>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OpenAPI spec is a dynamic JSON structure
+  let spec: any;
 
   beforeAll(async () => {
+    // arrange (shared): full app with all routes registered for OpenAPI generation
     const quotesPath = getTestQuotesPath();
     const quoteSource = new JsonQuoteSource(quotesPath);
     const keywordSource: KeywordSource = { getKeywords: async () => KEYWORDS };
@@ -52,38 +54,28 @@ describe("OpenAPI schema", () => {
     await fastify.register(healthRoutes, { prefix: "/health" });
     await fastify.ready();
 
-    specResponse = await fastify.inject({
+    const specResponse = await fastify.inject({
       method: "GET",
       url: "/openapi.json",
     });
+    spec = specResponse.json();
   });
 
   afterAll(async () => {
     await fastify.close();
   });
 
-  it("returns OpenAPI specification", () => {
-    const spec = specResponse.json();
+  it("returns valid OpenAPI specification", () => {
+    // assert
     expect(spec).toHaveProperty("openapi");
     expect(spec).toHaveProperty("info");
     expect(spec).toHaveProperty("paths");
     expect(spec.info.title).toBe("Unquote API");
-  });
-
-  it("OpenAPI spec is valid JSON schema", () => {
-    const spec = specResponse.json();
-
-    // Verify basic OpenAPI structure
-    expect(spec.openapi).toBeTruthy();
-    expect(spec.info).toBeTruthy();
-    expect(spec.paths).toBeTruthy();
-
-    // Verify it's a valid object (not empty)
     expect(typeof spec).toBe("object");
   });
 
   it("includes operation metadata for GET /game/today", () => {
-    const spec = specResponse.json();
+    // assert
     const todayPath = spec.paths["/game/today"];
 
     expect(todayPath).toBeDefined();
@@ -93,7 +85,7 @@ describe("OpenAPI schema", () => {
   });
 
   it("includes operation metadata for GET /game/{date}", () => {
-    const spec = specResponse.json();
+    // assert
     const datePath = spec.paths["/game/{date}"];
 
     expect(datePath).toBeDefined();
@@ -103,7 +95,7 @@ describe("OpenAPI schema", () => {
   });
 
   it("includes operation metadata for POST /game/{id}/check", () => {
-    const spec = specResponse.json();
+    // assert
     const checkPath = spec.paths["/game/{id}/check"];
 
     expect(checkPath).toBeDefined();
@@ -113,18 +105,18 @@ describe("OpenAPI schema", () => {
   });
 
   it("routes respond at /game prefix", async () => {
+    // act
     const response = await fastify.inject({
       method: "GET",
       url: "/game/today",
     });
 
+    // assert
     expect(response.statusCode).toBe(200);
   });
 
   it("extracts named schemas to components", () => {
-    const spec = specResponse.json();
-
-    // Verify schemas are extracted to components
+    // assert
     expect(spec.components?.schemas).toBeDefined();
     expect(spec.components.schemas.PuzzleResponse).toBeDefined();
     expect(spec.components.schemas.CheckRequest).toBeDefined();
@@ -132,7 +124,7 @@ describe("OpenAPI schema", () => {
   });
 
   it("includes operation metadata for POST /player", () => {
-    const spec = specResponse.json();
+    // assert
     const playerPath = spec.paths["/player"];
 
     expect(playerPath).toBeDefined();
@@ -141,7 +133,7 @@ describe("OpenAPI schema", () => {
   });
 
   it("includes operation metadata for POST /player/{code}/session", () => {
-    const spec = specResponse.json();
+    // assert
     const sessionPath = spec.paths["/player/{code}/session"];
 
     expect(sessionPath).toBeDefined();
@@ -150,7 +142,7 @@ describe("OpenAPI schema", () => {
   });
 
   it("includes operation metadata for GET /player/{code}/stats", () => {
-    const spec = specResponse.json();
+    // assert
     const statsPath = spec.paths["/player/{code}/stats"];
 
     expect(statsPath).toBeDefined();
@@ -159,7 +151,7 @@ describe("OpenAPI schema", () => {
   });
 
   it("includes operation metadata for GET /health/live", () => {
-    const spec = specResponse.json();
+    // assert
     const livePath = spec.paths["/health/live"];
 
     expect(livePath).toBeDefined();
@@ -168,7 +160,7 @@ describe("OpenAPI schema", () => {
   });
 
   it("includes operation metadata for GET /health/ready", () => {
-    const spec = specResponse.json();
+    // assert
     const readyPath = spec.paths["/health/ready"];
 
     expect(readyPath).toBeDefined();

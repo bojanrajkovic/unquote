@@ -29,49 +29,74 @@ afterEach(async () => {
 
 describe("createPlayer", () => {
   it("AC2.1: returns a claim code in ADJECTIVE-NOUN-NNNN format", async () => {
+    // act
     const result = await store.createPlayer();
+
+    // assert
     expect(result.claimCode).toMatch(/^[A-Z]+-[A-Z]+-\d{4}$/);
   });
 
   it("AC2.2: two calls return different claim codes", async () => {
+    // act
     const result1 = await store.createPlayer();
     const result2 = await store.createPlayer();
+
+    // assert
     expect(result1.claimCode).not.toBe(result2.claimCode);
   });
 
   it("AC2.3: creating many players all succeed with unique codes", async () => {
+    // act
     const codes = new Set<string>();
     for (let i = 0; i < 20; i++) {
       const result = await store.createPlayer();
       codes.add(result.claimCode);
     }
+
+    // assert
     expect(codes.size).toBe(20);
   });
 });
 
 describe("recordSession", () => {
   it("AC3.1: returns 'created' for a new session", async () => {
+    // arrange
     const { claimCode } = await store.createPlayer();
+
+    // act
     const result = await store.recordSession(claimCode, "game-2026-02-15", 120);
+
+    // assert
     expect(result).toBe("created");
   });
 
   it("AC3.2: returns 'exists' when recording the same session again", async () => {
+    // arrange
     const { claimCode } = await store.createPlayer();
     await store.recordSession(claimCode, "game-2026-02-15", 120);
+
+    // act
     const result = await store.recordSession(claimCode, "game-2026-02-15", 120);
+
+    // assert
     expect(result).toBe("exists");
   });
 
   it("AC3.3: throws PlayerNotFoundError for unknown claim code", async () => {
+    // act + assert
     await expect(store.recordSession("UNKNOWN-CODE-0000", "game-2026-02-15", 120)).rejects.toThrow(PlayerNotFoundError);
   });
 });
 
 describe("getStats", () => {
   it("AC4.3: returns zeroed counts and null for bestTime/averageTime with no sessions", async () => {
+    // arrange
     const { claimCode } = await store.createPlayer();
+
+    // act
     const stats = await store.getStats(claimCode);
+
+    // assert
     expect(stats).toEqual({
       gamesPlayed: 0,
       gamesSolved: 0,
@@ -85,17 +110,24 @@ describe("getStats", () => {
   });
 
   it("AC4.4: returns null for unknown claim code", async () => {
+    // act
     const stats = await store.getStats("UNKNOWN-CODE-0000");
+
+    // assert
     expect(stats).toBeNull();
   });
 
   it("AC4.1: returns correct aggregated values after recording sessions", async () => {
+    // arrange
     const { claimCode } = await store.createPlayer();
     await store.recordSession(claimCode, "game-2026-02-13", 90);
     await store.recordSession(claimCode, "game-2026-02-14", 150);
     await store.recordSession(claimCode, "game-2026-02-15", 60);
 
+    // act
     const stats = await store.getStats(claimCode);
+
+    // assert
     expect(stats).not.toBeNull();
     expect(stats?.gamesPlayed).toBe(3);
     expect(stats?.gamesSolved).toBe(3);
@@ -105,9 +137,9 @@ describe("getStats", () => {
   });
 
   it("AC4.2: recentSolves contains only last 30 days ordered by date ascending", async () => {
+    // arrange
     await store.createPlayer();
 
-    // Look up the player's id to insert directly
     const [playerRow] = await db.select({ id: players.id }).from(players);
     const playerId = playerRow?.id;
     if (!playerId) {
@@ -136,14 +168,16 @@ describe("getStats", () => {
       solvedAt: new Date("2026-02-15T12:00:00Z"),
     });
 
-    // Look up claim code from inserted player
     const [player] = await db.select({ claimCode: players.claimCode }).from(players);
     if (!player) {
       throw new Error("expected player");
     }
-    const stats = await store.getStats(player.claimCode);
-    expect(stats).not.toBeNull();
 
+    // act
+    const stats = await store.getStats(player.claimCode);
+
+    // assert
+    expect(stats).not.toBeNull();
     // Old session should not appear in recentSolves
     expect(stats?.recentSolves).toHaveLength(2);
     // Ordered by date ascending
@@ -154,15 +188,21 @@ describe("getStats", () => {
 
 describe("checkHealth", () => {
   it("AC5.1: returns { status: 'connected' } with a working connection", async () => {
+    // act
     const result = await store.checkHealth();
+
+    // assert
     expect(result).toEqual({ status: "connected" });
   });
 
   it("AC5.2: returns { status: 'error', error: ... } when connection fails", async () => {
-    // Close the client to simulate a failed connection
+    // arrange — close the client to simulate a failed connection
     await client.close();
 
+    // act
     const result = await store.checkHealth();
+
+    // assert
     expect(result.status).toBe("error");
     expect(typeof result.error).toBe("string");
     expect(result.error?.length ?? 0).toBeGreaterThan(0);
@@ -194,49 +234,59 @@ describe("streak calculation", () => {
   }
 
   it("AC6.1: current streak increments for consecutive calendar days with a solve", async () => {
+    // arrange
     const utcNow = DateTime.utc();
     const today = utcNow.toJSDate();
     const yesterday = utcNow.minus({ days: 1 }).toJSDate();
     const dayBefore = utcNow.minus({ days: 2 }).toJSDate();
-
     const { claimCode } = await setupPlayerWithSessions([dayBefore, yesterday, today]);
 
+    // act
     const stats = await store.getStats(claimCode);
+
+    // assert
     expect(stats).not.toBeNull();
     expect(stats?.currentStreak).toBe(3);
   });
 
   it("AC6.2: best streak reflects the longest consecutive run in history", async () => {
+    // arrange
     const utcNow = DateTime.utc();
     // A 5-day run well in the past (far enough back to leave a clear gap)
     const pastBase = utcNow.minus({ days: 30 });
     const pastRun = [0, 1, 2, 3, 4].map((d) => pastBase.plus({ days: d }).toJSDate());
     // A 2-day run ending today
     const recentRun = [utcNow.minus({ days: 1 }).toJSDate(), utcNow.toJSDate()];
-
     const { claimCode } = await setupPlayerWithSessions([...pastRun, ...recentRun]);
 
+    // act
     const stats = await store.getStats(claimCode);
+
+    // assert
     expect(stats).not.toBeNull();
     expect(stats?.bestStreak).toBe(5);
     expect(stats?.currentStreak).toBe(2);
   });
 
   it("AC6.3: streak resets to 0 when a day is missed", async () => {
+    // arrange
     const utcNow = DateTime.utc();
-    // Last solve was 5+ days ago with a clear gap to today
     const { claimCode } = await setupPlayerWithSessions([
       utcNow.minus({ days: 7 }).toJSDate(),
       utcNow.minus({ days: 6 }).toJSDate(),
       // gap — no solve from day-5 through today
     ]);
 
+    // act
     const stats = await store.getStats(claimCode);
+
+    // assert
     expect(stats).not.toBeNull();
     expect(stats?.currentStreak).toBe(0);
   });
 
   it("AC6.4: multiple solves on the same day count as 1 streak day", async () => {
+    // arrange
     const { claimCode } = await store.createPlayer();
     const [playerRow] = await db.select({ id: players.id }).from(players);
     const playerId = playerRow?.id;
@@ -259,7 +309,10 @@ describe("streak calculation", () => {
       solvedAt: utcNow.startOf("day").plus({ hours: 15 }).toJSDate(),
     });
 
+    // act
     const stats = await store.getStats(claimCode);
+
+    // assert
     expect(stats).not.toBeNull();
     // Two sessions on same day still count as streak of 1
     expect(stats?.currentStreak).toBe(1);
