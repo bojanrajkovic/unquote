@@ -22,6 +22,12 @@ export const sessionRoute: FastifyPluginAsync = async (fastify) => {
   }>({
     method: "POST",
     url: "/:code/session",
+    config: {
+      rateLimit: {
+        max: 10,
+        timeWindow: "1 minute",
+      },
+    },
     schema: {
       params: ClaimCodeParamsSchema,
       body: RecordSessionRequestSchema,

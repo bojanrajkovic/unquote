@@ -12,6 +12,12 @@ export const registerRoute: FastifyPluginAsync = async (fastify) => {
   }>({
     method: "POST",
     url: "/",
+    config: {
+      rateLimit: {
+        max: 10,
+        timeWindow: "1 minute",
+      },
+    },
     schema: {
       response: {
         201: CreatePlayerResponseSchema,
