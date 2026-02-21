@@ -125,7 +125,7 @@ describe("tracing", () => {
       expect(createdSpans).toHaveLength(1);
       const span0 = createdSpans[0];
       expect(span0).toBeDefined();
-      const mockSpan = span0!.span as any;
+      const mockSpan = span0!.span;
       expect(mockSpan.recordException).toHaveBeenCalled();
       expect(mockSpan.setStatus).toHaveBeenCalledWith({
         code: SpanStatusCode.ERROR,
@@ -146,7 +146,7 @@ describe("tracing", () => {
       expect(createdSpans).toHaveLength(1);
       const span0 = createdSpans[0];
       expect(span0).toBeDefined();
-      const mockSpan = span0!.span as any;
+      const mockSpan = span0!.span;
       expect(mockSpan.recordException).toHaveBeenCalled();
       expect(mockSpan.setStatus).toHaveBeenCalledWith({
         code: SpanStatusCode.ERROR,
@@ -230,7 +230,7 @@ describe("tracing", () => {
       expect(createdSpans).toHaveLength(1);
       const span0 = createdSpans[0];
       expect(span0).toBeDefined();
-      const mockSpan = span0!.span as any;
+      const mockSpan = span0!.span;
       expect(mockSpan.recordException).toHaveBeenCalled();
       expect(mockSpan.setStatus).toHaveBeenCalledWith({
         code: SpanStatusCode.ERROR,
@@ -247,7 +247,7 @@ describe("tracing", () => {
       expect(createdSpans).toHaveLength(1);
       const span0 = createdSpans[0];
       expect(span0).toBeDefined();
-      const mockSpan = span0!.span as any;
+      const mockSpan = span0!.span;
       expect(mockSpan.recordException).toHaveBeenCalled();
       expect(mockSpan.setStatus).toHaveBeenCalledWith({
         code: SpanStatusCode.ERROR,
