@@ -60,7 +60,8 @@ Svelte 5 runes with singleton class instances (not stores). Two global state obj
 - **Puzzle cells**: `buildCells()` returns `Cell[]` (LetterCell, HintCell, PunctCell, SpaceCell). LetterCells have `editIndex` for cursor navigation.
 - **Conflict detection**: `detectConflicts()` flags cipher letters where two different ciphers map to the same plain letter (one-to-one cipher invariant). Includes hint cells in conflict map.
 - **Solution assembly**: `assembleSolution()` builds the full plaintext from cells for submission to `POST /game/:id/check`.
-- **Game persistence**: `StoredPuzzleState` is keyed by `date` + `puzzleId`. Stale state (different day) is discarded on load.
+- **Game persistence**: `StoredPuzzleState` is keyed by `date` + `puzzleId`. Stores full puzzle data alongside guesses so same-day reloads skip the API call. Stale state (different day) is discarded on load.
+- **Puzzle loading**: The `/game` loader checks localStorage first; if the stored date matches today and puzzle data is present, it uses the cached puzzle. Only fetches from the API on cache miss or new day.
 - **Session recording**: `recordSession()` is fire-and-forget. Failures never block the solved card.
 
 ### Invariants
