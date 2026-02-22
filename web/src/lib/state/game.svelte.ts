@@ -201,3 +201,5 @@ class GameState {
 }
 
 export const game = new GameState();
+
+export { GameState };
