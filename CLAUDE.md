@@ -1,6 +1,6 @@
 # Unquote
 
-Last verified: 2026-02-17
+Last verified: 2026-02-22
 
 A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encrypted quotes by substituting letters.
 
@@ -9,6 +9,7 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 ## Tech Stack
 
 - **API**: Node.js 24+ / Fastify 5 / TypeScript (pnpm 10 monorepo)
+- **Web**: SvelteKit 5 / Svelte 5 / Tailwind v4 / TypeScript (static SPA)
 - **Database**: PostgreSQL via Drizzle ORM + node-postgres (optional, for player stats)
 - **TUI**: Go 1.25.6
 - **Version management & tasks**: mise
@@ -19,6 +20,14 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 - `mise run build` - Build all projects
 - `mise run //api:build` - Build the API
 - `mise run //tui:build` - Build the TUI
+- `mise run //web:build` - Build the web frontend
+
+### Web Development (run from `web/`)
+- `pnpm run dev` - Start SvelteKit dev server
+- `pnpm run build` - Build static site
+- `pnpm run test` - Run tests (vitest)
+- `pnpm run check` - Svelte type checking (svelte-check)
+- `pnpm run format` - Format with Prettier
 
 ### API Development (run from `api/`)
 - `pnpm run build` - Build all packages
@@ -32,7 +41,9 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 - `api/` - REST API (pnpm monorepo with `packages/`)
   - `packages/api/` - Main API server
   - `packages/game-generator/` - Puzzle generation library
+- `web/` - Web frontend (SvelteKit static SPA, pnpm workspace member)
 - `tui/` - Terminal UI client (Go module)
+- `infra/web/` - Terraform for web hosting (S3 + CloudFront + GitHub OIDC deploy role)
 
 ## Containerization
 
@@ -41,6 +52,14 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 - **Platforms**: linux/amd64 and linux/arm64 (native runners, no QEMU)
 - **Deploy strategy**: `pnpm deploy --filter=@unquote/api --prod` for minimal production image
 - **Workspace injection**: `injectWorkspacePackages: true` in pnpm-workspace.yaml (required for `pnpm deploy`)
+
+## Web Hosting
+
+- **Hosting**: S3 static site + CloudFront CDN (Terraform-managed in `infra/web/`)
+- **Deploy**: GitHub Actions (`web-deploy.yml`) via OIDC role assumption (no long-lived credentials)
+- **Trigger**: Push to `main` when `web/**` changes
+- **Build output**: Static HTML/JS/CSS via SvelteKit `adapter-static`
+- **Cache strategy**: Immutable assets (1 year), HTML (must-revalidate) + CloudFront invalidation on deploy
 
 ## API Architecture
 
@@ -130,7 +149,9 @@ Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 - `api` - API server changes (subscopes allowed, e.g. `api/routes`)
 - `game-generator` - Puzzle generation library changes
+- `web` - Web frontend changes (subscopes allowed, e.g. `web/state`)
 - `tui` - TUI changes (subscopes allowed, e.g. `tui/app`)
+- `infra` - Infrastructure changes (subscopes allowed, e.g. `infra/web`)
 - `ci` - CI/CD workflow changes
 
 ### Guidelines
