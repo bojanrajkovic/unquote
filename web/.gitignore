@@ -1,0 +1,16 @@
+# SvelteKit generated files
+.svelte-kit/
+
+# Build output
+build/
+
+# Dependencies
+node_modules/
+
+# Env files (never commit secrets)
+.env
+.env.*
+!.env.example
+
+# Editor
+.DS_Store
