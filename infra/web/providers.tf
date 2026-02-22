@@ -17,7 +17,7 @@ provider "aws" {
   # Region for S3 + CloudFront resources.
   # CloudFront ACM certificates must be in us-east-1, but CloudFront itself
   # is global. S3 bucket can be in any region.
-  region = "eu-west-1"
+  region = var.aws_region
 }
 
 provider "github" {
