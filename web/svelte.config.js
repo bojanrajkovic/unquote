@@ -13,7 +13,7 @@ const config = {
     prerender: {
       handleHttpError: ({ path, message }) => {
         // /stats is implemented in Phase 6 — not an error during Phase 4 build
-        if (path === '/stats') return;
+        if (path === "/stats") return;
         throw new Error(message);
       },
     },
