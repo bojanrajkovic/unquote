@@ -1,0 +1,145 @@
+@import "tailwindcss";
+
+@theme {
+  /* ── Colors — extracted from web-frontend-flow.html ── */
+
+  /* Gold: primary action, focus rings, active state */
+  --color-gold: #D4A140;
+  --color-gold-mid: #A87820;    /* hover/darker variant */
+  --color-gold-bright: #E8BB60; /* highlight variant */
+  --color-gold-dim: #5A3E0E;    /* very dark gold for borders */
+
+  /* Teal: cipher labels, hint cells */
+  --color-teal: #7DD4E8;
+  --color-teal-mid: #6ECFE8;
+  --color-teal-dim: #153A48;    /* background for clue chips */
+
+  /* Green: correct answer, solved state, registered ticket */
+  --color-green: #5AAA78;
+  --color-green-mid: #3A8A58;
+
+  /* Amber: conflict detection */
+  --color-amber: #C08040;
+
+  /* Red: error messages, incorrect submission */
+  --color-red: #BF5757;
+
+  /* Surfaces */
+  --color-surface: #0C0C18;     /* main background (deep navy) */
+  --color-surface-elevated: #14142A; /* card / panel background */
+  --color-surface-2: #1C1C35;   /* more elevated surface */
+
+  /* Text */
+  --color-text-primary: #EAE0CA;   /* warm off-white */
+  --color-text-secondary: #8A8AA4; /* muted purple-grey */
+  --color-text-muted: #807A9A;     /* dimmer muted */
+  --color-text-border: #6A6488;    /* decorative text borders */
+
+  /* ── Fonts ── */
+  /* Display: quote text, headings — Cormorant Garamond */
+  --font-display: 'Cormorant Garamond', 'Georgia', serif;
+
+  /* Mono: cipher cells, claim codes — Space Mono */
+  --font-mono: 'Space Mono', 'Courier New', monospace;
+
+  /* Body/UI: buttons, labels, nav — DM Sans */
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+}
+
+/* Alpha-channel variants — used for glows, semi-transparent overlays,
+   and borders with opacity. Tailwind cannot generate meaningful utilities
+   from rgba() values, so these are plain CSS custom properties. */
+:root {
+  --color-gold-glow: rgba(212, 161, 64, 0.14);
+  --color-teal-glow: rgba(79, 163, 184, 0.10);
+  --color-green-glow: rgba(90, 170, 120, 0.12);
+  --color-green-border: rgba(90, 170, 120, 0.30);
+  --color-amber-glow: rgba(192, 128, 64, 0.14);
+  --color-border: rgba(255, 255, 255, 0.07);       /* subtle divider */
+  --color-border-vis: rgba(255, 255, 255, 0.12);   /* visible border */
+  --color-surface-overlay: rgba(12, 12, 24, 0.85);
+}
+
+/* Base resets */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Grain texture overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23g)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* WCAG 2.1 AA focus indicators */
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
+}
+#kb:focus-visible { outline: none; }
+
+.btn-back:focus-visible,
+.btn-primary:focus-visible,
+.btn-ghost:focus-visible,
+.btn-copy:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 4px;
+  border-radius: var(--r);
+}
+.choice-card:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+  border-color: var(--color-gold-mid);
+}
+
+/* Button base styles */
+.btn-primary {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 0.75em 2.5em;
+  background: transparent;
+  border: 1px solid var(--color-gold-mid);
+  color: var(--color-gold);
+  border-radius: var(--r);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.1s, color 0.15s;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-gold-glow);
+  border-color: var(--color-gold);
+  box-shadow: 0 0 22px rgba(212,161,64,0.18);
+  color: var(--color-gold-bright);
+}
+.btn-primary:active:not(:disabled) { transform: translateY(1px); }
+.btn-primary:disabled { opacity: 0.3; cursor: default; }
+
+.btn-ghost {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5em 1em;
+  min-height: 44px;
+  transition: color 0.15s;
+  letter-spacing: 0.04em;
+}
+.btn-ghost:hover { color: var(--color-text-primary); }
