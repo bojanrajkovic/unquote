@@ -18,14 +18,22 @@ export async function load() {
     throw redirect(302, "/");
   }
 
-  // Fetch today's puzzle from the API.
-  const puzzle = await getToday();
+  try {
+    // Fetch today's puzzle from the API.
+    const puzzle = await getToday();
 
-  // Read stored state for today — discard if date doesn't match.
-  const raw = storageGetJson<StoredPuzzleState>(STORAGE_KEYS.PUZZLE);
-  const stored = raw?.date === puzzle.date ? raw : null;
+    // Read stored state for today — discard if date doesn't match.
+    const raw = storageGetJson<StoredPuzzleState>(STORAGE_KEYS.PUZZLE);
+    const stored = raw?.date === puzzle.date ? raw : null;
 
-  // Load puzzle into game state (resumes from stored or starts fresh).
-  game.load(puzzle, stored);
+    // Load puzzle into game state (resumes from stored or starts fresh).
+    game.load(puzzle, stored);
+  } catch {
+    // Show in-page error rather than SvelteKit's error page (AC4.7).
+    game.status = "error";
+    game.errorMessage =
+      "Could not load today's puzzle. Check your connection and try again.";
+  }
+
   return {};
 }
