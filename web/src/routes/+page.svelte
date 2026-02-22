@@ -1,9 +1,12 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { fly } from "svelte/transition";
   import { goto } from "$app/navigation";
   import { registerPlayer } from "$lib/api.js";
   import { identity } from "$lib/state/identity.svelte.js";
   import { validateClaimCode } from "$lib/claim-code.js";
+
+  const TRANSITION_MS = 220;
 
   // ── Step state machine ──────────────────────────────────────
   type Step =
@@ -30,7 +33,7 @@
     { cipher: "R", plain: "D" },
     { cipher: "T", plain: "E" },
     { cipher: "E", plain: "C" },
-    { cipher: "E", plain: "O" },
+    { cipher: "G", plain: "O" },
     { cipher: "R", plain: "D" },
     { cipher: "T", plain: "E" },
   ] as const;
@@ -136,9 +139,15 @@
   <title>Unquote</title>
 </svelte:head>
 
-<!-- ── Landing ── -->
-{#if step === "landing"}
-  <main class="screen landing-inner">
+<!-- Onboarded players redirect to /game via +page.ts; guard prevents flash -->
+{#if identity.hasOnboarded}
+  <!-- empty: redirect in flight -->
+{:else if step === "landing"}
+  <main
+    class="screen landing-inner"
+    in:fly={{ y: 8, duration: TRANSITION_MS, delay: TRANSITION_MS }}
+    out:fly={{ y: -8, duration: TRANSITION_MS }}
+  >
     <p class="landing-eyebrow">A daily puzzle</p>
     <h1 class="landing-title">Unquote</h1>
 
@@ -157,7 +166,7 @@
             <div class="demo-cell-input" class:resolved={demoCells[i].resolved}>
               {demoCells[i].display}
             </div>
-            <span class="cell-cipher">{cell.cipher}</span>
+            <span class="demo-cell-cipher">{cell.cipher}</span>
           </div>
         {/each}
       </div>
@@ -167,7 +176,11 @@
     </div>
 
     <div class="landing-actions">
-      <button class="btn-primary" onclick={() => (step = "choose")}>
+      <button
+        class="btn-primary"
+        onclick={() =>
+          identity.hasOnboarded ? goto("/game") : (step = "choose")}
+      >
         Play Today's Puzzle →
       </button>
       <p class="landing-sub">
@@ -185,7 +198,12 @@
 
   <!-- ── Choose ── -->
 {:else if step === "choose"}
-  <div class="screen">
+  <div
+    class="screen"
+    style="padding-bottom: 3rem"
+    in:fly={{ y: 8, duration: TRANSITION_MS, delay: TRANSITION_MS }}
+    out:fly={{ y: -8, duration: TRANSITION_MS }}
+  >
     <header class="compact-header">
       <span class="compact-logo">Unquote</span>
       <button class="btn-back" onclick={() => (step = "landing")}>← Back</button
@@ -279,7 +297,11 @@
 
   <!-- ── Registering (spinner) ── -->
 {:else if step === "registering"}
-  <div class="screen">
+  <div
+    class="screen"
+    in:fly={{ y: 8, duration: TRANSITION_MS, delay: TRANSITION_MS }}
+    out:fly={{ y: -8, duration: TRANSITION_MS }}
+  >
     <header class="compact-header">
       <span class="compact-logo">Unquote</span>
     </header>
@@ -291,7 +313,11 @@
 
   <!-- ── Registered (claim code ticket) ── -->
 {:else if step === "registered"}
-  <div class="screen">
+  <div
+    class="screen"
+    in:fly={{ y: 8, duration: TRANSITION_MS, delay: TRANSITION_MS }}
+    out:fly={{ y: -8, duration: TRANSITION_MS }}
+  >
     <header class="compact-header">
       <span class="compact-logo">Unquote</span>
     </header>
@@ -337,7 +363,11 @@
 
   <!-- ── Enter code ── -->
 {:else if step === "enter-code"}
-  <div class="screen">
+  <div
+    class="screen"
+    in:fly={{ y: 8, duration: TRANSITION_MS, delay: TRANSITION_MS }}
+    out:fly={{ y: -8, duration: TRANSITION_MS }}
+  >
     <header class="compact-header">
       <span class="compact-logo">Unquote</span>
       <button class="btn-back" onclick={goBackToChoose}>← Back</button>
@@ -396,94 +426,117 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: var(--color-surface);
-    color: var(--color-text-primary);
-    font-family: var(--font-sans);
   }
 
   /* ── Landing ── */
   .landing-inner {
     justify-content: center;
-    padding: 3rem 1.5rem;
+    padding: 3rem 1.25rem 4rem;
     text-align: center;
-    gap: 1.5rem;
   }
 
   .landing-eyebrow {
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.22em;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.42em;
     text-transform: uppercase;
     color: var(--color-text-secondary);
+    margin-bottom: 1.75rem;
   }
 
   .landing-title {
     font-family: var(--font-mono);
-    font-size: clamp(2.8rem, 8vw, 4.5rem);
+    font-size: clamp(2rem, 7vw, 3.2rem);
     font-weight: 700;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.28em;
     color: var(--color-gold);
+    text-transform: uppercase;
     line-height: 1;
+    position: relative;
+    padding-bottom: 0.5em;
+  }
+  .landing-title::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3rem;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--color-gold-mid),
+      transparent
+    );
   }
 
   .landing-tagline {
     font-family: var(--font-display);
     font-style: italic;
-    font-size: clamp(1.05rem, 2.5vw, 1.3rem);
+    font-size: clamp(1.1rem, 2.5vw, 1.35rem);
     color: var(--color-text-primary);
-    max-width: 480px;
-    line-height: 1.55;
+    margin-top: 1.4rem;
+    line-height: 1.6;
+    max-width: 380px;
   }
 
   /* Demo cells */
   .demo-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1.5rem 0;
+    margin: 2.5rem 0 0.5rem;
   }
 
   .demo-cells {
     display: flex;
     gap: 8px;
+    justify-content: center;
   }
 
   .demo-cell {
+    width: 44px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 36px;
+    gap: 5px;
   }
 
   .demo-cell-input {
     font-family: var(--font-mono);
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: 700;
-    color: var(--color-text-secondary);
-    height: 1.5rem;
-    line-height: 1.5rem;
-    transition: color 0.3s ease;
+    height: 40px;
+    width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1.5px solid var(--color-text-border);
+    color: var(--color-text-muted);
+    transition:
+      color 0.15s,
+      border-color 0.2s;
   }
 
   .demo-cell-input.resolved {
     color: var(--color-gold);
+    border-bottom-color: var(--color-gold-mid);
   }
 
-  .cell-cipher {
+  .demo-cell-cipher {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: var(--color-text-secondary);
-    letter-spacing: 0.04em;
-    margin-top: 3px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--color-teal-mid);
   }
 
   .demo-caption {
     font-size: 0.7rem;
-    color: var(--color-text-muted);
-    letter-spacing: 0.05em;
+    color: var(--color-text-secondary);
+    letter-spacing: 0.06em;
+    margin-top: 0.85rem;
     opacity: 0;
-    transition: opacity 0.4s ease;
+    transition: opacity 0.5s ease;
+    text-align: center;
   }
 
   .demo-caption.caption-visible {
@@ -491,123 +544,107 @@
   }
 
   .landing-actions {
+    margin-top: 2.75rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
-    margin-top: 0.5rem;
+    gap: 0.9rem;
   }
 
   .landing-sub {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: var(--color-text-secondary);
   }
 
   .landing-sub a {
-    color: var(--color-gold);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-text-border);
     cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 3px;
+    transition: color 0.15s;
+  }
+  .landing-sub a:hover {
+    color: var(--color-text-primary);
   }
 
   /* ── Compact header (onboarding screens) ── */
   .compact-header {
     width: 100%;
-    max-width: 560px;
+    padding: 1.25rem 1.5rem;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 1.2rem 1.5rem 0.8rem;
+    justify-content: space-between;
     border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
   }
 
   .compact-logo {
     font-family: var(--font-mono);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 700;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.22em;
     color: var(--color-gold);
-  }
-
-  /* ── Shared buttons ── */
-  .btn-primary {
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
     text-transform: uppercase;
-    padding: 0.75em 2em;
-    background: var(--color-gold);
-    color: var(--color-surface);
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    transition: background 0.15s;
   }
-  .btn-primary:hover {
-    background: var(--color-gold-bright);
+  .compact-logo::after {
+    content: "";
+    display: block;
+    height: 1px;
+    background: linear-gradient(90deg, var(--color-gold-mid), transparent);
+    margin-top: 2px;
   }
 
   .btn-back {
-    font-size: 0.75rem;
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
     color: var(--color-text-secondary);
     background: none;
     border: none;
     cursor: pointer;
-    padding: 0.25em 0;
+    padding: 0.3em 0.5em;
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
     transition: color 0.15s;
   }
   .btn-back:hover {
     color: var(--color-text-primary);
   }
 
-  .btn-ghost {
-    font-size: 0.75rem;
-    color: var(--color-text-secondary);
-    background: none;
-    border: 1px solid var(--color-border-vis);
-    border-radius: 3px;
-    padding: 0.5em 1.5em;
-    cursor: pointer;
-    transition:
-      color 0.15s,
-      border-color 0.15s;
-  }
-  .btn-ghost:hover {
-    color: var(--color-text-primary);
-    border-color: var(--color-text-secondary);
-  }
-
   /* ── Onboarding ── */
   .onboarding-body {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 2.5rem 1.5rem;
+    justify-content: center;
+    padding: 2.5rem 1.25rem;
+    max-width: 500px;
     width: 100%;
-    max-width: 480px;
-    gap: 1.5rem;
   }
 
   .onboarding-heading {
-    text-align: center;
+    margin-bottom: 2rem;
   }
 
   .onboarding-eyebrow {
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.2em;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.35em;
     text-transform: uppercase;
     color: var(--color-text-secondary);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.65rem;
   }
 
   .onboarding-title {
     font-family: var(--font-display);
-    font-size: clamp(1.6rem, 4.5vw, 2.2rem);
+    font-size: 1.7rem;
     font-weight: 400;
-    color: var(--color-text-primary);
     line-height: 1.3;
+    color: var(--color-text-primary);
   }
 
   .onboarding-title em {
@@ -618,39 +655,41 @@
   .choice-stack {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    width: 100%;
+    gap: 0.65rem;
   }
 
   .choice-card {
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 1rem 1.25rem;
-    background: var(--color-surface-elevated);
-    border: 1px solid var(--color-border-vis);
-    border-radius: 8px;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--r-lg);
     cursor: pointer;
     transition:
       border-color 0.15s,
-      background 0.15s;
+      background 0.15s,
+      transform 0.12s;
+    background: rgba(255, 255, 255, 0.01);
   }
   .choice-card:hover {
-    border-color: var(--color-text-secondary);
-    background: var(--color-surface-2);
+    border-color: rgba(212, 161, 64, 0.28);
+    background: rgba(212, 161, 64, 0.04);
+    transform: translateX(4px);
   }
 
   .choice-card.choice-primary {
     border-color: var(--color-gold-mid);
-    background: rgba(212, 161, 64, 0.04);
   }
-  .choice-card.choice-primary:hover {
-    border-color: var(--color-gold);
-    background: rgba(212, 161, 64, 0.08);
+  .choice-card.choice-primary .choice-icon {
+    color: var(--color-gold);
   }
 
   .choice-icon {
-    font-size: 1.1rem;
+    font-size: 1rem;
+    width: 22px;
+    text-align: center;
+    color: var(--color-text-secondary);
     flex-shrink: 0;
   }
   .choice-body {
@@ -658,20 +697,29 @@
   }
 
   .choice-title {
-    font-size: 0.9rem;
     font-weight: 600;
+    font-size: 0.875rem;
     color: var(--color-text-primary);
     margin-bottom: 0.2rem;
   }
 
   .choice-desc {
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     color: var(--color-text-secondary);
+    line-height: 1.4;
   }
   .choice-arrow {
-    font-size: 1rem;
-    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--color-text-border);
+    transition:
+      color 0.15s,
+      transform 0.15s;
     flex-shrink: 0;
+  }
+  .choice-card:hover .choice-arrow {
+    color: var(--color-gold);
+    transform: translateX(3px);
   }
 
   /* ── Registering spinner ── */
@@ -682,14 +730,15 @@
     align-items: center;
     justify-content: center;
     gap: 1rem;
+    padding: 3rem;
     color: var(--color-text-secondary);
     font-size: 0.78rem;
   }
 
   .spinner {
     display: inline-block;
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     border: 2px solid var(--color-border-vis);
     border-top-color: var(--color-gold);
     border-radius: 50%;
@@ -704,13 +753,14 @@
 
   /* ── Ticket screens ── */
   .ticket-screen-body {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 2.5rem 1.5rem;
-    gap: 1.5rem;
+    justify-content: center;
+    padding: 2rem 1.25rem 3rem;
+    gap: 2rem;
     width: 100%;
-    max-width: 480px;
   }
 
   .ticket-heading {
@@ -718,11 +768,12 @@
   }
 
   .ticket-eyebrow {
-    font-size: 0.65rem;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
     font-weight: 700;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.38em;
     text-transform: uppercase;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.6rem;
   }
   .ticket-eyebrow.green {
     color: var(--color-green);
@@ -733,15 +784,16 @@
 
   .ticket-title {
     font-family: var(--font-display);
-    font-size: clamp(1.5rem, 4vw, 2rem);
-    font-weight: 600;
+    font-size: 1.55rem;
+    font-weight: 400;
     color: var(--color-text-primary);
-    margin-bottom: 0.4rem;
   }
 
   .ticket-subtitle {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: var(--color-text-secondary);
+    margin-top: 0.4rem;
+    line-height: 1.5;
   }
 
   .ticket {
@@ -750,13 +802,9 @@
     border-radius: var(--r-lg);
     padding: 2rem 2.5rem;
     text-align: center;
-    max-width: 400px;
+    max-width: 460px;
     width: 100%;
     background: rgba(90, 170, 120, 0.03);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
   }
 
   /* Scalloped cutouts on the sides */
@@ -790,30 +838,35 @@
   }
 
   .ticket-label {
-    font-size: 0.62rem;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
     font-weight: 700;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.28em;
     text-transform: uppercase;
     color: var(--color-text-secondary);
+    margin-bottom: 0.75rem;
   }
 
   .ticket-code {
     font-family: var(--font-mono);
-    font-size: clamp(1.1rem, 3.5vw, 1.5rem);
+    font-size: clamp(1rem, 3.5vw, 1.45rem);
     font-weight: 700;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.06em;
     color: var(--color-green);
+    word-break: keep-all;
+    white-space: nowrap;
   }
 
   .ticket-divider {
-    width: 100%;
     height: 1px;
-    background: var(--color-border-vis);
+    background: var(--color-green-border);
+    margin: 1.1rem 0;
+    opacity: 0.5;
   }
 
   .ticket-note {
     font-size: 0.75rem;
-    color: var(--color-text-secondary);
+    color: var(--color-text-primary);
     line-height: 1.5;
   }
 
@@ -829,9 +882,9 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
     padding: 0.45em 1.4em;
-    background: var(--color-green-glow);
+    background: rgba(90, 170, 120, 0.1);
     border: 1px solid var(--color-green-border);
-    border-radius: 3px;
+    border-radius: var(--r);
     color: var(--color-green);
     cursor: pointer;
     transition:
@@ -855,6 +908,7 @@
     align-items: center;
     gap: 0.75rem;
     width: 100%;
+    max-width: 460px;
   }
 
   /* ── Enter code input ── */
