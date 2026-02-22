@@ -54,12 +54,12 @@ describe("GameState", () => {
 
   describe("markSolved()", () => {
     it("sets status to solved", () => {
-      game.markSolved();
+      game.markSolved(5000);
       expect(game.status).toBe("solved");
     });
 
     it("persists solved status to localStorage", () => {
-      game.markSolved();
+      game.markSolved(5000);
       const stored = storageGetJson<StoredPuzzleState>(STORAGE_KEYS.PUZZLE);
       expect(stored?.status).toBe("solved");
     });
@@ -80,6 +80,7 @@ describe("GameState", () => {
         },
         guesses: { H: "A", E: "B" },
         startTime: 12345,
+        completionTime: null,
         status: "playing",
       };
       game.reset();
@@ -101,6 +102,7 @@ describe("GameState", () => {
         },
         guesses: {},
         startTime: 99999,
+        completionTime: null,
         status: "playing",
       };
       game.reset();
@@ -122,6 +124,7 @@ describe("GameState", () => {
         },
         guesses: { H: "X" },
         startTime: 1000,
+        completionTime: null,
         status: "playing",
       };
       game.reset();

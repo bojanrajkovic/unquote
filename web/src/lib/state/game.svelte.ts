@@ -39,6 +39,7 @@ export interface StoredPuzzleState {
   };
   guesses: Record<string, string>; // cipherLetter → plainLetter
   startTime: number | null; // epoch ms, for timer resume
+  completionTime: number | null; // ms elapsed when solved, null if still playing
   status: "playing" | "solved";
 }
 
@@ -54,6 +55,7 @@ class GameState {
   puzzle = $state<PuzzleResponse | null>(null);
   guesses = $state<Record<string, string>>({});
   startTime = $state<number | null>(null);
+  completionTime = $state<number | null>(null);
   status = $state<GameStatus>("idle");
   cursorEditIdx = $state(0);
   errorMessage = $state<string | null>(null);
@@ -104,11 +106,13 @@ class GameState {
       // Same day — resume
       this.guesses = stored.guesses;
       this.startTime = stored.startTime;
+      this.completionTime = stored.completionTime ?? null;
       this.status = stored.status;
     } else {
       // New day or no stored state — start fresh
       this.guesses = {};
       this.startTime = Date.now();
+      this.completionTime = null;
       this.status = "playing";
       this._persist();
     }
@@ -147,8 +151,9 @@ class GameState {
     );
   }
 
-  /** Mark the game as solved. Persists solved status. */
-  markSolved(): void {
+  /** Mark the game as solved. Persists solved status and completion time. */
+  markSolved(completionTime: number | null): void {
+    this.completionTime = completionTime;
     this.status = "solved";
     this._persist();
   }
@@ -169,6 +174,7 @@ class GameState {
     this.puzzle = null;
     this.guesses = {};
     this.startTime = null;
+    this.completionTime = null;
     this.status = "idle";
     this.cursorEditIdx = 0;
     this.errorMessage = null;
@@ -192,6 +198,7 @@ class GameState {
       },
       guesses: this.guesses,
       startTime: this.startTime,
+      completionTime: this.completionTime,
       status: this.status === "solved" ? "solved" : "playing",
     };
 

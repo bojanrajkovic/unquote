@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { fade } from "svelte/transition";
   import { game } from "$lib/state/game.svelte.js";
   import { identity } from "$lib/state/identity.svelte.js";
   import { assembleSolution, formatTimer } from "$lib/puzzle.js";
@@ -11,7 +12,7 @@
   let timerDisplay = $state("00:00");
   let submitting = $state(false);
   let solvedCardVisible = $state(false);
-  let solveElapsedMs: number | null = $state(null);
+  let revealComplete = $state(false);
   let statusMessage: {
     text: string;
     kind: "warning" | "error" | "loading";
@@ -51,14 +52,19 @@
     return () => clearInterval(id);
   });
 
-  // ── Solved card: reveal after stagger animation completes ─────────────
+  // ── Solved reveal: flip animation → pause → cross-fade grid to solved card
   $effect(() => {
     if (game.status === "solved") {
-      const delay = game.editables.length * 28 + 450;
-      const t = setTimeout(() => {
+      // Last cell starts flipping at (N-1)*28ms, flip animation is 380ms
+      const lastFlipEnd = game.editables.length * 28 + 380;
+      // Brief pause after the last cell finishes flipping
+      const fadeStart = lastFlipEnd + 300;
+      const t1 = setTimeout(() => {
+        // Trigger both simultaneously: grid fades out while solved card fades in
+        revealComplete = true;
         solvedCardVisible = true;
-      }, delay);
-      return () => clearTimeout(t);
+      }, fadeStart);
+      return () => clearTimeout(t1);
     }
   });
 
@@ -166,18 +172,16 @@
 
       if (result.correct) {
         // Capture elapsed time before markSolved clears the timer interval
-        solveElapsedMs =
+        const elapsed =
           game.startTime !== null ? Date.now() - game.startTime : null;
-        game.markSolved();
+        game.markSolved(elapsed);
         // Record the session for registered players (fire-and-forget — never block the UI)
-        if (identity.claimCode && game.puzzle && solveElapsedMs !== null) {
-          recordSession(
-            identity.claimCode,
-            game.puzzle.id,
-            solveElapsedMs,
-          ).catch(() => {
-            // Silently ignore — stats recording failure must not affect the game experience
-          });
+        if (identity.claimCode && game.puzzle && elapsed !== null) {
+          recordSession(identity.claimCode, game.puzzle.id, elapsed).catch(
+            () => {
+              // Silently ignore — stats recording failure must not affect the game experience
+            },
+          );
         }
         statusMessage = null;
       } else {
@@ -273,93 +277,102 @@
         {/if}
         <span class="meta-sep">·</span>
         <span class="timer">
-          {game.status === "solved" && solveElapsedMs !== null
-            ? formatTimer(solveElapsedMs)
+          {game.status === "solved" && game.completionTime !== null
+            ? formatTimer(game.completionTime)
             : timerDisplay}
         </span>
       </div>
 
-      <!-- Clues + progress -->
-      <div style="padding: 0.4rem 0 0">
-        <hr class="rule" />
-        <div class="game-clues">
-          <span class="clues-label">Clues</span>
-          <div class="clue-chips">
-            {#each game.puzzle.hints as hint}
-              <div class="clue-chip">
-                <span class="chip-cipher">{hint.cipherLetter}</span>
-                <span class="chip-arrow">→</span>
-                <span class="chip-plain">{hint.plainLetter}</span>
-              </div>
-            {/each}
-          </div>
-        </div>
-        <hr class="rule" />
-        <div class="progress-track">
-          <div
-            class="progress-fill"
-            style="width: {(game.progress * 100).toFixed(1)}%"
-          ></div>
-        </div>
-      </div>
-
-      <!-- Puzzle grid (AC2.1–2.17) -->
-      <!-- Words wrap as units (flex-wrap is on .puzzle-grid, not .puzzle-word) -->
-      <div
-        class="puzzle-grid"
-        class:game-solved={game.status === "solved"}
-        role="application"
-        aria-label="Cryptogram puzzle"
-      >
-        {#each wordGroups as word}
-          <div class="puzzle-word" role="group">
-            {#each word as cell (cell.index)}
-              {#if cell.kind === "punct"}
-                <div class="cell punct" aria-hidden="true">{cell.char}</div>
-              {:else if cell.kind === "hint"}
-                <!-- Hint cells: teal, not editable (AC2.9) -->
-                <div class="cell hint">
-                  <div class="cell-cipher">{cell.cipherLetter}</div>
-                  <div class="cell-input">{cell.plainLetter}</div>
-                </div>
-              {:else if cell.kind === "letter"}
-                <!-- Letter cell: editable (AC2.1–2.8, AC2.15) -->
-                <button
-                  class="cell letter"
-                  class:active={cell.editIndex === game.cursorEditIdx}
-                  class:related={cell.cipherLetter === activeCipherLetter &&
-                    cell.editIndex !== game.cursorEditIdx}
-                  class:conflict={game.conflicts.has(cell.cipherLetter)}
-                  class:correct={game.status === "solved"}
-                  style="--edit-idx: {cell.editIndex}"
-                  tabindex="0"
-                  onclick={() => handleCellClick(cell.editIndex)}
-                  onkeydown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      handleCellClick(cell.editIndex); // AC2.15
-                    }
-                  }}
-                  aria-label="Cipher {cell.cipherLetter}, guess: {cell.guess ??
-                    'empty'}"
+      <!-- Clues + progress: hidden after solve -->
+      {#if !revealComplete}
+        <div style="padding: 0.4rem 0 0" out:fade={{ duration: 400 }}>
+          <hr class="rule" />
+          <div class="game-clues">
+            <span class="clues-label">Clues</span>
+            <div class="clue-chips">
+              {#each game.puzzle.hints as hint}
+                <span class="clue-chip"
+                  >{hint.cipherLetter} = {hint.plainLetter}</span
                 >
-                  <div class="cell-cipher">{cell.cipherLetter}</div>
-                  <div class="cell-input">{cell.guess ?? "·"}</div>
-                </button>
-              {/if}
-            {/each}
+              {/each}
+            </div>
           </div>
-        {/each}
-      </div>
+          <hr class="rule" />
+          <div class="progress-track">
+            <div
+              class="progress-fill"
+              style="width: {(game.progress * 100).toFixed(1)}%"
+            ></div>
+          </div>
+        </div>
+      {/if}
 
-      <!-- Attribution -->
-      <div class="puzzle-author">— {game.puzzle.author}</div>
+      {#if !revealComplete}
+        <!-- Puzzle grid (AC2.1–2.17) -->
+        <div
+          class="puzzle-grid"
+          class:game-solved={game.status === "solved"}
+          role="application"
+          aria-label="Cryptogram puzzle"
+          out:fade={{ duration: 400 }}
+        >
+          {#each wordGroups as word}
+            <div class="puzzle-word" role="group">
+              {#each word as cell (cell.index)}
+                {#if cell.kind === "punct"}
+                  <div class="cell punct" aria-hidden="true">{cell.char}</div>
+                {:else if cell.kind === "hint"}
+                  <div class="cell hint">
+                    <div class="cell-input">{cell.plainLetter}</div>
+                    <div class="cell-cipher">{cell.cipherLetter}</div>
+                  </div>
+                {:else if cell.kind === "letter"}
+                  <button
+                    class="cell letter"
+                    class:active={cell.editIndex === game.cursorEditIdx}
+                    class:related={cell.cipherLetter === activeCipherLetter &&
+                      cell.editIndex !== game.cursorEditIdx}
+                    class:conflict={game.conflicts.has(cell.cipherLetter)}
+                    class:correct={game.status === "solved"}
+                    style="--edit-idx: {cell.editIndex}"
+                    tabindex="0"
+                    onclick={() => handleCellClick(cell.editIndex)}
+                    onkeydown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleCellClick(cell.editIndex);
+                      }
+                    }}
+                    aria-label="Cipher {cell.cipherLetter}, guess: {cell.guess ??
+                      'empty'}"
+                  >
+                    <div class="cell-input">{cell.guess ?? "·"}</div>
+                    <div class="cell-cipher">{cell.cipherLetter}</div>
+                  </button>
+                {/if}
+              {/each}
+            </div>
+          {/each}
+        </div>
 
-      <div class="ornament-rule"><span>✦ · ✦ · ✦</span></div>
+        <!-- Attribution -->
+        <div class="puzzle-author" class:hidden={game.status === "solved"}>
+          — {game.puzzle.author}
+        </div>
+      {/if}
+
+      {#if !revealComplete}
+        <div class="ornament-rule"><span>✦ · ✦ · ✦</span></div>
+      {/if}
 
       <!-- Solved card (AC2.11) -->
       {#if solvedCardVisible}
-        <div class="solved-card" aria-live="polite" aria-atomic="true">
+        <div
+          class="solved-card"
+          aria-live="polite"
+          aria-atomic="true"
+          in:fade={{ duration: 500, delay: 300 }}
+        >
           <div class="solved-eyebrow">✦ Decoded ✦</div>
           <blockquote class="solved-quote">
             "{assembleSolution(game.cells)}"
@@ -368,7 +381,9 @@
           <div class="solved-stats">
             <div class="stat-group">
               <span class="stat-value">
-                {solveElapsedMs !== null ? formatTimer(solveElapsedMs) : "—"}
+                {game.completionTime !== null
+                  ? formatTimer(game.completionTime)
+                  : "—"}
               </span>
               <span class="stat-label">Time</span>
             </div>
@@ -377,28 +392,30 @@
       {/if}
 
       <!-- Status messages (AC2.12, AC2.13, AC2.14) -->
-      {#if statusMessage}
+      {#if statusMessage && !revealComplete}
         <div class="game-status {statusMessage.kind}" aria-live="polite">
           {statusMessage.text}
         </div>
       {/if}
 
-      <!-- Submit button + keyboard hints -->
-      <div class="game-actions">
-        <button
-          class="btn-primary"
-          onclick={submitSolution}
-          disabled={submitting || game.status !== "playing"}
-        >
-          {game.status === "solved" ? "Decoded ✓" : "Check Answer"}
-        </button>
-        <div class="keyboard-hints" aria-hidden="true">
-          <span><kbd>↵</kbd> submit</span>
-          <span><kbd>⌫</kbd> delete</span>
-          <span><kbd>←</kbd><kbd>→</kbd> navigate</span>
-          <span><kbd>Ctrl+C</kbd> clear</span>
+      <!-- Submit button + keyboard hints: hidden once solved -->
+      {#if !revealComplete}
+        <div class="game-actions">
+          <button
+            class="btn-primary"
+            onclick={submitSolution}
+            disabled={submitting || game.status !== "playing"}
+          >
+            {game.status === "solved" ? "Decoded ✓" : "Check Answer"}
+          </button>
+          <div class="keyboard-hints" aria-hidden="true">
+            <span><kbd>↵</kbd> submit</span>
+            <span><kbd>⌫</kbd> delete</span>
+            <span><kbd>←</kbd><kbd>→</kbd> navigate</span>
+            <span><kbd>Ctrl+C</kbd> clear</span>
+          </div>
         </div>
-      </div>
+      {/if}
     </div>
   </div>
 {/if}
@@ -414,50 +431,67 @@
   }
 
   .compact-header {
+    width: 100%;
+    padding: 1.25rem 1.5rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 1rem;
     border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
   }
 
-  /* NOTE: The game screen uses --font-display (Cormorant Garamond, italic) for the
-     compact wordmark. Phase 4 (landing/onboarding) uses --font-mono for a terminal
-     aesthetic. The difference is intentional — the game screen logo is more refined
-     and literary. If the prototype shows a single consistent style, align both. */
   .compact-logo {
-    font-family: var(--font-display);
-    font-size: 1.2rem;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
     color: var(--color-gold);
-    font-style: italic;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+  .compact-logo::after {
+    content: "";
+    display: block;
+    height: 1px;
+    background: linear-gradient(90deg, var(--color-gold-mid), transparent);
+    margin-top: 2px;
   }
 
   .btn-stats-nav {
     font-family: var(--font-sans);
-    font-size: 0.78rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
     color: var(--color-text-secondary);
     text-decoration: none;
-    letter-spacing: 0.04em;
+    padding: 0.3em 0.5em;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s;
+  }
+  .btn-stats-nav:hover {
+    color: var(--color-text-primary);
   }
 
   .game-inner {
+    width: 100%;
+    max-width: 660px;
+    padding: 0 1.25rem;
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    max-width: 540px;
-    margin: 0 auto;
-    padding: 1rem 1rem 2rem;
-    width: 100%;
   }
 
   /* ── Meta bar ─────────────────────────────────────────────────── */
 
   .game-meta-bar {
     display: flex;
+    justify-content: center;
     align-items: center;
-    gap: 0.5rem;
-    font-family: var(--font-sans);
-    font-size: 0.78rem;
+    gap: 0.6rem;
+    padding: 0.75rem 0 0;
+    font-size: 0.74rem;
     color: var(--color-text-secondary);
   }
 
@@ -492,81 +526,80 @@
 
   .timer {
     font-family: var(--font-mono);
-    font-size: 0.88rem;
-    color: var(--color-text-primary);
-    letter-spacing: 0.05em;
+    font-size: 0.77rem;
+    letter-spacing: 0.04em;
   }
 
   /* ── Clues + progress ─────────────────────────────────────────── */
 
   .rule {
     border: none;
-    border-top: 1px solid var(--color-border);
-    margin: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--color-border) 25%,
+      var(--color-border) 75%,
+      transparent
+    );
   }
 
   .game-clues {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
-    padding: 0.35rem 0;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+    padding: 0.85rem 0;
   }
 
   .clues-label {
-    font-family: var(--font-sans);
-    font-size: 0.72rem;
-    color: var(--color-text-muted);
-    letter-spacing: 0.06em;
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
+    color: var(--color-text-secondary);
     flex-shrink: 0;
   }
 
   .clue-chips {
     display: flex;
-    gap: 0.4rem;
+    gap: 0.35rem;
     flex-wrap: wrap;
   }
 
   .clue-chip {
-    display: flex;
-    align-items: center;
-    gap: 0.2rem;
-    padding: 0.15rem 0.45rem;
-    border-radius: 4px;
-    background: var(--color-teal-dim);
-    border: 1px solid rgba(125, 212, 232, 0.2);
     font-family: var(--font-mono);
-    font-size: 0.75rem;
-  }
-
-  .chip-cipher {
-    color: var(--color-teal);
-  }
-  .chip-arrow {
-    color: var(--color-text-muted);
-  }
-  .chip-plain {
+    font-size: clamp(0.72rem, 1.8vw, 0.82rem);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 0.22em 0.6em;
+    background: var(--color-teal-dim);
+    border: 1px solid rgba(79, 163, 184, 0.22);
+    border-radius: 2px;
     color: var(--color-teal);
   }
 
   .progress-track {
-    height: 3px;
+    height: 2px;
     background: var(--color-surface-2);
-    border-radius: 2px;
+    border-radius: 1px;
+    margin-top: 0.2rem;
     overflow: hidden;
-    margin-top: 0.35rem;
   }
 
   .progress-fill {
     height: 100%;
-    background: var(--color-gold);
-    border-radius: 2px;
-    transition: width 0.15s ease;
+    background: linear-gradient(
+      90deg,
+      var(--color-teal-mid),
+      var(--color-gold-mid)
+    );
+    border-radius: 1px;
+    transition: width 0.25s ease;
   }
 
   /* ── Puzzle grid ──────────────────────────────────────────────── */
 
-  /* flex-wrap on .puzzle-grid (not .puzzle-word) so words wrap as units */
   .puzzle-grid {
     padding: 1.4rem 0 0.5rem;
     display: flex;
@@ -587,179 +620,200 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-end;
-    min-width: 2.2rem;
-    height: 2.8rem;
-    padding: 0.1rem;
-    border-radius: 4px;
+    width: 30px;
+    flex-shrink: 0;
     font-family: var(--font-mono);
-    font-size: 0.85rem;
     background: transparent;
     border: none;
-  }
-
-  .cell-cipher {
-    font-size: 0.65rem;
-    letter-spacing: 0.06em;
-    color: var(--color-teal);
-    height: 1rem;
-    line-height: 1;
+    padding: 0;
   }
 
   .cell-input {
-    width: 100%;
-    min-width: 1.8rem;
-    height: 1.8rem;
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    font-weight: 700;
+    width: 30px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1rem;
+    border-bottom: 1.5px solid var(--color-text-border);
+    color: var(--color-text-muted);
+    transition:
+      background 0.12s,
+      border-color 0.14s,
+      color 0.12s,
+      box-shadow 0.14s;
+  }
+
+  .cell-cipher {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
     font-weight: 700;
-    text-transform: uppercase;
-    border-bottom: 2px solid var(--color-border-vis);
-    color: var(--color-text-primary);
-    letter-spacing: 0.04em;
+    color: var(--color-teal-mid);
+    margin-top: 5px;
+    height: 15px;
+    display: flex;
+    align-items: center;
+    letter-spacing: 0.05em;
+    transition: color 0.12s;
   }
 
   .cell.punct {
-    min-width: 0.8rem;
-    height: 2.8rem;
-    justify-content: flex-end;
     font-size: 1.1rem;
     color: var(--color-text-secondary);
-    padding-bottom: 0.25rem;
+    justify-content: center;
+    height: auto;
   }
 
-  /* Hint cells: teal label, not editable (AC2.9) */
-  .cell.hint .cell-cipher {
-    color: var(--color-teal);
-  }
+  /* Hint cells: teal, not editable (AC2.9) */
   .cell.hint .cell-input {
     color: var(--color-teal);
-    border-bottom-color: rgba(125, 212, 232, 0.3);
+    border-bottom-color: var(--color-teal-mid);
+  }
+  .cell.hint .cell-cipher {
+    color: var(--color-teal-mid);
   }
 
-  /* Letter cells: cursor: pointer, gold focus ring */
+  /* Letter cells: cursor: pointer */
   .cell.letter {
     cursor: pointer;
-    padding: 0.1rem 0.2rem;
   }
 
-  /* Active cell (AC2.6: click or navigate to cell) */
+  /* Filled letter cells */
+  .cell.letter .cell-input:not(:empty) {
+    color: var(--color-text-primary);
+  }
+
+  /* Active cell (AC2.6) */
   .cell.letter.active .cell-input {
-    border-bottom-color: var(--color-gold);
     background: var(--color-gold-glow);
-    border-radius: 2px 2px 0 0;
+    border-bottom-color: var(--color-gold);
+    box-shadow: 0 3px 14px rgba(212, 161, 64, 0.18);
+    color: var(--color-gold-bright);
+  }
+  .cell.letter.active .cell-cipher {
+    color: var(--color-gold-mid);
   }
 
   /* Related cells: same cipher letter as active cell (AC2.7) */
   .cell.letter.related .cell-input {
-    background: rgba(212, 161, 64, 0.07);
-    border-bottom-color: rgba(212, 161, 64, 0.4);
+    background: var(--color-teal-glow);
+    border-bottom-color: var(--color-teal-mid);
+  }
+  .cell.letter.related .cell-cipher {
+    color: var(--color-teal);
   }
 
-  /* Conflict cells: two cipher letters → same plain letter (AC2.8) */
+  /* Conflict cells (AC2.8) */
   .cell.letter.conflict .cell-input {
     background: var(--color-amber-glow);
     border-bottom-color: var(--color-amber);
     color: var(--color-amber);
   }
 
-  /* Correct cells: staggered green flip animation (AC2.11) */
-  @keyframes cell-flip {
+  /* Correct cells: staggered flip animation (AC2.11) */
+  @keyframes flipReveal {
     0% {
       transform: scaleY(1);
     }
-    50% {
+    40% {
       transform: scaleY(0.05);
-    }
-    51% {
-      transform: scaleY(0.05);
-      background: var(--color-green);
+      opacity: 0.4;
     }
     100% {
       transform: scaleY(1);
-      background: var(--color-green);
+      opacity: 1;
     }
   }
 
   .cell.letter.correct .cell-input {
-    animation: cell-flip 0.32s ease forwards;
+    color: var(--color-green);
+    border-bottom-color: var(--color-green-mid);
+    animation: flipReveal 0.38s ease forwards;
     animation-delay: calc(var(--edit-idx) * 28ms);
-    color: var(--color-surface);
-    background: var(--color-green);
-    border-bottom-color: transparent;
   }
 
   /* ── Attribution + ornament ───────────────────────────────────── */
 
   .puzzle-author {
     font-family: var(--font-display);
-    font-size: 0.95rem;
     font-style: italic;
+    font-size: 1rem;
     color: var(--color-text-secondary);
     text-align: right;
-    padding: 0.25rem 0;
+    padding: 1rem 0 1.5rem;
+  }
+
+  .puzzle-author.hidden {
+    display: none;
   }
 
   .ornament-rule {
-    text-align: center;
-    font-size: 0.65rem;
-    color: var(--color-gold-dim);
-    letter-spacing: 0.2em;
-    margin: 0.25rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.5rem 0;
+  }
+  .ornament-rule::before,
+  .ornament-rule::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-border));
+  }
+  .ornament-rule::after {
+    background: linear-gradient(90deg, var(--color-border), transparent);
+  }
+  .ornament-rule span {
+    color: var(--color-text-secondary);
+    font-size: 0.5rem;
+    letter-spacing: 0.3em;
   }
 
   /* ── Solved card (AC2.11) ─────────────────────────────────────── */
 
   .solved-card {
-    background: var(--color-surface-elevated);
-    border: 1px solid var(--color-green-border);
-    border-radius: 8px;
-    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.75rem 1.5rem;
+    border: 1px solid rgba(90, 170, 120, 0.22);
+    background: rgba(90, 170, 120, 0.03);
+    border-radius: var(--r-lg);
     text-align: center;
-    animation: fade-up 0.5s ease both;
-  }
-
-  @keyframes fade-up {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
   }
 
   .solved-eyebrow {
-    font-family: var(--font-sans);
-    font-size: 0.72rem;
-    letter-spacing: 0.15em;
-    color: var(--color-green);
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.32em;
     text-transform: uppercase;
-    margin-bottom: 0.75rem;
+    color: var(--color-green);
   }
 
   .solved-quote {
     font-family: var(--font-display);
-    font-size: 1.15rem;
     font-style: italic;
+    font-size: clamp(1.05rem, 2.5vw, 1.4rem);
+    line-height: 1.6;
     color: var(--color-text-primary);
-    line-height: 1.5;
-    margin: 0 0 0.5rem;
+    max-width: 500px;
+    margin: 0;
   }
 
   .solved-attribution {
     font-family: var(--font-display);
     font-size: 0.9rem;
     color: var(--color-text-secondary);
-    margin-bottom: 1rem;
   }
 
   .solved-stats {
     display: flex;
-    justify-content: center;
     gap: 2rem;
   }
 
@@ -767,49 +821,42 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.2rem;
+    gap: 0.15rem;
   }
 
   .stat-value {
     font-family: var(--font-mono);
-    font-size: 1.4rem;
-    color: var(--color-green);
+    font-size: 1.3rem;
     font-weight: 700;
+    color: var(--color-green);
   }
 
   .stat-label {
-    font-family: var(--font-sans);
-    font-size: 0.72rem;
-    color: var(--color-text-muted);
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    color: var(--color-text-secondary);
   }
 
   /* ── Status messages ──────────────────────────────────────────── */
 
   .game-status {
-    font-family: var(--font-sans);
-    font-size: 0.82rem;
-    padding: 0.4rem 0.75rem;
-    border-radius: 5px;
+    min-height: 1.5rem;
+    font-size: 0.78rem;
     text-align: center;
-  }
-
-  .game-status.warning {
-    background: rgba(192, 128, 64, 0.12);
-    color: var(--color-amber);
-    border: 1px solid rgba(192, 128, 64, 0.25);
+    padding: 0.2rem 0;
   }
 
   .game-status.error {
-    background: rgba(191, 87, 87, 0.12);
     color: var(--color-red);
-    border: 1px solid rgba(191, 87, 87, 0.25);
+  }
+
+  .game-status.warning {
+    color: var(--color-amber);
   }
 
   .game-status.loading {
-    background: transparent;
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
   }
 
   /* ── Actions ──────────────────────────────────────────────────── */
@@ -818,48 +865,26 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.75rem;
-    margin-top: 0.5rem;
-  }
-
-  .btn-primary {
-    width: 100%;
-    max-width: 280px;
-    padding: 0.7rem 1.5rem;
-    background: var(--color-gold);
-    color: var(--color-surface);
-    font-family: var(--font-sans);
-    font-size: 0.88rem;
-    font-weight: 600;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    letter-spacing: 0.05em;
-    transition: opacity 0.15s;
-  }
-
-  .btn-primary:disabled {
-    opacity: 0.5;
-    cursor: default;
+    gap: 0.85rem;
+    padding-top: 0.25rem;
   }
 
   .keyboard-hints {
     display: flex;
-    gap: 1rem;
+    gap: 0.9rem;
     flex-wrap: wrap;
     justify-content: center;
-    font-family: var(--font-sans);
-    font-size: 0.72rem;
-    color: var(--color-text-muted);
+    font-size: clamp(0.68rem, 1.6vw, 0.76rem);
+    color: var(--color-text-border);
   }
 
   .keyboard-hints kbd {
-    display: inline-block;
-    padding: 0.05rem 0.25rem;
-    border: 1px solid var(--color-border-vis);
-    border-radius: 3px;
     font-family: var(--font-mono);
-    font-size: 0.68rem;
+    font-size: clamp(0.62rem, 1.4vw, 0.68rem);
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    padding: 0.1em 0.4em;
     color: var(--color-text-secondary);
   }
 
