@@ -51,6 +51,7 @@
    from rgba() values, so these are plain CSS custom properties. */
 :root {
   --r: 3px;
+  --r-lg: 8px;
   --color-gold-glow: rgba(212, 161, 64, 0.14);
   --color-teal-glow: rgba(79, 163, 184, 0.1);
   --color-green-glow: rgba(90, 170, 120, 0.12);
