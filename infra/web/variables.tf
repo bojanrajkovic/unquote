@@ -17,5 +17,5 @@ variable "github_repo" {
 variable "aws_region" {
   description = "AWS region for S3 bucket (CloudFront is global)."
   type        = string
-  default     = "eu-west-1"
+  default     = "us-east-1"
 }
