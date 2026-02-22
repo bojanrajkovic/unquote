@@ -10,9 +10,6 @@ const config = {
       precompress: false,
       strict: true,
     }),
-    // Never add trailing slashes — /game not /game/
-    // Ensures CloudFront routes work correctly without redirect loops.
-    trailingSlash: 'never',
   },
 };
 
