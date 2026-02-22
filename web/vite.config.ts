@@ -8,4 +8,12 @@ export default defineConfig({
     tailwindcss(),
     sveltekit(),
   ],
+  build: {
+    // Bundle is ~46 KB gzipped total — single chunk is faster than waterfall
+    rollupOptions: {
+      output: {
+        manualChunks: () => "app",
+      },
+    },
+  },
 });
