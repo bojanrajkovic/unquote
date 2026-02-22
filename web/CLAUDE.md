@@ -21,9 +21,9 @@ SvelteKit 5 static SPA for the Unquote cryptoquip game. Builds to a fully static
 
 ## Configuration
 
-| Variable | Build-time | Default | Description |
-|----------|------------|---------|-------------|
-| `VITE_API_URL` | Yes | `http://localhost:3000` | Base URL for the Unquote REST API |
+| Variable       | Build-time | Default                 | Description                       |
+| -------------- | ---------- | ----------------------- | --------------------------------- |
+| `VITE_API_URL` | Yes        | `http://localhost:3000` | Base URL for the Unquote REST API |
 
 Set via `VITE_API_URL` environment variable at build time. In CI, injected from GitHub Actions variables.
 
@@ -49,11 +49,11 @@ Svelte 5 runes with singleton class instances (not stores). Two global state obj
 
 ### Routes
 
-| Route | Purpose |
-|-------|---------|
-| `/` | Landing page + onboarding (register, enter code, or skip) |
-| `/game` | Game screen (puzzle grid, keyboard, timer, solution check) |
-| `/stats` | Player statistics (requires claim code) |
+| Route    | Purpose                                                    |
+| -------- | ---------------------------------------------------------- |
+| `/`      | Landing page + onboarding (register, enter code, or skip)  |
+| `/game`  | Game screen (puzzle grid, keyboard, timer, solution check) |
+| `/stats` | Player statistics (requires claim code)                    |
 
 ### Key Contracts
 

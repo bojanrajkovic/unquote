@@ -139,10 +139,12 @@
     }));
 
     // Horizontal grid lines at each y-axis tick
-    const gridLines = ticks.map(
-      ({ y }) =>
-        `<line x1="${pl}" y1="${y.toFixed(1)}" x2="${pl + iW}" y2="${y.toFixed(1)}" stroke="var(--color-border)" stroke-width="0.5"/>`,
-    );
+    const gridLines = ticks.map(({ y }) => ({
+      x1: pl,
+      y1: y,
+      x2: pl + iW,
+      y2: y,
+    }));
 
     return { segments, areas, dots, yLabels, gridLines, pl, iW, iH: H };
   }
@@ -232,7 +234,14 @@
 
           <!-- Horizontal grid lines at each y-axis tick -->
           {#each chart.gridLines as gl}
-            {@html gl}
+            <line
+              x1={gl.x1}
+              y1={gl.y1}
+              x2={gl.x2}
+              y2={gl.y2}
+              stroke="var(--color-border)"
+              stroke-width="0.5"
+            />
           {/each}
 
           <!-- Gradient areas (one per contiguous segment) -->

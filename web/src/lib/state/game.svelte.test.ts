@@ -70,6 +70,14 @@ describe("GameState", () => {
       const stored: StoredPuzzleState = {
         date: "2026-02-21",
         puzzleId: "game-123",
+        puzzle: {
+          id: "game-123",
+          encryptedText: "HELLO WORLD",
+          hints: [],
+          author: "Test Author",
+          category: "test",
+          difficulty: 50,
+        },
         guesses: { H: "A", E: "B" },
         startTime: 12345,
         status: "playing",
@@ -83,6 +91,14 @@ describe("GameState", () => {
       const stored: StoredPuzzleState = {
         date: "2026-02-21",
         puzzleId: "game-123",
+        puzzle: {
+          id: "game-123",
+          encryptedText: "HELLO WORLD",
+          hints: [],
+          author: "Test Author",
+          category: "test",
+          difficulty: 50,
+        },
         guesses: {},
         startTime: 99999,
         status: "playing",
@@ -96,6 +112,14 @@ describe("GameState", () => {
       const stale: StoredPuzzleState = {
         date: "2026-02-20", // yesterday
         puzzleId: "game-999",
+        puzzle: {
+          id: "game-999",
+          encryptedText: "OLD PUZZLE",
+          hints: [],
+          author: "Old Author",
+          category: "test",
+          difficulty: 30,
+        },
         guesses: { H: "X" },
         startTime: 1000,
         status: "playing",

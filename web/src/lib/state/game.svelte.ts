@@ -28,6 +28,15 @@ export interface StoredPuzzleState {
   /** ISO date "YYYY-MM-DD" — discriminator for stale detection */
   date: string;
   puzzleId: string;
+  /** Full puzzle data to avoid re-fetching on same-day reload */
+  puzzle: {
+    id: string;
+    encryptedText: string;
+    hints: Array<{ cipherLetter: string; plainLetter: string }>;
+    author: string;
+    category: string;
+    difficulty: number;
+  };
   guesses: Record<string, string>; // cipherLetter → plainLetter
   startTime: number | null; // epoch ms, for timer resume
   status: "playing" | "solved";
@@ -173,6 +182,14 @@ class GameState {
     const stored: StoredPuzzleState = {
       date: this.puzzle.date,
       puzzleId: this.puzzle.id,
+      puzzle: {
+        id: this.puzzle.id,
+        encryptedText: this.puzzle.encryptedText,
+        hints: this.puzzle.hints,
+        author: this.puzzle.author,
+        category: this.puzzle.category,
+        difficulty: this.puzzle.difficulty,
+      },
       guesses: this.guesses,
       startTime: this.startTime,
       status: this.status === "solved" ? "solved" : "playing",
