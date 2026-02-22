@@ -10,18 +10,23 @@
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "lint": "svelte-check --tsconfig ./tsconfig.json",
     "typecheck": "svelte-check --tsconfig ./tsconfig.json",
-    "format": "prettier --write --plugin prettier-plugin-svelte ."
+    "format": "prettier --write --plugin prettier-plugin-svelte .",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "3.0.10",
     "@sveltejs/kit": "2.52.2",
+    "@sveltejs/vite-plugin-svelte": "^3.0.0",
     "@tailwindcss/vite": "4.2.0",
+    "jsdom": "^24.0.0",
     "prettier": "^3.0.0",
     "prettier-plugin-svelte": "^3.0.0",
     "svelte": "5.53.1",
     "svelte-check": "4.4.1",
     "tailwindcss": "4.2.0",
     "typescript": "5.9.3",
-    "vite": "7.3.1"
+    "vite": "7.3.1",
+    "vitest": "^3.0.0"
   }
 }
