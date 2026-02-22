@@ -13,8 +13,8 @@ lefthook = "latest"
 "aqua:zizmorcore/zizmor" = "latest"
 
 [monorepo]
-config_roots = ["api", "tui"]
+config_roots = ["api", "tui", "web"]
 
 [tasks.build]
 description = "Build all projects"
-depends = ["//api:install", "//api:build", "//tui:install", "//tui:build"]
+depends = ["//api:install", "//api:build", "//tui:install", "//tui:build", "//web:install", "//web:build"]
