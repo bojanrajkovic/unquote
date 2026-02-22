@@ -6,7 +6,7 @@ lefthook = "latest"
 "aqua:zizmorcore/zizmor" = "latest"
 
 [monorepo]
-config_roots = ["api", "tui", "web"]
+config_roots = ["api", "infra", "tui", "web"]
 
 [tasks.build]
 description = "Build all projects"
