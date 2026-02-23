@@ -92,7 +92,9 @@
     let current: Point[] = [];
 
     const flushSegment = () => {
-      if (current.length < 1) return;
+      if (current.length < 1) {
+        return;
+      }
       const lineParts = current.map(
         (p, j) => `${j === 0 ? "M" : "L"}${p.x},${p.y}`,
       );

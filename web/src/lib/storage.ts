@@ -34,7 +34,9 @@ export function storageRemove(key: StorageKey): void {
 /** Parse a stored JSON value. Returns null if key is missing or JSON is invalid. */
 export function storageGetJson<T>(key: StorageKey): T | null {
   const raw = localStorage.getItem(key);
-  if (raw === null) return null;
+  if (raw === null) {
+    return null;
+  }
   try {
     return JSON.parse(raw) as T;
   } catch {

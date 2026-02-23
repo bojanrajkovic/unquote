@@ -53,7 +53,9 @@ export interface PlayerStats {
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {};
-  if (init?.body) headers["Content-Type"] = "application/json";
+  if (init?.body) {
+    headers["Content-Type"] = "application/json";
+  }
 
   const res = await fetch(`${API_BASE}${path}`, {
     ...init,
@@ -64,7 +66,9 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
     let message = `API error ${res.status}`;
     try {
       const body = await res.json();
-      if (typeof body?.message === "string") message = body.message;
+      if (typeof body?.message === "string") {
+        message = body.message;
+      }
     } catch {
       // ignore parse failure — use default message
     }

@@ -13,7 +13,9 @@ export const prerender = false;
 
 export async function load() {
   // During SSR (adapter-static build scan), skip — browser APIs unavailable.
-  if (!browser) return {};
+  if (!browser) {
+    return {};
+  }
 
   if (!identity.hasOnboarded) {
     throw redirect(302, "/");

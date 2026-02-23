@@ -26,7 +26,9 @@
           if (cell.kind === "space") {
             groups.push([]);
           } else {
-            if (groups.length === 0) groups.push([]);
+            if (groups.length === 0) {
+              groups.push([]);
+            }
             groups[groups.length - 1].push(cell);
           }
           return groups;
@@ -43,7 +45,9 @@
 
   // ── Timer: runs when playing, stops when solved/checking ─────────────
   $effect(() => {
-    if (game.status !== "playing" || game.startTime === null) return;
+    if (game.status !== "playing" || game.startTime === null) {
+      return;
+    }
     const update = () => {
       timerDisplay = formatTimer(Date.now() - game.startTime!);
     };
@@ -79,7 +83,9 @@
 
   // ── Keyboard handler (fires on the hidden input) ──────────────────────
   function handleKey(e: KeyboardEvent) {
-    if (game.status !== "playing") return;
+    if (game.status !== "playing") {
+      return;
+    }
 
     if (e.key === "Enter") {
       e.preventDefault();
@@ -104,8 +110,11 @@
     }
     if (e.key === "Tab") {
       e.preventDefault();
-      if (e.shiftKey) game.setCursor(game.cursorEditIdx - 1);
-      else game.setCursor(game.cursorEditIdx + 1);
+      if (e.shiftKey) {
+        game.setCursor(game.cursorEditIdx - 1);
+      } else {
+        game.setCursor(game.cursorEditIdx + 1);
+      }
       return;
     }
     if (e.key === "Backspace") {
@@ -121,7 +130,9 @@
 
   function handleLetter(letter: string) {
     const current = game.editables[game.cursorEditIdx];
-    if (!current) return;
+    if (!current) {
+      return;
+    }
     game.setGuess(current.cipherLetter, letter);
     statusMessage = null;
     // Advance cursor if not at the last cell
@@ -132,7 +143,9 @@
 
   function handleBackspace() {
     const current = game.editables[game.cursorEditIdx];
-    if (!current) return;
+    if (!current) {
+      return;
+    }
     if (current.guess !== null) {
       game.clearGuess(current.cipherLetter);
     } else if (game.cursorEditIdx > 0) {
@@ -147,7 +160,9 @@
   }
 
   async function submitSolution() {
-    if (submitting || game.status !== "playing" || !game.puzzle) return;
+    if (submitting || game.status !== "playing" || !game.puzzle) {
+      return;
+    }
 
     // Validate before sending (AC2.12, AC2.13)
     if (!game.editables.every((c) => c.guess !== null)) {
@@ -205,9 +220,15 @@
   }
 
   function diffInfo(score: number): [string, string] {
-    if (score <= 25) return ["Easy", "easy"];
-    if (score <= 50) return ["Medium", "medium"];
-    if (score <= 75) return ["Hard", "hard"];
+    if (score <= 25) {
+      return ["Easy", "easy"];
+    }
+    if (score <= 50) {
+      return ["Medium", "medium"];
+    }
+    if (score <= 75) {
+      return ["Hard", "hard"];
+    }
     return ["Expert", "expert"];
   }
 

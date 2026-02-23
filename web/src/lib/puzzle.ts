@@ -132,7 +132,9 @@ export function detectConflicts(
   const plainToCiphers = new Map<string, Set<string>>();
 
   for (const [cipher, plain] of Object.entries(guesses)) {
-    if (!plain) continue;
+    if (!plain) {
+      continue;
+    }
     const upper = plain.toUpperCase();
     const existing = plainToCiphers.get(upper) ?? new Set<string>();
     existing.add(cipher);
@@ -150,7 +152,9 @@ export function detectConflicts(
   const conflicts = new Set<string>();
   for (const ciphers of plainToCiphers.values()) {
     if (ciphers.size >= 2) {
-      for (const c of ciphers) conflicts.add(c);
+      for (const c of ciphers) {
+        conflicts.add(c);
+      }
     }
   }
 

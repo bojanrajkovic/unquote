@@ -176,7 +176,9 @@ class GameState {
   // ── localStorage persistence ───────────────────────────────────────────
 
   private _persist(): void {
-    if (!browser || !this.puzzle) return;
+    if (!browser || !this.puzzle) {
+      return;
+    }
 
     const stored: StoredPuzzleState = {
       date: this.puzzle.date,
@@ -198,15 +200,21 @@ class GameState {
    * Returns null if nothing is stored or if stored data is for a different day.
    */
   static readStored(today: string): StoredPuzzleState | null {
-    if (!browser) return null;
+    if (!browser) {
+      return null;
+    }
     const stored = storageGetJson<StoredPuzzleState>(STORAGE_KEYS.PUZZLE);
-    if (!stored || stored.date !== today) return null;
+    if (!stored || stored.date !== today) {
+      return null;
+    }
     return stored;
   }
 
   /** Clear stored puzzle state from localStorage. */
   static clearStored(): void {
-    if (browser) storageRemove(STORAGE_KEYS.PUZZLE);
+    if (browser) {
+      storageRemove(STORAGE_KEYS.PUZZLE);
+    }
   }
 }
 

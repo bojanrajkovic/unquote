@@ -393,7 +393,9 @@
           value={codeInput}
           oninput={handleCodeInput}
           onkeydown={(e) => {
-            if (e.key === "Enter") submitCode();
+            if (e.key === "Enter") {
+              submitCode();
+            }
           }}
         />
         <div class="ticket-divider"></div>

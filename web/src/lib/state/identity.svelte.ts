@@ -28,14 +28,20 @@ class IdentityState {
   hasOnboarded = $state(false);
 
   constructor() {
-    if (!browser) return;
+    if (!browser) {
+      return;
+    }
 
     // Hydrate from localStorage
     const storedCode = storageGet(STORAGE_KEYS.CLAIM_CODE);
-    if (storedCode) this.claimCode = storedCode;
+    if (storedCode) {
+      this.claimCode = storedCode;
+    }
 
     const storedOnboarded = storageGet(STORAGE_KEYS.HAS_ONBOARDED);
-    if (storedOnboarded === "true") this.hasOnboarded = true;
+    if (storedOnboarded === "true") {
+      this.hasOnboarded = true;
+    }
   }
 
   /**

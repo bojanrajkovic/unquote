@@ -7,7 +7,9 @@
   // View Transitions API — progressive enhancement.
   // Only Chromium supports this as of 2026; other browsers get instant transitions.
   onNavigate((navigation) => {
-    if (!document.startViewTransition) return;
+    if (!document.startViewTransition) {
+      return;
+    }
 
     return new Promise((resolve) => {
       document.startViewTransition(async () => {
