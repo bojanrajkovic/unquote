@@ -4,8 +4,8 @@
 
   let { children } = $props();
 
-  // View Transitions API — progressive enhancement.
-  // Only Chromium supports this as of 2026; other browsers get instant transitions.
+  // View Transitions API — progressive enhancement (Baseline Oct 2025).
+  // Falls back to instant transitions in older browsers.
   onNavigate((navigation) => {
     if (!document.startViewTransition) {
       return;
