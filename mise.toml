@@ -1,20 +1,13 @@
 experimental_monorepo_root = true
 
 [tools]
-node = "lts"
-go = "1.26.0"
-"go:golang.org/x/tools/gopls" = "latest"
 lefthook = "latest"
 "npm:@commitlint/cli" = "latest"
-# TUI tools
-"aqua:golangci/golangci-lint" = "2.10.1"
-"aqua:mvdan/gofumpt" = "0.9.2"
-"aqua:goreleaser/goreleaser" = "2.13.3"
 "aqua:zizmorcore/zizmor" = "latest"
 
 [monorepo]
-config_roots = ["api", "tui"]
+config_roots = ["api", "infra", "tui", "web"]
 
 [tasks.build]
 description = "Build all projects"
-depends = ["//api:install", "//api:build", "//tui:install", "//tui:build"]
+depends = ["//api:install", "//api:build", "//tui:install", "//tui:build", "//web:install", "//web:build"]

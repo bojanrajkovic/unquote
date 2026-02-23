@@ -29,6 +29,16 @@ pre-commit:
       glob: "api/**/*.ts"
       run: mise run //api:typecheck
 
+    # Web checks (TypeScript/Svelte)
+    web-fmt:
+      glob: "web/**/*.{ts,svelte,css}"
+      run: mise run //web:fmt
+      stage_fixed: true
+
+    web-lint:
+      glob: "web/**/*.{ts,svelte}"
+      run: mise run //web:lint
+
 commit-msg:
   commands:
     commitlint:

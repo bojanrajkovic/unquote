@@ -1,0 +1,31 @@
+# Copy this file to terraform.tfvars and fill in real values.
+# terraform.tfvars is gitignored — never commit it.
+
+# ARN of the GitHub OIDC provider in your AWS account.
+# To create it (one-time per account):
+#   aws iam create-open-id-connect-provider \
+#     --url https://token.actions.githubusercontent.com \
+#     --client-id-list sts.amazonaws.com \
+#     --thumbprint-list 6938fd4d98bab03faadb97b34396831e3780aea1
+github_oidc_provider_arn = "arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com"
+
+# Public URL of the Unquote API (used as VITE_API_URL in the web build).
+api_url = "https://api.example.com"
+
+# Domain name for the web frontend (registered via Route 53).
+# domain_name = "playunquote.com"  # uncomment to override default
+
+# Contact details for domain registration (WHOIS privacy enabled by default).
+# All three contacts (admin, registrant, tech) use the same details.
+domain_contact = {
+  first_name   = "Jane"
+  last_name    = "Doe"
+  email        = "admin@example.com"
+  phone_number = "+1.5555555555"
+  address_line = "123 Main St"
+  city         = "Anytown"
+  state        = "CA"
+  zip_code     = "90210"
+  country_code = "US"
+  contact_type = "PERSON"
+}
