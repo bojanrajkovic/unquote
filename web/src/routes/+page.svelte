@@ -9,13 +9,24 @@
   const TRANSITION_MS = 220;
 
   // ── Step state machine ──────────────────────────────────────
+  // ssr = false, so window is always available at script init time.
+  // ?action=register skips the landing page (used by /stats "create account").
   type Step =
     | "landing"
     | "choose"
     | "registering"
     | "registered"
     | "enter-code";
-  let step = $state<Step>("landing");
+  const initialStep: Step =
+    new URLSearchParams(window.location.search).get("action") === "register"
+      ? "choose"
+      : "landing";
+  let step = $state<Step>(initialStep);
+  console.log("[page] init", {
+    initialStep,
+    hasOnboarded: identity.hasOnboarded,
+    claimCode: identity.claimCode,
+  });
 
   // Registration
   let claimCode = $state("");

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
   import { identity } from "$lib/state/identity.svelte.js";
   import type { StatsPageData } from "./+page.js";
 
@@ -176,9 +175,16 @@
       <!-- Anonymous empty state (no claim code) — AC4.6 -->
       <div class="empty-state">
         <p class="empty-message">Stats are saved when you create an account.</p>
-        <button class="register-cta" onclick={() => goto("/")}>
+        <a
+          class="register-cta"
+          href="/?action=register"
+          onclick={() =>
+            console.log(
+              "[stats] 'create account' clicked, navigating to /?action=register",
+            )}
+        >
           create account
-        </button>
+        </a>
       </div>
     {:else}
       <!-- Stats heading: title + inline claim code — AC1.7 -->
