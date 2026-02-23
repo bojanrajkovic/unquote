@@ -17,9 +17,9 @@ describe("buildCells", () => {
     expect(cells[1]).toMatchObject({ kind: "space" });
   });
 
-  it("AC3.1: maps punctuation to PunctCells", () => {
+  it("AC3.1: maps punctuation to PunctuationCells", () => {
     const cells = buildCells("A,B", [], {});
-    expect(cells[1]).toMatchObject({ kind: "punct", char: "," });
+    expect(cells[1]).toMatchObject({ kind: "punctuation", char: "," });
   });
 
   it("AC3.1: maps hint letters to HintCells", () => {

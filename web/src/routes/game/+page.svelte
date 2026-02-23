@@ -340,8 +340,10 @@
           {#each wordGroups as word}
             <div class="puzzle-word" role="group">
               {#each word as cell (cell.index)}
-                {#if cell.kind === "punct"}
-                  <div class="cell punct" aria-hidden="true">{cell.char}</div>
+                {#if cell.kind === "punctuation"}
+                  <div class="cell punctuation" aria-hidden="true">
+                    {cell.char}
+                  </div>
                 {:else if cell.kind === "hint"}
                   <div class="cell hint">
                     <div class="cell-input">{cell.plainLetter}</div>
@@ -680,7 +682,7 @@
     transition: color 0.12s;
   }
 
-  .cell.punct {
+  .cell.punctuation {
     font-size: 1.1rem;
     color: var(--color-text-secondary);
     justify-content: center;

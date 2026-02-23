@@ -33,10 +33,10 @@ export interface HintCell {
 }
 
 /**
- * A "punct" cell is punctuation (comma, period, etc.) — displayed as-is, not editable.
+ * A "punctuation" cell is a punctuation character (comma, period, etc.) — displayed as-is, not editable.
  */
-export interface PunctCell {
-  kind: "punct";
+export interface PunctuationCell {
+  kind: "punctuation";
   index: number;
   char: string;
 }
@@ -49,7 +49,7 @@ export interface SpaceCell {
   index: number;
 }
 
-export type Cell = LetterCell | HintCell | PunctCell | SpaceCell;
+export type Cell = LetterCell | HintCell | PunctuationCell | SpaceCell;
 
 // ─── buildCells ─────────────────────────────────────────────────────────────
 
@@ -59,7 +59,7 @@ export type Cell = LetterCell | HintCell | PunctCell | SpaceCell;
  * Iterates over each character of encryptedText:
  * - Uppercase letters: HintCell if revealed in hints, otherwise LetterCell
  * - Spaces: SpaceCell
- * - Everything else (punctuation): PunctCell
+ * - Everything else (punctuation): PunctuationCell
  *
  * The guess for each LetterCell comes from the guesses map (cipherLetter → plainLetter).
  */
@@ -104,7 +104,7 @@ export function buildCells(
         });
       }
     } else {
-      cells.push({ kind: "punct", index: i, char });
+      cells.push({ kind: "punctuation", index: i, char });
     }
   }
 
@@ -194,7 +194,7 @@ export function assembleSolution(cells: Cell[]): string {
           return cell.guess ?? "?";
         case "hint":
           return cell.plainLetter;
-        case "punct":
+        case "punctuation":
           return cell.char;
         case "space":
           return " ";
