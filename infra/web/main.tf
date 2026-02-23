@@ -1,5 +1,136 @@
 data "aws_caller_identity" "current" {}
 
+# ─── Domain Registration ─────────────────────────────────────────────────────
+
+resource "aws_route53domains_domain" "web" {
+  domain_name       = var.domain_name
+  duration_in_years = 1
+  auto_renew        = true
+  transfer_lock     = true
+
+  admin_contact {
+    first_name     = var.domain_contact.first_name
+    last_name      = var.domain_contact.last_name
+    email          = var.domain_contact.email
+    phone_number   = var.domain_contact.phone_number
+    address_line_1 = var.domain_contact.address_line
+    city           = var.domain_contact.city
+    state          = var.domain_contact.state
+    zip_code       = var.domain_contact.zip_code
+    country_code   = var.domain_contact.country_code
+    contact_type   = var.domain_contact.contact_type
+  }
+
+  registrant_contact {
+    first_name     = var.domain_contact.first_name
+    last_name      = var.domain_contact.last_name
+    email          = var.domain_contact.email
+    phone_number   = var.domain_contact.phone_number
+    address_line_1 = var.domain_contact.address_line
+    city           = var.domain_contact.city
+    state          = var.domain_contact.state
+    zip_code       = var.domain_contact.zip_code
+    country_code   = var.domain_contact.country_code
+    contact_type   = var.domain_contact.contact_type
+  }
+
+  tech_contact {
+    first_name     = var.domain_contact.first_name
+    last_name      = var.domain_contact.last_name
+    email          = var.domain_contact.email
+    phone_number   = var.domain_contact.phone_number
+    address_line_1 = var.domain_contact.address_line
+    city           = var.domain_contact.city
+    state          = var.domain_contact.state
+    zip_code       = var.domain_contact.zip_code
+    country_code   = var.domain_contact.country_code
+    contact_type   = var.domain_contact.contact_type
+  }
+
+  admin_privacy      = true
+  registrant_privacy = true
+  tech_privacy       = true
+
+  tags = {
+    Project = "unquote"
+    Purpose = "domain-registration"
+  }
+}
+
+# ─── Route 53 Hosted Zone ───────────────────────────────────────────────────
+# Route 53 auto-creates a hosted zone when registering a domain. Reference it
+# via the ID exported by the registration resource rather than creating a duplicate.
+
+data "aws_route53_zone" "web" {
+  zone_id = aws_route53domains_domain.web.hosted_zone_id
+}
+
+# ─── ACM Certificate ─────────────────────────────────────────────────────────
+# CloudFront requires certificates in us-east-1 (already our default region).
+
+resource "aws_acm_certificate" "web" {
+  domain_name       = var.domain_name
+  validation_method = "DNS"
+
+  tags = {
+    Project = "unquote"
+    Purpose = "tls-certificate"
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_route53_record" "acm_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.web.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
+
+  zone_id = data.aws_route53_zone.web.zone_id
+  name    = each.value.name
+  type    = each.value.type
+  ttl     = 300
+  records = [each.value.record]
+
+  allow_overwrite = true
+}
+
+resource "aws_acm_certificate_validation" "web" {
+  certificate_arn         = aws_acm_certificate.web.arn
+  validation_record_fqdns = [for record in aws_route53_record.acm_validation : record.fqdn]
+}
+
+# ─── DNS: Point Domain at CloudFront ─────────────────────────────────────────
+
+resource "aws_route53_record" "web_a" {
+  zone_id = data.aws_route53_zone.web.zone_id
+  name    = var.domain_name
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.web.domain_name
+    zone_id                = aws_cloudfront_distribution.web.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_route53_record" "web_aaaa" {
+  zone_id = data.aws_route53_zone.web.zone_id
+  name    = var.domain_name
+  type    = "AAAA"
+
+  alias {
+    name                   = aws_cloudfront_distribution.web.domain_name
+    zone_id                = aws_cloudfront_distribution.web.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
 # ─── S3 Bucket ────────────────────────────────────────────────────────────────
 
 resource "aws_s3_bucket" "web" {
@@ -31,12 +162,61 @@ resource "aws_cloudfront_origin_access_control" "web" {
   signing_protocol                  = "sigv4"
 }
 
+# ─── WAF Web ACL ─────────────────────────────────────────────────────────────
+# Required for CloudFront flat-rate pricing plans. Default-allow with AWS
+# managed common rule set for basic protection (no extra cost on Free plan).
+
+resource "aws_wafv2_web_acl" "web" {
+  name        = "unquote-web"
+  description = "WAF for Unquote web CloudFront distribution"
+  scope       = "CLOUDFRONT" # Must be in us-east-1
+
+  default_action {
+    allow {}
+  }
+
+  rule {
+    name     = "aws-managed-common"
+    priority = 0
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        vendor_name = "AWS"
+        name        = "AWSManagedRulesCommonRuleSet"
+      }
+    }
+
+    visibility_config {
+      sampled_requests_enabled   = true
+      cloudwatch_metrics_enabled = true
+      metric_name                = "unquote-web-common-rules"
+    }
+  }
+
+  visibility_config {
+    sampled_requests_enabled   = true
+    cloudwatch_metrics_enabled = true
+    metric_name                = "unquote-web-waf"
+  }
+
+  tags = {
+    Project = "unquote"
+    Purpose = "static-site-waf"
+  }
+}
+
 # ─── CloudFront Distribution ──────────────────────────────────────────────────
 
 resource "aws_cloudfront_distribution" "web" {
   enabled             = true
   default_root_object = "index.html"
   comment             = "Unquote web frontend"
+  aliases             = [var.domain_name]
+  web_acl_id          = aws_wafv2_web_acl.web.arn
 
   origin {
     domain_name              = aws_s3_bucket.web.bucket_regional_domain_name
@@ -59,7 +239,7 @@ resource "aws_cloudfront_distribution" "web" {
     }
 
     min_ttl     = 0
-    default_ttl = 86400   # 1 day
+    default_ttl = 86400    # 1 day
     max_ttl     = 31536000 # 1 year
   }
 
@@ -88,7 +268,9 @@ resource "aws_cloudfront_distribution" "web" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn      = aws_acm_certificate_validation.web.certificate_arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
   }
 
   tags = {
@@ -148,7 +330,7 @@ data "aws_iam_policy_document" "github_oidc_trust" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:brajkovic/${var.github_repo}:ref:refs/heads/main"]
+      values   = ["repo:bojanrajkovic/${var.github_repo}:ref:refs/heads/main"]
     }
   }
 }
@@ -167,9 +349,9 @@ resource "aws_iam_role" "github_web_deploy" {
 data "aws_iam_policy_document" "github_web_deploy" {
   # Allow listing bucket contents (required for aws s3 sync --delete).
   statement {
-    sid     = "S3List"
-    effect  = "Allow"
-    actions = ["s3:ListBucket"]
+    sid       = "S3List"
+    effect    = "Allow"
+    actions   = ["s3:ListBucket"]
     resources = [aws_s3_bucket.web.arn]
   }
 

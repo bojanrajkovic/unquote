@@ -19,3 +19,26 @@ variable "aws_region" {
   type        = string
   default     = "us-east-1"
 }
+
+variable "domain_name" {
+  description = "Domain name for the web frontend (e.g. playunquote.com)."
+  type        = string
+  default     = "playunquote.com"
+}
+
+variable "domain_contact" {
+  description = "Contact details for domain registration. Used for admin, registrant, and tech contacts."
+  type = object({
+    first_name   = string
+    last_name    = string
+    email        = string
+    phone_number = string # E.164 format: +1.5555555555
+    address_line = string
+    city         = string
+    state        = string
+    zip_code     = string
+    country_code = string                     # ISO 3166-1 alpha-2: US, GB, etc.
+    contact_type = optional(string, "PERSON") # PERSON, COMPANY, ASSOCIATION, PUBLIC_BODY
+  })
+  sensitive = true
+}
