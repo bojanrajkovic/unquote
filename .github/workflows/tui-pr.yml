@@ -54,7 +54,9 @@ jobs:
           scopes: |
             tui(/.*)?
             api(/.*)?
+            web(/.*)?
             game-generator(/.*)?
+            infra(/.*)?
             ci
           requireScope: false
 
