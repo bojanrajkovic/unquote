@@ -392,3 +392,87 @@ The Terraform module in `infra/web/` is new — no existing IaC exists in the re
 **Beta/staging distribution:** Out of scope. A single production distribution is sufficient. Testing happens locally against `localhost:3000`.
 
 **Frontend release tagging:** Not needed. The web frontend is always "latest" — there are no pinned-version semantics as with the API (where the TUI pins to specific API contracts).
+
+## Post-Design-Phase Changes
+
+### Additions
+
+**`lib/claim-code.ts` -- dedicated claim code validation module.** The design placed claim code validation inline in `+page.svelte`. The implementation extracted it into a standalone module (`web/src/lib/claim-code.ts`) with a `validateClaimCode()` function and its own test file (`web/src/lib/claim-code.test.ts`). This improves testability and reusability.
+
+**`lib/puzzle.ts: assembleSolution()` function.** The design listed `buildCells()`, `detectConflicts()`, and `formatTimer()` as the pure functions in `lib/puzzle.ts`. The implementation added `assembleSolution()` -- a pure function that reconstructs the full plaintext from the cell array for submission to `POST /game/:id/check`. The game screen calls this instead of performing inline string assembly.
+
+**`api.ts: recordSession()` function.** The design specified four API functions (`getToday`, `checkSolution`, `registerPlayer`, `getStats`). The implementation added a fifth, `recordSession(claimCode, gameId, completionTime)`, which calls `POST /player/:code/session` to record a completed game. This is called fire-and-forget from the game screen on solve; failures are silently ignored.
+
+**`StoredPuzzleState.puzzle` -- full puzzle data cached in localStorage.** The design's `StoredPuzzleState` interface included `date`, `puzzleId`, `guesses`, `startTime`, and `status`. The implementation added a nested `puzzle` object containing the full `PuzzleResponse` fields (`id`, `encryptedText`, `hints`, `author`, `category`, `difficulty`). This allows same-day reloads to skip the API call entirely by reconstructing the puzzle from localStorage without fetching `/game/today` (AC4.2).
+
+**`StoredPuzzleState.completionTime` field.** The design's stored state had no `completionTime`. The implementation added it to persist the exact elapsed time at solve, so the solved card shows the correct time after a page reload.
+
+**`GameState.errorMessage` and `GameState.conflicts` derived fields.** The design specified `cells`, `editables`, and `progress` as derived state. The implementation added `conflicts` (a `$derived` `Set<string>` from `detectConflicts()`) and `errorMessage` (a `$state<string | null>` for user-visible error messages).
+
+**`+layout.ts` for global SvelteKit options.** The design placed `trailingSlash: 'never'` in `svelte.config.js`. The implementation instead uses a `+layout.ts` file at the route root that exports `prerender = true` and `trailingSlash = "never"` as SvelteKit layout-level options.
+
+**`+page.ts` on the `/` route (onboarding redirect guard).** The design described the `/game` load function redirecting unonboarded users to `/`. The implementation also added a `/` route load function (`src/routes/+page.ts`) that redirects already-onboarded users to `/game`, preventing them from seeing the landing page again.
+
+**Vitest configuration with jsdom and `$app/environment` mock.** The design mentioned unit tests but did not specify test infrastructure. The implementation added `vitest.config.ts` (jsdom environment, `$lib` path alias, `$app/environment` mock) and `vitest.setup.ts` (exports `browser = true`, `dev = false`, `building = false`). Tests cover `puzzle.ts`, `storage.ts`, `claim-code.ts`, `identity.svelte.ts`, and `game.svelte.ts`.
+
+**Vite `rollupOptions.manualChunks` -- single-chunk bundling.** The implementation's `vite.config.ts` forces all code into a single `"app"` chunk (`manualChunks: () => "app"`). This was not in the design but optimizes loading for the small bundle size (~46 KB gzipped).
+
+**Infrastructure: Route 53 domain registration, ACM certificate, DNS records, and WAF.** The design specified S3 + CloudFront + IAM role + GitHub Actions variables. The implementation's Terraform module (`infra/web/main.tf`) additionally manages:
+- `aws_route53domains_domain.web` -- domain registration for `playunquote.com`
+- `aws_acm_certificate.web` + DNS validation records -- TLS certificate for the custom domain
+- `aws_route53_record.web_a` and `web_aaaa` -- A/AAAA alias records pointing the domain at CloudFront
+- `aws_wafv2_web_acl.web` -- WAF Web ACL with AWS managed common rule set, attached to the CloudFront distribution
+- `aws_cloudfront_origin_access_control.web` -- OAC instead of the legacy OAI pattern
+
+**Infrastructure: CloudFront uses OAC with private S3 bucket.** The design described "S3 bucket with static website hosting enabled." The implementation uses a private S3 bucket (all public access blocked via `aws_s3_bucket_public_access_block`) accessed by CloudFront through Origin Access Control (OAC). This is a security improvement over public S3 website endpoints.
+
+**Infrastructure variables: `domain_name`, `domain_contact`, `github_repo`, `aws_region`.** The design specified only `github_oidc_provider_arn` and `api_url` as Terraform variables. The implementation added `domain_name` (default `playunquote.com`), `domain_contact` (sensitive, for WHOIS registration), `github_repo` (default `unquote`), and `aws_region` (default `us-east-1`).
+
+**Infrastructure outputs expanded.** The design listed bucket name and distribution ID as outputs. The implementation added: `cloudfront_domain_name`, `github_deploy_role_arn`, `waf_web_acl_arn`, `domain_name`, `hosted_zone_id`, `hosted_zone_nameservers`, and `acm_certificate_arn`.
+
+**CI workflow: mise setup and differentiated cache headers.** The design described a simple build-and-sync workflow. The implementation's `web-deploy.yml` additionally:
+- Uses `jdx/mise-action` to install mise and runs `corepack enable` for pnpm
+- Splits S3 sync into two passes: immutable assets (`max-age=31536000, immutable`) and HTML files (`max-age=0, must-revalidate`)
+- Includes `concurrency` settings to prevent mid-sync cancellation
+- Triggers on both `web/**` and `.github/workflows/web-deploy.yml` changes
+- Uses pinned action SHAs (not tags) for security
+
+**CI workflow: `permissions` block at workflow and job level.** The workflow sets top-level `permissions: {}` and only grants `contents: read` and `id-token: write` at the job level, following least-privilege.
+
+**`infra/mise.toml` -- OpenTofu tool for IaC.** The design did not mention a mise config for infrastructure. The implementation added `infra/mise.toml` specifying `opentofu = "latest"` as the Terraform alternative.
+
+**`web/mise.toml` with full task set.** The design mentioned adding `//web:build` and `//web:dev` tasks. The implementation added a comprehensive `web/mise.toml` with tasks for `install`, `dev`, `build`, `preview`, `lint`, `typecheck`, `fmt`, and `ci`.
+
+**Game screen: word-group rendering.** The design described a puzzle grid with cells. The implementation groups cells into "words" by splitting on `SpaceCell` boundaries (`wordGroups` derived), rendering each word as a `<div class="puzzle-word">` with `flex-wrap` on the grid. This produces natural word-wrap behavior.
+
+**Game screen: keyboard hints bar.** The implementation renders a keyboard hints bar below the submit button showing key bindings (`Enter` submit, `Backspace` delete, arrow navigate, `Ctrl+C` clear). This was not in the design.
+
+**Game screen: difficulty badge with 4-tier color system.** The implementation maps the difficulty score to four labels with distinct color schemes (Easy/green, Medium/gold, Hard/amber, Expert/red) via the `diffInfo()` function. The design mentioned a "difficulty badge" but did not specify the tier breakdown.
+
+**Stats screen: CTA for anonymous users.** The design's AC4.6 required showing an empty state when no claim code is present. The implementation goes further: the stats screen shows a "create account" CTA button that navigates to `/` for anonymous users, instead of simply stating "no stats available."
+
+### Deviations
+
+**`web/` is a standalone pnpm project, not a pnpm workspace member.** The design stated that `web/` would be "added to `pnpm-workspace.yaml`" as a workspace member alongside `api/`. In the implementation, `web/` has its own `package.json` but is not referenced in `api/pnpm-workspace.yaml`. It operates as an independent pnpm project. The root `mise.toml` references it as a monorepo config root, but pnpm workspace linking is not used.
+
+**`storage.ts` uses three keys, not two.** The design specified "two localStorage keys only" (`unquote_claim_code`, `unquote_puzzle`). The implementation adds a third key, `unquote_has_onboarded`, to track onboarding completion independently of the claim code. This is necessary because anonymous (skipped) users have no claim code but still need the onboarding flag to bypass the landing page.
+
+**`svelte.config.js` omits `trailingSlash` setting.** The design specified `svelte.config.js` would include `trailingSlash: 'never'`. The implementation moves this to `src/routes/+layout.ts` as an exported constant, which is an equivalent SvelteKit mechanism but in a different file.
+
+**Game screen error handling stays in-page.** The design specified that fetch failures would set `game.status = 'error'`. The implementation does this via a `try/catch` in the load function that sets `game.status` and `game.errorMessage` directly rather than throwing a SvelteKit error, keeping error handling in-page rather than using SvelteKit's error boundary.
+
+**No `lib/components/` directory.** The design's project structure listed components under `src/lib/`. The implementation places all UI directly in route `+page.svelte` files with scoped `<style>` blocks and global styles in `app.css`. No shared component files were extracted.
+
+**Solve animation uses CSS `scaleY` flip, not per-cell green fill.** The design described "staggered green flip animation." The implementation uses a CSS `@keyframes flipReveal` animation with `scaleY(1) -> scaleY(0.05) -> scaleY(1)` and staggered delay via `calc(var(--edit-idx) * 28ms)`, followed by a cross-fade from the grid to a solved card.
+
+**Stats screen secondary stats use grouped cards.** The design described "secondary stat rows." The implementation organizes them into two side-by-side cards (Streaks: current/best; Times: best/average) in a 2-column grid.
+
+**Infrastructure uses OpenTofu, not Terraform.** The design referred to "Terraform" throughout. The implementation uses the OpenTofu fork (compatible provider and HCL syntax).
+
+### Deferred
+
+**`lib/components/` shared component library.** The implementation inlines all UI into route-level `+page.svelte` files. Common patterns (compact header, buttons) are repeated via CSS classes in `app.css` rather than Svelte components. This may be refactored as the UI grows.
+
+**Precompression of static assets.** The `svelte.config.js` explicitly sets `precompress: false`. CloudFront handles compression via its `compress: true` setting, but precompressing assets could improve initial response times.
+
+**Unit tests for `lib/api.ts`.** The pure domain logic and state modules all have tests. The API client has no unit tests -- API communication is validated through manual testing.
