@@ -231,16 +231,9 @@ resource "aws_cloudfront_distribution" "web" {
     viewer_protocol_policy = "redirect-to-https"
     compress               = true
 
-    forwarded_values {
-      query_string = false
-      cookies {
-        forward = "none"
-      }
-    }
-
-    min_ttl     = 0
-    default_ttl = 86400    # 1 day
-    max_ttl     = 31536000 # 1 year
+    # AWS managed CachingOptimized policy: gzip+brotli compression, no query
+    # strings or cookies forwarded, 1-day default / 1-year max TTL.
+    cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6"
   }
 
   # SPA fallback: 404 and 403 from S3 → serve /404.html with HTTP 200
