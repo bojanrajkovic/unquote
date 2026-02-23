@@ -102,11 +102,13 @@ jobs:
             --cache-control "public, max-age=31536000, immutable" \
             --exclude "*.html"
           # HTML files: short cache (must revalidate so new deploys take effect quickly)
+          # NOTE: --exclude must come before --include; AWS CLI processes filters
+          # left-to-right with later rules taking precedence.
           aws s3 sync web/build/ s3://${{ vars.S3_BUCKET }} \
             --delete \
             --cache-control "public, max-age=0, must-revalidate" \
-            --include "*.html" \
-            --exclude "*"
+            --exclude "*" \
+            --include "*.html"
 
       - name: Invalidate CloudFront cache
         run: |
