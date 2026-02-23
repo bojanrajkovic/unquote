@@ -19,7 +19,7 @@ import type { Span } from "@opentelemetry/api";
  */
 export function tracedProxy<T extends object>(target: T, serviceName: string): T {
   return new Proxy(target, {
-    get(target: T, prop: string | symbol, receiver: ProxyHandler<T>): unknown {
+    get(_target: T, prop: string | symbol, receiver: ProxyHandler<T>): unknown {
       const propValue = Reflect.get(target, prop, receiver);
 
       // If the property is not a function, return it unchanged (AC3.3)
