@@ -123,6 +123,10 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 - `internal/ui/` - Styling and text wrapping utilities
 - `internal/versioninfo/` - Build-time version info (ldflags injection)
 
+## Testing
+
+- **Test naming**: Test descriptions must reference the acceptance criteria they validate, prefixed with the AC identifier (e.g., `"AC3.1: restores guesses from localStorage on reload"`). AC definitions live in the relevant design plan under `docs/design-plans/`.
+
 ## Commit Messages
 
 Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
