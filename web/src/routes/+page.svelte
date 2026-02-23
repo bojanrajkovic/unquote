@@ -125,6 +125,7 @@
       return; // AC1.9: does NOT navigate
     }
     identity.setClaimCode(validated);
+    identity.completeOnboarding();
     goto("/game");
   }
 
@@ -351,10 +352,22 @@
       </div>
 
       <div class="ticket-actions">
-        <button class="btn-primary" onclick={() => goto("/game")}>
+        <button
+          class="btn-primary"
+          onclick={() => {
+            identity.completeOnboarding();
+            goto("/game");
+          }}
+        >
           Continue to Puzzle →
         </button>
-        <button class="btn-ghost" onclick={() => goto("/game")}>
+        <button
+          class="btn-ghost"
+          onclick={() => {
+            identity.completeOnboarding();
+            goto("/game");
+          }}
+        >
           I'll save it later
         </button>
       </div>

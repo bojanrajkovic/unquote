@@ -46,13 +46,25 @@ class IdentityState {
 
   /**
    * Called after successful registration or entering an existing code.
-   * Persists the claim code to localStorage.
+   * Persists the claim code to localStorage but does NOT mark onboarding
+   * complete — call `completeOnboarding()` when the user navigates away
+   * from the onboarding flow so intermediate screens (e.g. claim code
+   * ticket) remain visible.
    */
   setClaimCode(code: string): void {
     this.claimCode = code;
-    this.hasOnboarded = true;
     if (browser) {
       storageSet(STORAGE_KEYS.CLAIM_CODE, code);
+    }
+  }
+
+  /**
+   * Mark onboarding as complete. Call this when the user is done with
+   * the onboarding flow and ready to navigate to the game.
+   */
+  completeOnboarding(): void {
+    this.hasOnboarded = true;
+    if (browser) {
       storageSet(STORAGE_KEYS.HAS_ONBOARDED, "true");
     }
   }
