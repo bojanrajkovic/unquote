@@ -457,7 +457,9 @@
     border: 1px solid var(--color-border);
     border-radius: var(--r-lg);
     padding: 1rem 0.75rem;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .stat-value {
