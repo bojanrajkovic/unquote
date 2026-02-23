@@ -1,10 +1,11 @@
-import { eq, and, sql, asc } from "drizzle-orm";
+import { eq, sql, asc } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { DateTime } from "luxon";
 import { players, gameSessions } from "./schema.js";
 import { generateClaimCode } from "./claim-code.js";
 import type { PlayerStats } from "./types.js";
 import { PlayerNotFoundError } from "./types.js";
+import { decodeGameId } from "../game/game-id.js";
 
 /**
  * Calculate current and best consecutive-day streaks from an array of UTC date strings.
@@ -169,17 +170,25 @@ export class PgPlayerStore {
     const averageTime =
       stats?.averageTime !== null && stats?.averageTime !== undefined ? Math.round(Number(stats.averageTime)) : null;
 
-    // Recent solves (last 30 days)
-    const recentSolves = await this.db
+    // Recent solves — derive puzzle date from game ID (not solvedAt, which may
+    // reflect when the session was recorded rather than the puzzle's live date).
+    const allSessions = await this.db
       .select({
-        date: sql<string>`${gameSessions.solvedAt}::date::text`,
+        gameId: gameSessions.gameId,
         completionTime: gameSessions.completionTime,
       })
       .from(gameSessions)
-      .where(
-        and(eq(gameSessions.playerId, playerId), sql`${gameSessions.solvedAt} >= CURRENT_DATE - INTERVAL '30 days'`),
-      )
-      .orderBy(asc(gameSessions.solvedAt));
+      .where(eq(gameSessions.playerId, playerId));
+
+    const thirtyDaysAgo = DateTime.utc().minus({ days: 30 }).toISODate() ?? "";
+    const recentSolves = allSessions
+      .map((s) => {
+        const puzzleDate = decodeGameId(s.gameId);
+        const isoDate = puzzleDate?.toISODate();
+        return isoDate ? { date: isoDate, completionTime: s.completionTime } : null;
+      })
+      .filter((s): s is { date: string; completionTime: number } => s !== null && s.date >= thirtyDaysAgo)
+      .toSorted((a, b) => a.date.localeCompare(b.date));
 
     // Streak calculation from all distinct solve dates (group by date to deduplicate)
     const solveDates = await this.db

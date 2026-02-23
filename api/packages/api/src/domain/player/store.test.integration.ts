@@ -8,6 +8,7 @@ import { createMigratedSnapshot, restoreSnapshot, type PGliteSnapshot } from "..
 import { PgPlayerStore } from "./store.js";
 import { PlayerNotFoundError } from "./types.js";
 import { players, gameSessions } from "./schema.js";
+import { encodeGameId } from "../game/game-id.js";
 
 let snapshot: PGliteSnapshot;
 let client: PGlite;
@@ -171,24 +172,24 @@ describe("getStats", () => {
       throw new Error("expected player row");
     }
 
-    // Insert a session older than 30 days
+    // Insert a session with a puzzle date older than 30 days
     await db.insert(gameSessions).values({
       playerId,
-      gameId: "game-old",
+      gameId: encodeGameId(DateTime.utc(2020, 1, 1)),
       completionTime: 200,
       solvedAt: new Date("2020-01-01T12:00:00Z"),
     });
 
-    // Insert recent sessions
+    // Insert sessions with recent puzzle dates
     await db.insert(gameSessions).values({
       playerId,
-      gameId: "game-recent-1",
+      gameId: encodeGameId(DateTime.utc(2026, 2, 14)),
       completionTime: 120,
       solvedAt: new Date("2026-02-14T12:00:00Z"),
     });
     await db.insert(gameSessions).values({
       playerId,
-      gameId: "game-recent-2",
+      gameId: encodeGameId(DateTime.utc(2026, 2, 15)),
       completionTime: 90,
       solvedAt: new Date("2026-02-15T12:00:00Z"),
     });

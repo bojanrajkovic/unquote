@@ -192,11 +192,14 @@
         game.markSolved(elapsed);
         // Record the session for registered players (fire-and-forget — never block the UI)
         if (identity.claimCode && game.puzzle && elapsed !== null) {
-          recordSession(identity.claimCode, game.puzzle.id, elapsed).catch(
-            () => {
-              // Silently ignore — stats recording failure must not affect the game experience
-            },
-          );
+          recordSession(
+            identity.claimCode,
+            game.puzzle.id,
+            elapsed,
+            new Date().toISOString(),
+          ).catch(() => {
+            // Silently ignore — stats recording failure must not affect the game experience
+          });
         }
         statusMessage = null;
       } else {

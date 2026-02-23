@@ -123,9 +123,10 @@ export function recordSession(
   claimCode: string,
   gameId: string,
   completionTime: number,
+  solvedAt: string,
 ): Promise<void> {
   return apiFetch<void>(`/player/${claimCode}/session`, {
     method: "POST",
-    body: JSON.stringify({ gameId, completionTime }),
+    body: JSON.stringify({ gameId, completionTime, solvedAt }),
   });
 }
