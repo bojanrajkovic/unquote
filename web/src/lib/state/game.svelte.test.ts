@@ -72,6 +72,7 @@ describe("GameState", () => {
         puzzleId: "game-123",
         puzzle: {
           id: "game-123",
+          date: "2026-02-21",
           encryptedText: "HELLO WORLD",
           hints: [],
           author: "Test Author",
@@ -94,6 +95,7 @@ describe("GameState", () => {
         puzzleId: "game-123",
         puzzle: {
           id: "game-123",
+          date: "2026-02-21",
           encryptedText: "HELLO WORLD",
           hints: [],
           author: "Test Author",
@@ -116,6 +118,7 @@ describe("GameState", () => {
         puzzleId: "game-999",
         puzzle: {
           id: "game-999",
+          date: "2026-02-20",
           encryptedText: "OLD PUZZLE",
           hints: [],
           author: "Old Author",
