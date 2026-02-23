@@ -11,49 +11,49 @@ describe("IdentityState", () => {
   });
 
   describe("initial state", () => {
-    it("starts with null claimCode", () => {
+    it("AC3.3: starts with null claimCode", () => {
       expect(identity.claimCode).toBeNull();
     });
 
-    it("starts with hasOnboarded false", () => {
+    it("AC1.5: starts with hasOnboarded false", () => {
       expect(identity.hasOnboarded).toBe(false);
     });
   });
 
   describe("setClaimCode()", () => {
-    it("sets claimCode on the state", () => {
+    it("AC1.3: sets claimCode on the state", () => {
       identity.setClaimCode("BRAVE-LION-1234");
       expect(identity.claimCode).toBe("BRAVE-LION-1234");
     });
 
-    it("sets hasOnboarded to true", () => {
+    it("AC1.3: sets hasOnboarded to true", () => {
       identity.setClaimCode("BRAVE-LION-1234");
       expect(identity.hasOnboarded).toBe(true);
     });
 
-    it("persists claim code to localStorage", () => {
+    it("AC3.3: persists claim code to localStorage", () => {
       identity.setClaimCode("BRAVE-LION-1234");
       expect(storageGet(STORAGE_KEYS.CLAIM_CODE)).toBe("BRAVE-LION-1234");
     });
 
-    it("persists onboarded flag to localStorage", () => {
+    it("AC1.3: persists onboarded flag to localStorage", () => {
       identity.setClaimCode("BRAVE-LION-1234");
       expect(storageGet(STORAGE_KEYS.HAS_ONBOARDED)).toBe("true");
     });
   });
 
   describe("setSkipped()", () => {
-    it("sets hasOnboarded to true", () => {
+    it("AC1.5: sets hasOnboarded to true", () => {
       identity.setSkipped();
       expect(identity.hasOnboarded).toBe(true);
     });
 
-    it("does not set claimCode", () => {
+    it("AC1.5: does not set claimCode", () => {
       identity.setSkipped();
       expect(identity.claimCode).toBeNull();
     });
 
-    it("persists onboarded flag without a claim code", () => {
+    it("AC1.5: persists onboarded flag without a claim code", () => {
       identity.setSkipped();
       expect(storageGet(STORAGE_KEYS.HAS_ONBOARDED)).toBe("true");
       expect(storageGet(STORAGE_KEYS.CLAIM_CODE)).toBeNull();
@@ -61,25 +61,25 @@ describe("IdentityState", () => {
   });
 
   describe("clear()", () => {
-    it("resets claimCode to null", () => {
+    it("AC3.3: resets claimCode to null", () => {
       identity.setClaimCode("BRAVE-LION-1234");
       identity.clear();
       expect(identity.claimCode).toBeNull();
     });
 
-    it("resets hasOnboarded to false", () => {
+    it("AC1.5: resets hasOnboarded to false", () => {
       identity.setClaimCode("BRAVE-LION-1234");
       identity.clear();
       expect(identity.hasOnboarded).toBe(false);
     });
 
-    it("removes claim code from localStorage", () => {
+    it("AC3.3: removes claim code from localStorage", () => {
       identity.setClaimCode("BRAVE-LION-1234");
       identity.clear();
       expect(storageGet(STORAGE_KEYS.CLAIM_CODE)).toBeNull();
     });
 
-    it("removes onboarded flag from localStorage", () => {
+    it("AC1.5: removes onboarded flag from localStorage", () => {
       identity.setClaimCode("BRAVE-LION-1234");
       identity.clear();
       expect(storageGet(STORAGE_KEYS.HAS_ONBOARDED)).toBeNull();

@@ -24,12 +24,12 @@ describe("GameState", () => {
   });
 
   describe("setGuess()", () => {
-    it("adds a guess to state", () => {
+    it("AC2.1: adds a guess to state", () => {
       game.setGuess("H", "A");
       expect(game.guesses["H"]).toBe("A");
     });
 
-    it("persists guesses to localStorage", () => {
+    it("AC3.1: persists guesses to localStorage", () => {
       game.setGuess("H", "A");
       const stored = storageGetJson<StoredPuzzleState>(STORAGE_KEYS.PUZZLE);
       expect(stored?.guesses["H"]).toBe("A");
@@ -37,14 +37,14 @@ describe("GameState", () => {
   });
 
   describe("clearAll()", () => {
-    it("removes all guesses from state", () => {
+    it("AC2.5: removes all guesses from state", () => {
       game.setGuess("H", "A");
       game.setGuess("E", "B");
       game.clearAll();
       expect(Object.keys(game.guesses)).toHaveLength(0);
     });
 
-    it("persists empty guesses to localStorage", () => {
+    it("AC2.5: persists empty guesses to localStorage", () => {
       game.setGuess("H", "A");
       game.clearAll();
       const stored = storageGetJson<StoredPuzzleState>(STORAGE_KEYS.PUZZLE);
@@ -53,12 +53,12 @@ describe("GameState", () => {
   });
 
   describe("markSolved()", () => {
-    it("sets status to solved", () => {
+    it("AC2.11: sets status to solved", () => {
       game.markSolved(5000);
       expect(game.status).toBe("solved");
     });
 
-    it("persists solved status to localStorage", () => {
+    it("AC3.1: persists solved status to localStorage", () => {
       game.markSolved(5000);
       const stored = storageGetJson<StoredPuzzleState>(STORAGE_KEYS.PUZZLE);
       expect(stored?.status).toBe("solved");
@@ -66,7 +66,7 @@ describe("GameState", () => {
   });
 
   describe("load() — resume from stored state", () => {
-    it("restores guesses when stored date and puzzleId match", () => {
+    it("AC3.1: restores guesses when stored date and puzzleId match", () => {
       const stored: StoredPuzzleState = {
         date: "2026-02-21",
         puzzleId: "game-123",
@@ -88,7 +88,7 @@ describe("GameState", () => {
       expect(game.guesses).toEqual({ H: "A", E: "B" });
     });
 
-    it("restores startTime from stored state", () => {
+    it("AC3.2: restores startTime from stored state", () => {
       const stored: StoredPuzzleState = {
         date: "2026-02-21",
         puzzleId: "game-123",
@@ -110,7 +110,7 @@ describe("GameState", () => {
       expect(game.startTime).toBe(99999);
     });
 
-    it("starts fresh when stored date does not match", () => {
+    it("AC3.4: starts fresh when stored date does not match", () => {
       const stale: StoredPuzzleState = {
         date: "2026-02-20", // yesterday
         puzzleId: "game-999",
@@ -132,14 +132,14 @@ describe("GameState", () => {
       expect(Object.keys(game.guesses)).toHaveLength(0);
     });
 
-    it("starts fresh when stored is null", () => {
+    it("AC3.1: starts fresh when stored is null", () => {
       game.reset();
       game.load(mockPuzzle, null);
       expect(Object.keys(game.guesses)).toHaveLength(0);
       expect(game.status).toBe("playing");
     });
 
-    it("sets startTime when starting fresh", () => {
+    it("AC3.2: sets startTime when starting fresh", () => {
       game.reset();
       game.load(mockPuzzle, null);
       expect(game.startTime).not.toBeNull();
@@ -147,12 +147,12 @@ describe("GameState", () => {
   });
 
   describe("GameState.readStored()", () => {
-    it("returns null when localStorage is empty", () => {
+    it("AC4.2: returns null when localStorage is empty", () => {
       localStorage.clear();
       expect(GameState.readStored("2026-02-21")).toBeNull();
     });
 
-    it("returns stored state when date matches", () => {
+    it("AC4.2: returns stored state when date matches", () => {
       game.setGuess("H", "A");
       const result = GameState.readStored("2026-02-21");
       expect(result).not.toBeNull();
@@ -160,7 +160,7 @@ describe("GameState", () => {
       expect(result?.guesses["H"]).toBe("A");
     });
 
-    it("returns null when stored date does not match the requested date", () => {
+    it("AC3.4: returns null when stored date does not match the requested date", () => {
       game.setGuess("H", "A"); // persists with date '2026-02-21'
       expect(GameState.readStored("2026-02-22")).toBeNull();
     });
