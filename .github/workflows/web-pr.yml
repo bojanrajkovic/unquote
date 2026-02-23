@@ -1,0 +1,92 @@
+name: Web - PR
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read # checkout source code
+  pull-requests: read # paths-filter reads PR diff
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: filter
+        with:
+          filters: |
+            web:
+              - 'web/**'
+              - '.github/workflows/web-pr.yml'
+
+  validate:
+    name: Validate
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Setup mise
+        uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8 # v3.6.1
+        with:
+          cache: false
+          experimental: true
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        working-directory: web
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        working-directory: web
+        run: pnpm run check
+
+      - name: Format check
+        working-directory: web
+        run: pnpm run format --check
+
+      - name: Test
+        working-directory: web
+        run: pnpm run test
+
+      - name: Build
+        working-directory: web
+        run: pnpm run build
+
+  web-result:
+    name: Web Result
+    needs: [changes, validate]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check results
+        run: |
+          if [[ "${NEEDS_CHANGES_OUTPUTS_WEB}" != "true" ]]; then
+            echo "No web changes, skipping"
+            exit 0
+          fi
+          if [[ "${NEEDS_VALIDATE_RESULT}" != "success" ]]; then
+            echo "Web validation failed: ${NEEDS_VALIDATE_RESULT}"
+            exit 1
+          fi
+          echo "All web checks passed"
+        env:
+          NEEDS_CHANGES_OUTPUTS_WEB: ${{ needs.changes.outputs.web }}
+          NEEDS_VALIDATE_RESULT: ${{ needs.validate.result }}

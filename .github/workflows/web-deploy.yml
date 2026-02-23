@@ -17,8 +17,45 @@ concurrency:
   cancel-in-progress: false # Never cancel: mid-sync cancellation leaves bucket in partial state
 
 jobs:
+  validate:
+    name: Validate
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Setup mise
+        uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8 # v3.6.1
+        with:
+          cache: false
+          experimental: true
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        working-directory: web
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        working-directory: web
+        run: pnpm run check
+
+      - name: Format check
+        working-directory: web
+        run: pnpm run format --check
+
+      - name: Test
+        working-directory: web
+        run: pnpm run test
+
   deploy:
     name: Build and Deploy
+    needs: validate
     permissions:
       contents: read   # checkout source
       id-token: write  # REQUIRED: lets GitHub issue the OIDC JWT for AWS role assumption
