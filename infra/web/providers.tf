@@ -23,5 +23,5 @@ provider "aws" {
 provider "github" {
   # Reads GITHUB_TOKEN from environment at apply time.
   # Token needs: repo (for Actions variables) scope.
-  owner = "brajkovic"
+  owner = "bojanrajkovic"
 }
