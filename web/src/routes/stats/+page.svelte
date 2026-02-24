@@ -162,7 +162,10 @@
 <div class="stats-screen">
   <header class="compact-header">
     <span class="compact-logo">Unquote</span>
-    <a href="/game" class="btn-back">← Today's Puzzle</a>
+    <nav class="header-nav">
+      <a href="/faq" class="btn-nav">FAQ</a>
+      <a href="/game" class="btn-back">← Today's Puzzle</a>
+    </nav>
   </header>
 
   <div class="stats-body">
@@ -357,17 +360,6 @@
     flex-direction: column;
   }
 
-  /* Compact header: full-width bar matching the prototype */
-  .compact-header {
-    width: 100%;
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--color-border);
-    flex-shrink: 0;
-  }
-
   /* Content wrapper: constrains everything below the header */
   .stats-body {
     width: 100%;
@@ -377,39 +369,6 @@
     display: flex;
     flex-direction: column;
     gap: 1.75rem;
-  }
-
-  .compact-logo {
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-    font-weight: 700;
-    letter-spacing: 0.22em;
-    color: var(--color-gold);
-    text-transform: uppercase;
-  }
-  .compact-logo::after {
-    content: "";
-    display: block;
-    height: 1px;
-    background: linear-gradient(90deg, var(--color-gold-mid), transparent);
-    margin-top: 2px;
-  }
-
-  .btn-back {
-    font-family: var(--font-sans);
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    color: var(--color-text-secondary);
-    text-decoration: none;
-    padding: 0.3em 0.5em;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    transition: color 0.15s;
-  }
-  .btn-back:hover {
-    color: var(--color-text-primary);
   }
 
   /* Stats heading: title + inline claim code */

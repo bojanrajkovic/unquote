@@ -283,9 +283,12 @@
     <!-- Header -->
     <header class="compact-header">
       <span class="compact-logo">Unquote</span>
-      {#if identity.claimCode}
-        <a href="/stats" class="btn-stats-nav">Stats →</a>
-      {/if}
+      <nav class="header-nav">
+        <a href="/faq" class="btn-nav">FAQ</a>
+        {#if identity.claimCode}
+          <a href="/stats" class="btn-nav">Stats →</a>
+        {/if}
+      </nav>
     </header>
 
     <div class="game-inner">
@@ -454,50 +457,6 @@
     flex-direction: column;
     min-height: 100dvh;
     background: var(--color-surface);
-  }
-
-  .compact-header {
-    width: 100%;
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--color-border);
-    flex-shrink: 0;
-  }
-
-  .compact-logo {
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-    font-weight: 700;
-    letter-spacing: 0.22em;
-    color: var(--color-gold);
-    text-transform: uppercase;
-    text-decoration: none;
-  }
-  .compact-logo::after {
-    content: "";
-    display: block;
-    height: 1px;
-    background: linear-gradient(90deg, var(--color-gold-mid), transparent);
-    margin-top: 2px;
-  }
-
-  .btn-stats-nav {
-    font-family: var(--font-sans);
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    color: var(--color-text-secondary);
-    text-decoration: none;
-    padding: 0.3em 0.5em;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    transition: color 0.15s;
-  }
-  .btn-stats-nav:hover {
-    color: var(--color-text-primary);
   }
 
   .game-inner {

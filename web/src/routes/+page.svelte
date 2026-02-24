@@ -199,6 +199,7 @@
             goto("/stats");
           }}>View your stats</a
         >
+        · <a href="/faq">FAQ</a>
       </p>
     </div>
   </main>
@@ -585,54 +586,6 @@
     transition: color 0.15s;
   }
   .landing-sub a:hover {
-    color: var(--color-text-primary);
-  }
-
-  /* ── Compact header (onboarding screens) ── */
-  .compact-header {
-    width: 100%;
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--color-border);
-    flex-shrink: 0;
-  }
-
-  .compact-logo {
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-    font-weight: 700;
-    letter-spacing: 0.22em;
-    color: var(--color-gold);
-    text-transform: uppercase;
-  }
-  .compact-logo::after {
-    content: "";
-    display: block;
-    height: 1px;
-    background: linear-gradient(90deg, var(--color-gold-mid), transparent);
-    margin-top: 2px;
-  }
-
-  .btn-back {
-    font-family: var(--font-sans);
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    color: var(--color-text-secondary);
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.3em 0.5em;
-    min-height: 44px;
-    min-width: 44px;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    transition: color 0.15s;
-  }
-  .btn-back:hover {
     color: var(--color-text-primary);
   }
 
