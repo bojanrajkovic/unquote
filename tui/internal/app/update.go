@@ -56,6 +56,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case sessionLoadedMsg:
 		return m.handleSessionLoaded(msg)
 
+	case remoteSessionMsg:
+		return m.handleRemoteSession(msg)
+
 	case configLoadedMsg:
 		return m.handleConfigLoaded(msg)
 
@@ -461,7 +464,10 @@ func (m Model) handlePuzzleFetched(msg puzzleFetchedMsg) (tea.Model, tea.Cmd) {
 
 func (m Model) handleSessionLoaded(msg sessionLoadedMsg) (tea.Model, tea.Cmd) {
 	if msg.session == nil {
-		// No saved session - start fresh timer
+		// No saved session - check for remote completion before starting
+		if m.claimCode != "" && m.puzzle != nil {
+			return m, tea.Batch(tickCmd(), checkRemoteSessionCmd(m.client, m.claimCode, m.puzzle.ID))
+		}
 		return m, tickCmd()
 	}
 
@@ -478,7 +484,7 @@ func (m Model) handleSessionLoaded(msg sessionLoadedMsg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	// Check if already solved
+	// Check if already solved locally (AC3.3: local state always wins)
 	if msg.session.Solved {
 		m.state = StateSolved
 		m.elapsedAtPause = msg.session.CompletionTime
@@ -486,11 +492,35 @@ func (m Model) handleSessionLoaded(msg sessionLoadedMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	// Restore timer state for in-progress sessions
+	// In-progress session — restore timer and check for remote completion
 	m.elapsedAtPause = msg.session.ElapsedTime
 	m.startTime = time.Now()
 
+	if m.claimCode != "" && m.puzzle != nil {
+		return m, tea.Batch(tickCmd(), checkRemoteSessionCmd(m.client, m.claimCode, m.puzzle.ID))
+	}
 	return m, tickCmd()
+}
+
+func (m Model) handleRemoteSession(msg remoteSessionMsg) (tea.Model, tea.Cmd) {
+	// AC3.4/AC3.5: nil session means 404 or error — continue playing
+	if msg.session == nil {
+		return m, nil
+	}
+
+	// AC3.3: if already solved locally (race between local solve and remote check),
+	// ignore the remote result
+	if m.state == StateSolved {
+		return m, nil
+	}
+
+	// AC3.1: remote completion detected — show solved-elsewhere state
+	m.state = StateSolved
+	m.solvedElsewhere = true
+	m.elapsedAtPause = time.Duration(msg.session.CompletionTime) * time.Millisecond
+	m.statusMsg = ""
+
+	return m, nil
 }
 
 func (m Model) handleStatsFetched(msg statsFetchedMsg) (tea.Model, tea.Cmd) {

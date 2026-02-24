@@ -52,6 +52,12 @@ type sessionRecordedMsg struct {
 // reconciliationDoneMsg is sent when session reconciliation has completed
 type reconciliationDoneMsg struct{}
 
+// remoteSessionMsg is sent when a remote session check completes.
+// session is nil if no remote session exists or the check failed.
+type remoteSessionMsg struct {
+	session *api.SessionLookupResponse
+}
+
 // statsFetchedMsg is sent when player stats have been loaded from the API
 type statsFetchedMsg struct {
 	stats *api.PlayerStatsResponse

@@ -82,6 +82,16 @@ func loadSessionCmd(gameID string) tea.Cmd {
 	}
 }
 
+// checkRemoteSessionCmd creates a command to check for a remote completion.
+// Returns nil session on any failure (404, network error) — the remote check
+// must never block normal gameplay.
+func checkRemoteSessionCmd(client *api.Client, claimCode, gameID string) tea.Cmd {
+	return func() tea.Msg {
+		result := client.GetSession(claimCode, gameID)
+		return remoteSessionMsg{session: result}
+	}
+}
+
 // loadConfigCmd creates a command to load the player config from disk.
 // Returns configLoadedMsg{config: nil} if no config file exists.
 func loadConfigCmd() tea.Cmd {

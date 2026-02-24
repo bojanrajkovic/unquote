@@ -214,6 +214,33 @@ func (c *Client) RecordSession(claimCode, gameID string, completionTimeMs int64,
 	return nil
 }
 
+// GetSession looks up whether a player has completed a specific game.
+// Returns session data on success, or nil if no session exists (404)
+// or any error occurs (network failure, server error).
+//
+// Non-blocking: errors silently return nil so the game falls through
+// to normal gameplay.
+func (c *Client) GetSession(claimCode, gameID string) *SessionLookupResponse {
+	url := fmt.Sprintf("%s/player/%s/session/%s", c.baseURL, claimCode, gameID)
+
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return nil
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil
+	}
+
+	var result SessionLookupResponse
+	if err := json.NewDecoder(io.LimitReader(resp.Body, maxResponseBytes)).Decode(&result); err != nil {
+		return nil
+	}
+
+	return &result
+}
+
 // FetchStats retrieves player statistics for the given claim code
 func (c *Client) FetchStats(claimCode string) (*PlayerStatsResponse, error) {
 	url := fmt.Sprintf("%s/player/%s/stats", c.baseURL, claimCode)
