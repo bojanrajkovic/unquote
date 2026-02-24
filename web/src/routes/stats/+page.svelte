@@ -47,13 +47,17 @@
       solveMap.set(s.date, s.completionTime);
     }
 
-    // Build 30-day window (today back 29 days)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Build 30-day window (today back 29 days).
+    // Use UTC to match the API, which dates games by UTC day.
+    const now = new Date();
+    const todayUTC = Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+    );
     const days: Array<{ date: string; ms: number | null }> = [];
     for (let i = 29; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(d.getDate() - i);
+      const d = new Date(todayUTC - i * 86_400_000);
       const key = d.toISOString().slice(0, 10);
       days.push({ date: key, ms: solveMap.get(key) ?? null });
     }
