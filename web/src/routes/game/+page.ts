@@ -3,7 +3,7 @@ import { redirect } from "@sveltejs/kit";
 import { identity } from "$lib/state/identity.svelte.js";
 import { game } from "$lib/state/game.svelte.js";
 import type { StoredPuzzleState } from "$lib/state/game.svelte.js";
-import { getToday } from "$lib/api.js";
+import { getToday, getSession } from "$lib/api.js";
 import type { PuzzleResponse } from "$lib/api.js";
 import { STORAGE_KEYS, storageGetJson } from "$lib/storage.js";
 
@@ -47,6 +47,14 @@ export async function load() {
 
     // Load puzzle into game state (resumes from stored or starts fresh).
     game.load(puzzle, raw?.date === puzzle.date ? raw : null);
+
+    // Stage 3: Check for remote completion (registered players, not locally solved).
+    if (game.status !== "solved" && identity.claimCode) {
+      const session = await getSession(identity.claimCode, puzzle.id);
+      if (session) {
+        game.markSolvedElsewhere(session.completionTime);
+      }
+    }
   } catch {
     // Show in-page error rather than SvelteKit's error page (AC4.7).
     game.status = "error";

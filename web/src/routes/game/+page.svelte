@@ -59,6 +59,12 @@
   // ── Solved reveal: flip animation → pause → cross-fade grid to solved card
   $effect(() => {
     if (game.status === "solved") {
+      if (game.solvedElsewhere) {
+        // No grid animation for remote solve — show card immediately
+        revealComplete = true;
+        solvedCardVisible = true;
+        return;
+      }
       // Last cell starts flipping at (N-1)*28ms, flip animation is 380ms
       const lastFlipEnd = game.editables.length * 28 + 380;
       // Brief pause after the last cell finishes flipping
@@ -391,19 +397,25 @@
         <div class="ornament-rule"><span>✦ · ✦ · ✦</span></div>
       {/if}
 
-      <!-- Solved card (AC2.11) -->
+      <!-- Solved card (AC2.11, cross-client-sync.AC2.1) -->
       {#if solvedCardVisible}
         <div
           class="solved-card"
+          class:solved-elsewhere={game.solvedElsewhere}
           aria-live="polite"
           aria-atomic="true"
-          in:fade={{ duration: 500, delay: 300 }}
+          in:fade={{ duration: 500, delay: game.solvedElsewhere ? 0 : 300 }}
         >
-          <div class="solved-eyebrow">✦ Decoded ✦</div>
-          <blockquote class="solved-quote">
-            "{assembleSolution(game.cells)}"
-          </blockquote>
-          <div class="solved-attribution">— {game.puzzle.author}</div>
+          {#if game.solvedElsewhere}
+            <div class="solved-eyebrow">✦ Already Solved ✦</div>
+            <p class="solved-elsewhere-msg">Solved on another device</p>
+          {:else}
+            <div class="solved-eyebrow">✦ Decoded ✦</div>
+            <blockquote class="solved-quote">
+              "{assembleSolution(game.cells)}"
+            </blockquote>
+            <div class="solved-attribution">— {game.puzzle.author}</div>
+          {/if}
           <div class="solved-stats">
             <div class="stat-group">
               <span class="stat-value">
@@ -862,6 +874,13 @@
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--color-text-secondary);
+  }
+
+  .solved-elsewhere-msg {
+    font-family: var(--font-sans);
+    font-size: 0.88rem;
+    color: var(--color-text-secondary);
+    letter-spacing: 0.02em;
   }
 
   /* ── Status messages ──────────────────────────────────────────── */

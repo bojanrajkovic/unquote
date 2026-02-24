@@ -65,6 +65,28 @@ describe("GameState", () => {
     });
   });
 
+  describe("markSolvedElsewhere()", () => {
+    it("cross-client-sync.AC2.1: sets solvedElsewhere on markSolvedElsewhere", () => {
+      game.markSolvedElsewhere(53260);
+      expect(game.status).toBe("solved");
+      expect(game.solvedElsewhere).toBe(true);
+      expect(game.completionTime).toBe(53260);
+    });
+
+    it("cross-client-sync.AC2.1: persists solvedElsewhere to localStorage", () => {
+      game.markSolvedElsewhere(53260);
+      const stored = storageGetJson<StoredPuzzleState>(STORAGE_KEYS.PUZZLE);
+      expect(stored?.solvedElsewhere).toBe(true);
+      expect(stored?.completionTime).toBe(53260);
+    });
+
+    it("cross-client-sync.AC2.3: markSolved does not set solvedElsewhere", () => {
+      game.markSolved(5000);
+      expect(game.status).toBe("solved");
+      expect(game.solvedElsewhere).toBe(false);
+    });
+  });
+
   describe("load() — resume from stored state", () => {
     it("AC3.1: restores guesses when stored date and puzzleId match", () => {
       const stored: StoredPuzzleState = {
@@ -146,6 +168,32 @@ describe("GameState", () => {
       game.reset();
       game.load(mockPuzzle, null);
       expect(game.startTime).not.toBeNull();
+    });
+
+    it("cross-client-sync.AC2.1: restores solvedElsewhere from stored state", () => {
+      const stored: StoredPuzzleState = {
+        date: "2026-02-21",
+        puzzleId: "game-123",
+        puzzle: {
+          id: "game-123",
+          date: "2026-02-21",
+          encryptedText: "HELLO WORLD",
+          hints: [],
+          author: "Test Author",
+          category: "test",
+          difficulty: 50,
+        },
+        guesses: {},
+        startTime: 12345,
+        completionTime: 53260,
+        status: "solved",
+        solvedElsewhere: true,
+      };
+      game.reset();
+      game.load(mockPuzzle, stored);
+      expect(game.solvedElsewhere).toBe(true);
+      expect(game.completionTime).toBe(53260);
+      expect(game.status).toBe("solved");
     });
   });
 
