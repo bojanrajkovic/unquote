@@ -1,6 +1,6 @@
 # Unquote
 
-Last verified: 2026-02-22
+Last verified: 2026-02-24
 
 A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encrypted quotes by substituting letters.
 
@@ -99,6 +99,7 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 - `POST /game/:id/check` - Validate a solution attempt using opaque game ID
 - `POST /player` - Register a new player (returns claim code)
 - `POST /player/:code/session` - Record a game session for a player
+- `GET /player/:code/session/:gameId` - Look up a player's session for a specific game
 - `GET /player/:code/stats` - Retrieve player statistics
 
 ## TUI Architecture

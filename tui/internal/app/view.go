@@ -184,6 +184,9 @@ func (m Model) renderStatus() string {
 	case StateChecking:
 		return ui.LoadingStyle.Render("Checking solution...")
 	case StateSolved:
+		if m.solvedElsewhere {
+			return ui.SuccessStyle.Render(fmt.Sprintf("Solved on another device in %s", formatElapsed(m.Elapsed())))
+		}
 		return ui.SuccessStyle.Render(fmt.Sprintf("Congratulations! You solved it in %s!", formatElapsed(m.Elapsed())))
 	default:
 		if m.statusMsg != "" {

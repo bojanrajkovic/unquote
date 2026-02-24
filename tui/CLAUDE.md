@@ -1,6 +1,6 @@
 # TUI
 
-Last verified: 2026-02-17
+Last verified: 2026-02-24
 
 Terminal UI client for playing cryptoquip puzzles.
 
@@ -42,7 +42,8 @@ From `tui/` directory:
 ### api package
 - **Exposes**: `Client`, `NewClient(insecure bool) (*Client, error)`, `NewClientWithURL(url string, insecure bool) (*Client, error)`
 - **Game methods**: `FetchTodaysPuzzle()`, `FetchPuzzleByDate(date)`, `FetchRandomPuzzle()`, `CheckSolution(gameID, solution)`
-- **Player methods**: `RegisterPlayer()`, `RecordSession(claimCode, gameID, completionTimeMs)`, `FetchStats(claimCode)`
+- **Player methods**: `RegisterPlayer()`, `RecordSession(claimCode, gameID, completionTimeMs)`, `GetSession(claimCode, gameID)`, `FetchStats(claimCode)`
+- **GetSession**: Returns `*SessionLookupResponse` (nil on any failure -- 404, network, server error). Non-blocking: errors silently return nil so the game falls through to normal gameplay.
 - **Guarantees**: Wraps all API errors with context. Rejects HTTP to non-localhost unless insecure=true. Blocks HTTP redirects unconditionally.
 - **Expects**: API at `UNQUOTE_API_URL` env var (default: `https://unquote.gaur-kardashev.ts.net`)
 
@@ -58,12 +59,13 @@ From `tui/` directory:
 
 ### app package
 - **Exposes**: `Model`, `Options`, `New(opts Options)`, `NewWithClient(client)` for testing
-- **States**: Loading -> Playing -> (Checking -> Playing | Solved) or Error; also Onboarding, ClaimCodeDisplay, Stats
+- **States**: Loading -> Playing -> (Checking -> Playing | Solved) or Error; Loading -> Solved (via remote session); also Onboarding, ClaimCodeDisplay, Stats
 - **Timer**: `Model.Elapsed()` returns total time; timer runs while Playing, pauses on Solved/Checking
 - **Persistence**: Session auto-restored on startup; auto-saved on input changes and solve
 - **Mouse**: Left-click on letter cells navigates cursor; non-letter cells ignore clicks
 - **Onboarding**: Shown on first launch if no config exists; uses huh forms for register/skip choice
 - **Session recording**: On solve, uploads session to API if player is registered; reconciles un-uploaded sessions on startup
+- **Remote completion**: After local session load, checks API for remote completion via `GetSession()`. If found and local session is not already solved, transitions directly to Solved with `solvedElsewhere=true`. Remote check only runs for registered players (claim code present).
 - **Stats screen**: Accessible from solved screen (Tab key) or via `stats` subcommand; shows graph + sidebar
 - **Invariants**: Terminal size validated before rendering; minimum 40x10
 - **Options**: `Insecure` (allow HTTP), `Random` (random puzzle), `StatsMode` (launch directly to stats screen)

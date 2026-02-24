@@ -44,6 +44,12 @@ type RecordSessionResponse struct {
 	Status string `json:"status"` // "created" or "recorded"
 }
 
+// SessionLookupResponse represents the response from the session lookup endpoint
+type SessionLookupResponse struct {
+	SolvedAt       string  `json:"solvedAt"`       // ISO 8601 timestamp
+	CompletionTime float64 `json:"completionTime"` // milliseconds
+}
+
 // RecentSolve represents a single recent solve entry in player stats
 type RecentSolve struct {
 	Date           string  `json:"date"`           // YYYY-MM-DD

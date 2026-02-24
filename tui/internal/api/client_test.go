@@ -549,3 +549,76 @@ func TestClient_DoesNotFollowRedirects(t *testing.T) {
 		t.Fatal("expected error due to non-200 redirect response, got nil")
 	}
 }
+
+func TestGetSession_Success(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/player/ABCD-1234/session/test-game-id" {
+			t.Errorf("expected path /player/ABCD-1234/session/test-game-id, got %s", r.URL.Path)
+		}
+		if r.Method != "GET" {
+			t.Errorf("expected GET method, got %s", r.Method)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(SessionLookupResponse{
+			CompletionTime: 53260,
+			SolvedAt:       "2026-02-23T22:15:30.000Z",
+		})
+	}))
+	defer server.Close()
+
+	client, err := NewClientWithURL(server.URL, true)
+	if err != nil {
+		t.Fatalf("unexpected error creating client: %v", err)
+	}
+
+	result := client.GetSession("ABCD-1234", "test-game-id")
+	if result == nil {
+		t.Fatal("expected non-nil result")
+	}
+	if result.CompletionTime != 53260 {
+		t.Errorf("expected CompletionTime 53260, got %v", result.CompletionTime)
+	}
+	if result.SolvedAt != "2026-02-23T22:15:30.000Z" {
+		t.Errorf("expected SolvedAt '2026-02-23T22:15:30.000Z', got %q", result.SolvedAt)
+	}
+}
+
+func TestGetSession_NotFound(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/player/ABCD-1234/session/test-game-id" {
+			t.Errorf("expected path /player/ABCD-1234/session/test-game-id, got %s", r.URL.Path)
+		}
+		w.WriteHeader(http.StatusNotFound)
+	}))
+	defer server.Close()
+
+	client, err := NewClientWithURL(server.URL, true)
+	if err != nil {
+		t.Fatalf("unexpected error creating client: %v", err)
+	}
+
+	result := client.GetSession("ABCD-1234", "test-game-id")
+	if result != nil {
+		t.Errorf("expected nil result, got %v", result)
+	}
+}
+
+func TestGetSession_NetworkError(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(SessionLookupResponse{})
+	}))
+	serverURL := server.URL
+	server.Close()
+
+	client, err := NewClientWithURL(serverURL, true)
+	if err != nil {
+		t.Fatalf("unexpected error creating client: %v", err)
+	}
+
+	result := client.GetSession("ABCD-1234", "test-game-id")
+	if result != nil {
+		t.Errorf("expected nil result on network error, got %v", result)
+	}
+}
