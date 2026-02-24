@@ -175,16 +175,7 @@
       <!-- Anonymous empty state (no claim code) — AC4.6 -->
       <div class="empty-state">
         <p class="empty-message">Stats are saved when you create an account.</p>
-        <a
-          class="register-cta"
-          href="/?action=register"
-          onclick={() =>
-            console.log(
-              "[stats] 'create account' clicked, navigating to /?action=register",
-            )}
-        >
-          create account
-        </a>
+        <a class="register-cta" href="/?action=register"> create account </a>
       </div>
     {:else}
       <!-- Stats heading: title + inline claim code — AC1.7 -->

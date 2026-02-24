@@ -52,19 +52,15 @@ export interface PlayerStats {
 // ─── Fetch helpers ─────────────────────────────────────────────────────────
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  console.log("[apiFetch] called", { path, method: init?.method, API_BASE });
   const headers: Record<string, string> = {};
   if (init?.body) {
     headers["Content-Type"] = "application/json";
   }
 
-  const url = `${API_BASE}${path}`;
-  console.log("[apiFetch] fetching", url);
-  const res = await fetch(url, {
+  const res = await fetch(`${API_BASE}${path}`, {
     ...init,
     headers: { ...headers, ...(init?.headers as Record<string, string>) },
   });
-  console.log("[apiFetch] response", { status: res.status, ok: res.ok });
 
   if (!res.ok) {
     let message = `API error ${res.status}`;
@@ -76,7 +72,6 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
     } catch {
       // ignore parse failure — use default message
     }
-    console.log("[apiFetch] error", message);
     throw new Error(message);
   }
 
@@ -107,7 +102,6 @@ export function checkSolution(
 
 /** Register a new anonymous player. Returns a claim code. */
 export function registerPlayer(): Promise<CreatePlayerResult> {
-  console.log("[registerPlayer] called");
   return apiFetch<CreatePlayerResult>("/player", { method: "POST" });
 }
 

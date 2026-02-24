@@ -22,11 +22,6 @@
       ? "choose"
       : "landing";
   let step = $state<Step>(initialStep);
-  console.log("[page] init", {
-    initialStep,
-    hasOnboarded: identity.hasOnboarded,
-    claimCode: identity.claimCode,
-  });
 
   // Registration
   let claimCode = $state("");
@@ -94,21 +89,14 @@
 
   // ── Handlers ─────────────────────────────────────────────────
   async function handleRegister() {
-    console.log("[handleRegister] entered, current step:", step);
     step = "registering";
     registrationError = "";
-    console.log(
-      "[handleRegister] step set to registering, calling registerPlayer",
-    );
     try {
       const result = await registerPlayer();
-      console.log("[handleRegister] registerPlayer returned", result);
       claimCode = result.claimCode;
       identity.setClaimCode(claimCode);
       step = "registered";
-      console.log("[handleRegister] step set to registered");
-    } catch (err) {
-      console.error("[handleRegister] caught error", err);
+    } catch {
       registrationError = "Registration failed. Please try again.";
       step = "choose";
     }
@@ -152,15 +140,6 @@
     codeInput = "";
     codeError = "";
   }
-
-  // Diagnostic: log identity state and step changes
-  $effect(() => {
-    console.log("[page] render state", {
-      step,
-      hasOnboarded: identity.hasOnboarded,
-      claimCode: identity.claimCode,
-    });
-  });
 </script>
 
 <svelte:head>
@@ -255,14 +234,10 @@
           class="choice-card choice-primary"
           role="button"
           tabindex="0"
-          onclick={() => {
-            console.log("[onclick] 'Yes — create an account' clicked");
-            handleRegister();
-          }}
+          onclick={handleRegister}
           onkeydown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              console.log("[onkeydown] 'Yes — create an account' activated");
               handleRegister();
             }
           }}
