@@ -34,6 +34,8 @@ export interface StoredPuzzleState {
   startTime: number | null; // epoch ms, for timer resume
   completionTime: number | null; // ms elapsed when solved, null if still playing
   status: "playing" | "solved";
+  /** True when puzzle was solved on a different device. No guess data available. */
+  solvedElsewhere?: boolean;
 }
 
 // ─── Game status type ──────────────────────────────────────────────────────
@@ -52,6 +54,8 @@ class GameState {
   status = $state<GameStatus>("idle");
   cursorEditIdx = $state(0);
   errorMessage = $state<string | null>(null);
+  /** True when the puzzle was solved on another device (remote session detected). */
+  solvedElsewhere = $state(false);
 
   // ── Derived state ─────────────────────────────────────────────────────
 
@@ -101,12 +105,14 @@ class GameState {
       this.startTime = stored.startTime;
       this.completionTime = stored.completionTime ?? null;
       this.status = stored.status;
+      this.solvedElsewhere = stored.solvedElsewhere ?? false;
     } else {
       // New day or no stored state — start fresh
       this.guesses = {};
       this.startTime = Date.now();
       this.completionTime = null;
       this.status = "playing";
+      this.solvedElsewhere = false;
       this._persist();
     }
 
@@ -151,6 +157,17 @@ class GameState {
     this._persist();
   }
 
+  /**
+   * Mark the game as solved on another device.
+   * Shows the solved-elsewhere card without decoded quote.
+   */
+  markSolvedElsewhere(completionTime: number): void {
+    this.completionTime = completionTime;
+    this.solvedElsewhere = true;
+    this.status = "solved";
+    this._persist();
+  }
+
   /** Set an error message visible to the player. Clears after the next guess. */
   setError(message: string): void {
     this.errorMessage = message;
@@ -171,6 +188,7 @@ class GameState {
     this.status = "idle";
     this.cursorEditIdx = 0;
     this.errorMessage = null;
+    this.solvedElsewhere = false;
   }
 
   // ── localStorage persistence ───────────────────────────────────────────
@@ -188,6 +206,7 @@ class GameState {
       startTime: this.startTime,
       completionTime: this.completionTime,
       status: this.status === "solved" ? "solved" : "playing",
+      solvedElsewhere: this.solvedElsewhere,
     };
 
     storageSetJson(STORAGE_KEYS.PUZZLE, stored);

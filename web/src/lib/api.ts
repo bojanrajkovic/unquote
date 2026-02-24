@@ -49,6 +49,11 @@ export interface PlayerStats {
   recentSolves: RecentSolve[]; // last 30 days, ascending by date
 }
 
+export interface SessionLookupResult {
+  completionTime: number; // milliseconds
+  solvedAt: string; // ISO 8601 timestamp
+}
+
 // ─── Fetch helpers ─────────────────────────────────────────────────────────
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
@@ -129,4 +134,26 @@ export function recordSession(
     method: "POST",
     body: JSON.stringify({ gameId, completionTime, solvedAt }),
   });
+}
+
+/**
+ * Look up whether a player has completed a specific game.
+ * Returns session data on success, or null if no session exists (404)
+ * or any error occurs (network failure, server error).
+ *
+ * Non-blocking: errors silently return null so the game falls through
+ * to normal gameplay.
+ */
+export async function getSession(
+  claimCode: string,
+  gameId: string,
+): Promise<SessionLookupResult | null> {
+  try {
+    return await apiFetch<SessionLookupResult>(
+      `/player/${claimCode}/session/${gameId}`,
+    );
+  } catch {
+    // 404 (no session), network error, or server error — fall through
+    return null;
+  }
 }
