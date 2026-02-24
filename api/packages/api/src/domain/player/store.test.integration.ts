@@ -114,6 +114,44 @@ describe("recordSession", () => {
   });
 });
 
+describe("getSession", () => {
+  it("cross-client-sync.AC1.1: returns session data when player has a recorded session", async () => {
+    // arrange
+    const { claimCode } = await store.createPlayer();
+    const gameId = "game-2026-02-15";
+    const completionTime = 53_260;
+    await store.recordSession(claimCode, gameId, completionTime);
+
+    // act
+    const result = await store.getSession(claimCode, gameId);
+
+    // assert
+    expect(result).not.toBeNull();
+    expect(result?.completionTime).toBe(completionTime);
+    expect(result?.solvedAt).toBeInstanceOf(Date);
+  });
+
+  it("cross-client-sync.AC1.3: returns null when player has no session for the given game id", async () => {
+    // arrange
+    const { claimCode } = await store.createPlayer();
+    const unknownGameId = "game-2026-01-01";
+
+    // act
+    const result = await store.getSession(claimCode, unknownGameId);
+
+    // assert
+    expect(result).toBeNull();
+  });
+
+  it("cross-client-sync.AC1.4: returns null when claim code does not match any player", async () => {
+    // act
+    const result = await store.getSession("UNKNOWN-CODE-9999", "game-2026-02-15");
+
+    // assert
+    expect(result).toBeNull();
+  });
+});
+
 describe("getStats", () => {
   it("AC4.3: returns zeroed counts and null for bestTime/averageTime with no sessions", async () => {
     // arrange

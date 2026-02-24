@@ -1,4 +1,4 @@
-import { eq, sql, asc } from "drizzle-orm";
+import { and, eq, sql, asc } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { DateTime } from "luxon";
 import { players, gameSessions } from "./schema.js";
@@ -133,6 +133,25 @@ export class PgPlayerStore {
       .returning({ id: gameSessions.id });
 
     return result[0] ? "created" : "exists";
+  }
+
+  /**
+   * Look up a completed session for a player+game combination.
+   * Returns null if the player does not exist or has no session for the given game.
+   * Uses a single join query — does not distinguish between missing player and missing session.
+   */
+  async getSession(claimCode: string, gameId: string): Promise<{ completionTime: number; solvedAt: Date } | null> {
+    const result = await this.db
+      .select({
+        completionTime: gameSessions.completionTime,
+        solvedAt: gameSessions.solvedAt,
+      })
+      .from(gameSessions)
+      .innerJoin(players, eq(players.id, gameSessions.playerId))
+      .where(and(eq(players.claimCode, claimCode), eq(gameSessions.gameId, gameId)))
+      .limit(1);
+
+    return result[0] ?? null;
   }
 
   /**

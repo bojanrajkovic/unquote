@@ -2,11 +2,12 @@ import type { FastifyPluginAsync } from "fastify";
 
 import { registerRoute } from "./register.js";
 import { sessionRoute } from "./session.js";
+import { sessionLookupRoute } from "./session-lookup.js";
 import { statsRoute } from "./stats.js";
 
 /**
  * Aggregator plugin for player domain routes.
- * Registers player registration, session recording, and stats sub-routes.
+ * Registers player registration, session recording, session lookup, and stats sub-routes.
  *
  * NOTE: This plugin is intentionally NOT wrapped with fastify-plugin
  * to preserve encapsulation and allow prefix registration to work correctly.
@@ -14,5 +15,6 @@ import { statsRoute } from "./stats.js";
 export const registerPlayerRoutes: FastifyPluginAsync = async (fastify) => {
   await fastify.register(registerRoute);
   await fastify.register(sessionRoute);
+  await fastify.register(sessionLookupRoute);
   await fastify.register(statsRoute);
 };
