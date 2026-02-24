@@ -1,6 +1,6 @@
 # API Server
 
-Last verified: 2026-02-16
+Last verified: 2026-02-24
 
 ## Purpose
 
@@ -56,7 +56,7 @@ Both `@unquote/api` and `@unquote/game-generator` tests can reference this locat
 - `src/index.ts` - Server entry point, plugin registration
 - `src/domain/game/routes/` - Game endpoints (puzzle retrieval, solution checking)
 - `src/domain/game/game-id.ts` - Sqids-based date encoding for opaque game IDs
-- `src/domain/player/routes/` - Player endpoints (registration, session recording, stats)
+- `src/domain/player/routes/` - Player endpoints (registration, session recording, session lookup, stats)
 - `src/routes/health.ts` - Health endpoints (liveness and readiness probes)
 - `src/sources/` - Data source implementations (JsonQuoteSource, StaticKeywordSource)
 - `src/tracing/` - Tracing utilities (`tracedProxy` for DI service instrumentation)

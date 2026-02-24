@@ -127,6 +127,10 @@ export function createMockPlayerStore(): PlayerStore {
   return {
     createPlayer: async () => ({ claimCode: "TEST-CODE-0000" }),
     recordSession: async () => "created" as const,
+    getSession: async () => ({
+      completionTime: 53_260,
+      solvedAt: new Date("2026-02-23T22:15:30.000Z"),
+    }),
     getStats: async () => ({
       gamesPlayed: 5,
       gamesSolved: 5,

@@ -1,6 +1,6 @@
 # Player Domain
 
-Last verified: 2026-02-16
+Last verified: 2026-02-24
 
 ## Purpose
 
@@ -8,8 +8,8 @@ Manages player identity, game session recording, and statistics aggregation. Pla
 
 ## Contracts
 
-- **Exposes**: `PlayerStore` interface (create player, record session, get stats, check health), `PgPlayerStore` implementation, `runMigrationsWithLock()`, `runMigrateCli()`, branded types (`PlayerId`, `GameSessionId`), `DatabaseUnavailableError`, `PlayerNotFoundError`
-- **Guarantees**: Claim codes are unique (retries on collision up to 5 times). Session recording is idempotent (unique constraint on player+game). Migrations use `pg_advisory_lock(42)` to prevent races across replicas. Stats aggregation includes streaks, win rate, best/average times, and recent solves (30 days).
+- **Exposes**: `PlayerStore` interface (create player, record session, get session, get stats, check health), `PgPlayerStore` implementation, `runMigrationsWithLock()`, `runMigrateCli()`, branded types (`PlayerId`, `GameSessionId`), `DatabaseUnavailableError`, `PlayerNotFoundError`
+- **Guarantees**: Claim codes are unique (retries on collision up to 5 times). Session recording is idempotent (unique constraint on player+game). Session lookup returns null for both missing players and missing sessions (single join query, no distinction). Migrations use `pg_advisory_lock(42)` to prevent races across replicas. Stats aggregation includes streaks, win rate, best/average times, and recent solves (30 days).
 - **Expects**: A configured `NodePgDatabase` (Drizzle) instance. The module does not manage its own database connection; that is handled by the DI container in `src/deps/singleton.ts`.
 
 ## Dependencies
@@ -44,4 +44,5 @@ Manages player identity, game session recording, and statistics aggregation. Pla
 - `routes/schemas.ts` - TypeBox request/response schemas for player endpoints
 - `routes/register.ts` - POST /player (player registration)
 - `routes/session.ts` - POST /player/:code/session (session recording)
+- `routes/session-lookup.ts` - GET /player/:code/session/:gameId (session lookup)
 - `routes/stats.ts` - GET /player/:code/stats (statistics retrieval)

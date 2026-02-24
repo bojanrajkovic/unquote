@@ -59,6 +59,8 @@ export type PlayerStore = {
     completionTime: number,
     solvedAt?: Date,
   ): Promise<"created" | "exists">;
+  /** Look up a completed session for a player+game combination. Returns null if player or session not found. */
+  getSession(claimCode: string, gameId: string): Promise<{ completionTime: number; solvedAt: Date } | null>;
   getStats(claimCode: string): Promise<PlayerStats | null>;
   checkHealth(): Promise<{ status: "connected" | "error"; error?: string }>;
 };

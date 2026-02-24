@@ -100,3 +100,35 @@ export const PlayerStatsResponseSchema = schemaType(
 );
 
 export type PlayerStatsResponse = Static<typeof PlayerStatsResponseSchema>;
+
+/**
+ * Path parameter schema for session lookup (claim code + game ID).
+ */
+export const GameSessionParamsSchema = schemaType(
+  "GameSessionParams",
+  Type.Object(
+    {
+      code: Type.String({ description: "Player claim code in ADJECTIVE-NOUN-NNNN format" }),
+      gameId: Type.String({ description: "Opaque game ID from puzzle response" }),
+    },
+    { additionalProperties: false },
+  ),
+);
+
+export type GameSessionParams = Static<typeof GameSessionParamsSchema>;
+
+/**
+ * Response schema for GET /player/:code/session/:gameId.
+ */
+export const GameSessionResponseSchema = schemaType(
+  "GameSessionResponse",
+  Type.Object(
+    {
+      completionTime: Type.Number({ description: "Solve time in milliseconds" }),
+      solvedAt: Type.String({ format: "date-time", description: "ISO 8601 timestamp when the puzzle was solved" }),
+    },
+    { additionalProperties: false },
+  ),
+);
+
+export type GameSessionResponse = Static<typeof GameSessionResponseSchema>;
