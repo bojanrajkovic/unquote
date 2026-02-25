@@ -32,7 +32,7 @@ export const CreatePlayerResponseSchema = schemaType(
 export type CreatePlayerResponse = Static<typeof CreatePlayerResponseSchema>;
 
 /**
- * Request body schema for POST /player/:code/session.
+ * Request body schema for POST /player/:code/session (gameId required in body).
  */
 export const RecordSessionRequestSchema = schemaType(
   "RecordSessionRequest",
@@ -52,6 +52,27 @@ export const RecordSessionRequestSchema = schemaType(
 );
 
 export type RecordSessionRequest = Static<typeof RecordSessionRequestSchema>;
+
+/**
+ * Request body schema for POST /player/:code/session/:gameId (gameId in URL, not body).
+ */
+export const RecordSessionPathRequestSchema = schemaType(
+  "RecordSessionPathRequest",
+  Type.Object(
+    {
+      completionTime: Type.Number({ description: "Solve time in milliseconds" }),
+      solvedAt: Type.Optional(
+        Type.String({
+          format: "date-time",
+          description: "ISO 8601 timestamp when the puzzle was solved; defaults to server time if omitted",
+        }),
+      ),
+    },
+    { additionalProperties: false },
+  ),
+);
+
+export type RecordSessionPathRequest = Static<typeof RecordSessionPathRequestSchema>;
 
 /**
  * Response schema for POST /player/:code/session.

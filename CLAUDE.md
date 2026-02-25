@@ -98,7 +98,8 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 - `GET /game/:date` - Retrieve puzzle for a specific date (ISO format: YYYY-MM-DD)
 - `POST /game/:id/check` - Validate a solution attempt using opaque game ID
 - `POST /player` - Register a new player (returns claim code)
-- `POST /player/:code/session` - Record a game session for a player
+- `POST /player/:code/session` - Record a game session (game ID in body)
+- `POST /player/:code/session/:gameId` - Record a game session (game ID in URL)
 - `GET /player/:code/session/:gameId` - Look up a player's session for a specific game
 - `GET /player/:code/stats` - Retrieve player statistics
 
