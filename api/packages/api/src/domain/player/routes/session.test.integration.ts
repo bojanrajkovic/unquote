@@ -199,4 +199,88 @@ describe("session route (POST /:code/session)", () => {
 
     await fastify.close();
   });
+
+  it("returns 400 when gameId is missing from both URL and body", async () => {
+    // arrange
+    const container = createTestContainer();
+    const fastify = await createTestFastify(container, sessionRoute);
+
+    // act
+    const response = await fastify.inject({
+      method: "POST",
+      url: `/TEST-CODE-0000/session`,
+      payload: {
+        completionTime: 60_000,
+      },
+    });
+
+    // assert
+    expect(response.statusCode).toBe(400);
+
+    await fastify.close();
+  });
+});
+
+describe("session route (POST /:code/session/:gameId)", () => {
+  it("returns 201 when gameId is provided in URL path", async () => {
+    // arrange
+    const container = createTestContainer();
+    const fastify = await createTestFastify(container, sessionRoute);
+
+    // act
+    const response = await fastify.inject({
+      method: "POST",
+      url: `/TEST-CODE-0000/session/${validGameId}`,
+      payload: {
+        completionTime: 60_000,
+      },
+    });
+
+    // assert
+    expect(response.statusCode).toBe(201);
+    const body = response.json();
+    expect(body).toHaveProperty("status", "created");
+
+    await fastify.close();
+  });
+
+  it("returns 404 for invalid game ID in URL path", async () => {
+    // arrange
+    const container = createTestContainer();
+    const fastify = await createTestFastify(container, sessionRoute);
+
+    // act
+    const response = await fastify.inject({
+      method: "POST",
+      url: `/TEST-CODE-0000/session/invalid-id`,
+      payload: {
+        completionTime: 60_000,
+      },
+    });
+
+    // assert
+    expect(response.statusCode).toBe(404);
+
+    await fastify.close();
+  });
+
+  it("returns 503 when database is unavailable (URL path variant)", async () => {
+    // arrange
+    const container = createTestContainer({ playerStore: null });
+    const fastify = await createTestFastify(container, sessionRoute);
+
+    // act
+    const response = await fastify.inject({
+      method: "POST",
+      url: `/TEST-CODE-0000/session/${validGameId}`,
+      payload: {
+        completionTime: 60_000,
+      },
+    });
+
+    // assert
+    expect(response.statusCode).toBe(503);
+
+    await fastify.close();
+  });
 });

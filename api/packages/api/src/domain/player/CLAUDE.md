@@ -43,6 +43,6 @@ Manages player identity, game session recording, and statistics aggregation. Pla
 - `routes/index.ts` - Aggregator plugin registering all player sub-routes
 - `routes/schemas.ts` - TypeBox request/response schemas for player endpoints
 - `routes/register.ts` - POST /player (player registration)
-- `routes/session.ts` - POST /player/:code/session (session recording)
+- `routes/session.ts` - POST /player/:code/session and POST /player/:code/session/:gameId (session recording; game ID accepted in URL path or request body)
 - `routes/session-lookup.ts` - GET /player/:code/session/:gameId (session lookup)
 - `routes/stats.ts` - GET /player/:code/stats (statistics retrieval)
