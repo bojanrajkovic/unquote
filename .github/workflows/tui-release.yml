@@ -33,16 +33,25 @@ jobs:
 
       - name: Check commit type and changed paths
         id: check
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
         run: |
-          COMMIT_MSG=$(git log -1 --pretty=%B)
-          echo "Commit message: $COMMIT_MSG"
-          if ! [[ $COMMIT_MSG =~ ^(feat|fix)(\(.+\))?!?: ]]; then
+          # Check ALL commits in the push for a release-triggering type
+          HAS_RELEASE_COMMIT=false
+          for msg in $(git log --pretty=%s "$BEFORE_SHA"..HEAD); do
+            if [[ $msg =~ ^(feat|fix)(\(.+\))?!?: ]]; then
+              HAS_RELEASE_COMMIT=true
+              echo "Found release-triggering commit: $msg"
+              break
+            fi
+          done
+          if [ "$HAS_RELEASE_COMMIT" = false ]; then
             echo "should_release=false" >> $GITHUB_OUTPUT
-            echo "Commit type does not trigger release (not feat/fix)"
+            echo "No feat/fix commits in push range"
             exit 0
           fi
-          # Ensure actual tui/ source files changed, not just workflow files
-          if git diff --name-only HEAD~1 HEAD -- 'tui/' | grep -qv '^\.' ; then
+          # Ensure actual tui/ source files changed across the full push range
+          if git diff --name-only "$BEFORE_SHA" HEAD -- 'tui/' | grep -qv '^\.' ; then
             echo "should_release=true" >> $GITHUB_OUTPUT
             echo "Release-triggering commit with tui/ changes detected"
           else
