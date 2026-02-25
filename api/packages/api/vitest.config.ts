@@ -3,6 +3,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     environment: "node",
+    setupFiles: ["tests/telemetry/otel-register-hook.ts"],
     exclude: ["node_modules", "dist"],
     globals: true,
     include: ["src/**/*.{test,spec,test.integration}.ts", "tests/**/*.{test,spec}.ts"],

@@ -16,6 +16,8 @@ if (process.env["OTEL_DEBUG"]) {
 
 import { NodeSDK } from "@opentelemetry/sdk-node";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
+import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
+import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { containerDetector } from "@opentelemetry/resource-detector-container";
 import {
   envDetector,
@@ -30,6 +32,7 @@ import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
 import { PinoInstrumentation } from "@opentelemetry/instrumentation-pino";
 import { UndiciInstrumentation } from "@opentelemetry/instrumentation-undici";
 import { PgInstrumentation } from "@opentelemetry/instrumentation-pg";
+import { RuntimeNodeInstrumentation } from "@opentelemetry/instrumentation-runtime-node";
 
 // Read service metadata from package.json using fs for ESM compatibility
 const currentDir = dirname(fileURLToPath(import.meta.url));
@@ -56,6 +59,12 @@ const sdkConfig = {
     traceExporter: new OTLPTraceExporter({
       url: `${otlpEndpoint}/v1/traces`,
     }),
+    metricReader: new PeriodicExportingMetricReader({
+      exporter: new OTLPMetricExporter({
+        url: `${otlpEndpoint}/v1/metrics`,
+      }),
+      exportIntervalMillis: 15_000,
+    }),
   }),
   instrumentations: [
     new HttpInstrumentation(),
@@ -69,6 +78,7 @@ const sdkConfig = {
     }),
     new UndiciInstrumentation(),
     new PgInstrumentation(),
+    new RuntimeNodeInstrumentation(),
   ],
 };
 
