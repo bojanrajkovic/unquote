@@ -69,7 +69,7 @@ const sdkConfig = {
   views: [
     {
       instrumentType: InstrumentType.HISTOGRAM,
-      aggregation: { type: AggregationType.EXPONENTIAL_HISTOGRAM },
+      aggregation: { type: AggregationType.EXPONENTIAL_HISTOGRAM, options: { maxSize: 20 } } as const,
     },
   ],
   instrumentations: [
