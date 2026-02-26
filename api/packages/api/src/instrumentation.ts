@@ -17,7 +17,7 @@ if (process.env["OTEL_DEBUG"]) {
 import { NodeSDK } from "@opentelemetry/sdk-node";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
-import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
+import { AggregationType, InstrumentType, PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { containerDetector } from "@opentelemetry/resource-detector-container";
 import {
   envDetector,
@@ -66,6 +66,12 @@ const sdkConfig = {
       exportIntervalMillis: 15_000,
     }),
   }),
+  views: [
+    {
+      instrumentType: InstrumentType.HISTOGRAM,
+      aggregation: { type: AggregationType.EXPONENTIAL_HISTOGRAM },
+    },
+  ],
   instrumentations: [
     new HttpInstrumentation(),
     new FastifyInstrumentation(),
