@@ -58,7 +58,7 @@ const solutionRoutesPlugin: FastifyPluginAsync = async (fastify) => {
       // Decode game ID to get the date
       const dateTime = decodeGameId(id);
       if (!dateTime) {
-        throw fastify.httpErrors.notFound("invalid game id");
+        throw fastify.httpErrors.notFound("invalid or non-existent game ID");
       }
 
       // Regenerate the puzzle to get the quote ID
