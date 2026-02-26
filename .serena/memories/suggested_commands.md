@@ -9,9 +9,7 @@ mise run build
 # Build specific component
 mise run //api:build
 mise run //tui:build
-
-# TUI CI (fmt, vet, lint, test, build)
-mise run //tui:ci
+mise run //web:build
 ```
 
 ## API Development (from `api/` directory)
@@ -21,7 +19,6 @@ pnpm run build          # Build all packages
 pnpm run test           # Run tests (vitest)
 pnpm run lint           # Lint with oxlint
 pnpm run format         # Format with oxfmt
-pnpm run format:check   # Check only, don't fix
 pnpm run typecheck      # TypeScript type checking
 ```
 
@@ -37,12 +34,14 @@ mise run //tui:test     # Run tests with race detector
 mise run //tui:ci       # All of the above in order
 ```
 
-Or from `tui/` directory:
+## Web Development (from `web/` directory)
+
 ```bash
-mise run :build
-mise run :fmt
-mise run :test
-# etc.
+pnpm run dev            # Start SvelteKit dev server
+pnpm run build          # Build static site
+pnpm run test           # Run tests (vitest)
+pnpm run check          # Svelte type checking (svelte-check)
+pnpm run format         # Format with Prettier
 ```
 
 ## Running the Application
@@ -51,6 +50,7 @@ mise run :test
 # API server (from api/packages/api/)
 pnpm start
 # Requires: QUOTES_FILE_PATH environment variable
+# Optional: DATABASE_URL for player stats
 
 # TUI client (from tui/)
 ./bin/unquote

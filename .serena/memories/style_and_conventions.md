@@ -9,6 +9,7 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 ```
 
 - commitlint enforces **lowercase subject** after type/scope prefix
+- Config: `commitlint.config.mjs` (must be `.mjs` — no root `package.json` with `"type": "module"`)
 - lefthook runs pre-commit and commit-msg hooks
 
 ### Types
@@ -25,7 +26,9 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 ### Scopes
 - `api` - API server changes (subscopes allowed, e.g. `api/routes`)
 - `game-generator` - Puzzle generation library changes
+- `web` - Web frontend changes (subscopes allowed, e.g. `web/state`)
 - `tui` - TUI changes (subscopes allowed, e.g. `tui/app`)
+- `infra` - Infrastructure changes (subscopes allowed, e.g. `infra/web`)
 - `ci` - CI/CD workflow changes
 
 ### Guidelines
@@ -45,7 +48,7 @@ ci: remove custom semantic-version pattern workarounds
 ## TypeScript (API)
 
 - **Validation**: Use TypeBox schemas (import from `"typebox"`, not `"@sinclair/typebox"`)
-- **IDs**: Use nanoid-style random strings, not sequential numbers
+- **IDs**: Branded UUIDs via `Tagged<StringUUID, "tag">` from type-fest
 - **Dates**: Use Luxon DateTime, not JS Date
 - **No FCIS comments**: The Functional Core/Imperative Shell pattern is implicit
 
@@ -64,6 +67,7 @@ ci: remove custom semantic-version pattern workarounds
 - Test containers: Use `createTestContainer()` from `tests/helpers/`
 - Override pattern: Pass partial options to replace dependencies
 - Property testing: fast-check for invariant testing
+- Database tests: PGlite snapshot/restore from `tests/helpers/pglite.ts`
 
 ### TUI (Go)
 - Test files: `*_test.go`
