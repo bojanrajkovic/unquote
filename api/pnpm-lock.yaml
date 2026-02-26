@@ -144,9 +144,6 @@ catalogs:
     type-fest:
       specifier: ^5.4.0
       version: 5.4.4
-    typebox:
-      specifier: ^1.0.13
-      version: 1.0.81
   testing:
     '@electric-sql/pglite':
       specifier: ^0.3.15
@@ -202,7 +199,7 @@ importers:
     dependencies:
       '@eropple/fastify-openapi3':
         specifier: catalog:prod
-        version: 1.0.2(ajv@8.18.0)(fastify@5.7.4)(typebox@1.0.81)
+        version: 1.0.2(ajv@8.18.0)(fastify@5.7.4)(typebox@1.1.1)
       '@fastify/cors':
         specifier: catalog:prod
         version: 11.2.0
@@ -220,7 +217,7 @@ importers:
         version: 6.0.4
       '@fastify/type-provider-typebox':
         specifier: catalog:prod
-        version: 6.1.0(typebox@1.0.81)
+        version: 6.1.0(typebox@1.1.1)
       '@fastify/under-pressure':
         specifier: catalog:prod
         version: 9.0.3
@@ -307,7 +304,7 @@ importers:
         version: 5.4.4
       typebox:
         specifier: catalog:prod
-        version: 1.0.81
+        version: 1.1.1
     devDependencies:
       '@electric-sql/pglite':
         specifier: catalog:testing
@@ -368,7 +365,7 @@ importers:
         version: 3.7.2
       typebox:
         specifier: catalog:prod
-        version: 1.0.81
+        version: 1.1.1
     devDependencies:
       '@opentelemetry/context-async-hooks':
         specifier: catalog:testing
@@ -2544,8 +2541,8 @@ packages:
     resolution: {integrity: sha512-OZs6gsjF4vMp32qrCbiVSkrFmXtG/AZhY3t0iAMrMBiAZyV9oALtXO8hsrHbMXF9x6L3grlFuwW2oAz7cav+Gw==}
     engines: {node: '>= 0.6'}
 
-  typebox@1.0.81:
-    resolution: {integrity: sha512-bCslZUmZESHhBn4kHDghzH2oo3qu8m2W89xDLxQHv/aPvY4i81Nd1jvijlBp9wSpsVytDSfSoosbiBAjgsNb2Q==}
+  typebox@1.1.1:
+    resolution: {integrity: sha512-LyVGXXUEiG7mGWQmu/aNILf4FqQPbsE528j7LatYH5hErt0OQcZPN84cyzXDSfBltP2BjkdqKAR7fxfC+fW0Eg==}
 
   typescript@5.9.3:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
@@ -2718,7 +2715,7 @@ snapshots:
 
   '@electric-sql/pglite@0.3.15': {}
 
-  '@eropple/fastify-openapi3@1.0.2(ajv@8.18.0)(fastify@5.7.4)(typebox@1.0.81)':
+  '@eropple/fastify-openapi3@1.0.2(ajv@8.18.0)(fastify@5.7.4)(typebox@1.1.1)':
     dependencies:
       '@seriousme/openapi-schema-validator': 1.7.1
       ajv: 8.18.0
@@ -2729,7 +2726,7 @@ snapshots:
       lodash-es: 4.17.23
       openapi-ts: 0.3.4
       openapi3-ts: 2.0.2
-      typebox: 1.0.81
+      typebox: 1.1.1
       utility-types: 3.11.0
     transitivePeerDependencies:
       - openapi-types
@@ -3020,9 +3017,9 @@ snapshots:
       type-is: 2.0.1
       vary: 1.1.2
 
-  '@fastify/type-provider-typebox@6.1.0(typebox@1.0.81)':
+  '@fastify/type-provider-typebox@6.1.0(typebox@1.1.1)':
     dependencies:
-      typebox: 1.0.81
+      typebox: 1.1.1
 
   '@fastify/under-pressure@9.0.3':
     dependencies:
@@ -4547,7 +4544,7 @@ snapshots:
       media-typer: 1.1.0
       mime-types: 3.0.2
 
-  typebox@1.0.81: {}
+  typebox@1.1.1: {}
 
   typescript@5.9.3: {}
 
