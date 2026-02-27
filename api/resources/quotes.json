@@ -3,364 +3,609 @@
     "id": "tbwFfLG0D3I3UEhgU_qSr",
     "text": "The only way to do great work is to love what you do.",
     "author": "Steve Jobs",
-    "category": "inspiration",
+    "category": "Inspiration",
     "difficulty": 62
   },
   {
     "id": "eWUuiQU4yi0MOlzIEGzx_",
     "text": "In the middle of difficulty lies opportunity.",
     "author": "Albert Einstein",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 75
   },
   {
     "id": "b9gi6BClAT9Z5qE7_kX0J",
     "text": "Be yourself; everyone else is already taken.",
     "author": "Oscar Wilde",
-    "category": "humor",
+    "category": "Wisdom",
     "difficulty": 73
   },
   {
     "id": "VE95GVbttHOqklzuv4V1u",
     "text": "Two things are infinite: the universe and human stupidity; and I am not sure about the universe.",
     "author": "Albert Einstein",
-    "category": "humor",
+    "category": "Humor",
     "difficulty": 75
   },
   {
     "id": "L9arYdmYjq_sWzNOahigN",
     "text": "A room without books is like a body without a soul.",
     "author": "Marcus Tullius Cicero",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 56
   },
   {
     "id": "ij7SuOzDuJgS0dttn66Jh",
     "text": "The journey of a thousand miles begins with one step.",
     "author": "Lao Tzu",
-    "category": "inspiration",
+    "category": "Inspiration",
     "difficulty": 79
   },
   {
     "id": "IlUinTc0FmiGIhYc1XGyU",
     "text": "Life is what happens when you are busy making other plans.",
     "author": "John Lennon",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 84
   },
   {
     "id": "GoXy6WsrPeiekWtGKhjBy",
     "text": "Darkness cannot drive out darkness: only light can do that. Hate cannot drive out hate: only love can do that.",
     "author": "Martin Luther King Jr.",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 59
   },
   {
     "id": "84c79Llp-Kz4bskrESXCZ",
     "text": "To be or not to be, that is the question.",
     "author": "William Shakespeare",
-    "category": "literature",
+    "category": "Wisdom",
     "difficulty": 50
   },
   {
     "id": "_uXrHrMeAoXwG_0lQJlDA",
     "text": "The unexamined life is not worth living.",
     "author": "Socrates",
-    "category": "philosophy",
+    "category": "Philosophy",
     "difficulty": 77
   },
   {
     "id": "seWHdkaJDupgCDF1jNUsq",
     "text": "That which does not kill us makes us stronger.",
     "author": "Friedrich Nietzsche",
-    "category": "philosophy",
+    "category": "Philosophy",
     "difficulty": 73
   },
   {
     "id": "Pmw3leCtB1NiA81Gkqq5w",
     "text": "Imagination is more important than knowledge.",
     "author": "Albert Einstein",
-    "category": "science",
+    "category": "Philosophy",
     "difficulty": 78
   },
   {
     "id": "Vu6V9ll_-FAol0UhGaBHv",
     "text": "Never give in, never give in, never, never, never, never.",
     "author": "Winston Churchill",
-    "category": "inspiration",
+    "category": "Inspiration",
     "difficulty": 36
   },
   {
     "id": "WRZEHUUKR9l7mkwP8dNhr",
     "text": "If you want to go fast, go alone. If you want to go far, go together.",
     "author": "African Proverb",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 44
   },
   {
     "id": "bHIVzBdM9_KZ8qElaaiXt",
     "text": "Tell me and I forget. Teach me and I remember. Involve me and I learn.",
     "author": "Benjamin Franklin",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 45
   },
   {
     "id": "L-RM39IuDHAdqaTpsVRJC",
     "text": "You can fool all the people some of the time, and some of the people all the time, but you cannot fool all the people all the time.",
     "author": "Abraham Lincoln",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 52
   },
   {
     "id": "wglkPA7D9BeEE6FVI8frf",
     "text": "What you do not want done to yourself, do not do to others.",
     "author": "Confucius",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 49
   },
   {
     "id": "SKTgL92cWvuISjdIy82B5",
     "text": "First they ignore you, then they laugh at you, then they fight you, then you win.",
     "author": "Mahatma Gandhi",
-    "category": "inspiration",
+    "category": "Inspiration",
     "difficulty": 50
   },
   {
     "id": "MAnRI_zbvQODItRCfy9EA",
     "text": "Ask not what your country can do for you, ask what you can do for your country.",
     "author": "John F. Kennedy",
-    "category": "inspiration",
+    "category": "Inspiration",
     "difficulty": 50
   },
   {
     "id": "D7anF9gYuXusr9JGEF2v1",
     "text": "It is better to be hated for what you are than to be loved for what you are not.",
     "author": "Andre Gide",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 55
   },
   {
     "id": "yuFKxItH1p0aTJcUIXFI7",
     "text": "Do what you can, with what you have, where you are.",
     "author": "Theodore Roosevelt",
-    "category": "inspiration",
+    "category": "Inspiration",
     "difficulty": 57
   },
   {
     "id": "oSotzmRrjWpU1MpEV9pbT",
     "text": "What lies behind us and what lies before us are tiny matters compared to what lies within us.",
     "author": "Ralph Waldo Emerson",
-    "category": "philosophy",
+    "category": "Philosophy",
     "difficulty": 59
   },
   {
     "id": "dKsTEpviixKx28O8KSxKK",
     "text": "The way I see it, if you want the rainbow, you gotta put up with the rain.",
     "author": "Dolly Parton",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 59
   },
   {
     "id": "AmRl5aPzcwh8ZtRmwHUU1",
     "text": "Success is not final, failure is not fatal: it is the courage to continue that counts.",
     "author": "Winston Churchill",
-    "category": "inspiration",
+    "category": "Inspiration",
     "difficulty": 62
   },
   {
     "id": "IK67C5XmkfkKgUF1rMBEl",
     "text": "It does not matter how slowly you go as long as you do not stop.",
     "author": "Confucius",
-    "category": "inspiration",
+    "category": "Inspiration",
     "difficulty": 60
   },
   {
     "id": "BYEDuTzE0VIZn1EncLPGv",
     "text": "In the end, we only regret the chances we didn't take.",
-    "author": "Lewis Carroll",
-    "category": "wisdom",
+    "author": "Unknown",
+    "category": "Wisdom",
     "difficulty": 60
   },
   {
     "id": "gqg0sMaZiDTIkqeLyXk0R",
     "text": "Float like a butterfly, sting like a bee.",
     "author": "Muhammad Ali",
-    "category": "inspiration",
+    "category": "Wisdom",
     "difficulty": 63
   },
   {
     "id": "AZLQouppSix4QfwKWXQE_",
     "text": "You must be the change you wish to see in the world.",
     "author": "Mahatma Gandhi",
-    "category": "inspiration",
+    "category": "Inspiration",
     "difficulty": 66
   },
   {
     "id": "deo_PKNG4eZIkSOcze7jS",
     "text": "An eye for an eye only ends up making the whole world blind.",
     "author": "Mahatma Gandhi",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 69
   },
   {
     "id": "6OE9IwN0OfkxW1d2mFpPc",
     "text": "To be great is to be misunderstood.",
     "author": "Ralph Waldo Emerson",
-    "category": "inspiration",
+    "category": "Inspiration",
     "difficulty": 54
   },
   {
     "id": "58pZSBzFAJ8haurk0gbtq",
     "text": "A friend in need is a friend indeed.",
     "author": "Common Proverb",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 49
   },
   {
     "id": "hSVD-AyAF3y04zIn_FDOT",
     "text": "The only thing we have to fear is fear itself.",
     "author": "Franklin D. Roosevelt",
-    "category": "inspiration",
+    "category": "Inspiration",
     "difficulty": 66
   },
   {
     "id": "UkwQZxQl8XhSpOaLfkGyr",
     "text": "Whether you think you can or you think you cannot, you are right.",
     "author": "Henry Ford",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 53
   },
   {
     "id": "UHbun5JuMu5QwRakz_1p5",
     "text": "Believe you can and you are halfway there.",
     "author": "Theodore Roosevelt",
-    "category": "inspiration",
+    "category": "Inspiration",
     "difficulty": 67
   },
   {
     "id": "S1qvUgLlKA4JR8pMUYlri",
     "text": "It is never too late to be what you might have been.",
     "author": "George Eliot",
-    "category": "inspiration",
+    "category": "Inspiration",
     "difficulty": 73
   },
   {
     "id": "Wcqdrjzh6Y9pGsn-z5i2I",
     "text": "Go confidently in the direction of your dreams. Live the life you have imagined.",
     "author": "Henry David Thoreau",
-    "category": "inspiration",
+    "category": "Inspiration",
     "difficulty": 76
   },
   {
     "id": "6aUIiuR9R5KEpQYiuaNbt",
     "text": "All our dreams can come true if we have the courage to pursue them.",
     "author": "Walt Disney",
-    "category": "inspiration",
+    "category": "Inspiration",
     "difficulty": 79
   },
   {
     "id": "IPBPTV7Y03wq0tXX_ddE1",
     "text": "The best preparation for tomorrow is doing your best today.",
     "author": "H. Jackson Brown Jr.",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 73
   },
   {
     "id": "jEoARdRLhVz4tQ9K2FI0k",
     "text": "Everything you have ever wanted is on the other side of fear.",
     "author": "George Addair",
-    "category": "inspiration",
+    "category": "Inspiration",
     "difficulty": 72
   },
   {
     "id": "j1r-9rjiiTMHqYxUxQM9a",
     "text": "Happiness is not something ready made. It comes from your own actions.",
     "author": "Dalai Lama",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 84
   },
   {
     "id": "vM7Ka6n9oChMve9DfCcd-",
     "text": "The best time to plant a tree was twenty years ago. The second best time is now.",
     "author": "Chinese Proverb",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 66
   },
   {
     "id": "23-ow5GrYbTKP9sFnKjHk",
     "text": "It is a truth universally acknowledged, that a single man in possession of a good fortune must be in want of a wife.",
     "author": "Jane Austen",
-    "category": "literature",
+    "category": "Wisdom",
     "difficulty": 69
   },
   {
     "id": "uHD-QMIFehfPbdVaHS-17",
     "text": "As I would not be a slave, so I would not be a master.",
     "author": "Abraham Lincoln",
-    "category": "philosophy",
+    "category": "Philosophy",
     "difficulty": 56
   },
   {
     "id": "MactQ3jL7TJPaQKkbP7KQ",
     "text": "Always do right. This will gratify some people and astonish the rest.",
     "author": "Mark Twain",
-    "category": "humor",
+    "category": "Humor",
     "difficulty": 84
   },
   {
     "id": "JgkMlAxod_wIWEY1XZmis",
     "text": "Nothing great was ever achieved without enthusiasm.",
     "author": "Ralph Waldo Emerson",
-    "category": "inspiration",
+    "category": "Inspiration",
     "difficulty": 81
   },
   {
     "id": "GXjhNILMJctkFXo6FHu-_",
     "text": "Love all, trust a few, do wrong to none.",
     "author": "William Shakespeare",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 71
   },
   {
     "id": "0w4bJlbCanl9DZTMlSyJR",
     "text": "If it is not broken, do not fix it.",
     "author": "Bert Lance",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 50
   },
   {
     "id": "5wCnGSIG2Wq9eK1XPjV-c",
     "text": "What is done cannot be undone, but what is not done can still be done.",
     "author": "African Proverb",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 52
   },
   {
     "id": "oki5Q9GbxzdbpniwPMLHZ",
     "text": "The more things change, the more they stay the same.",
     "author": "Jean-Baptiste Alphonse Karr",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 53
   },
   {
     "id": "nhEP7OpyiaPnbKa1oR5MX",
     "text": "The more you know, the more you know you do not know.",
     "author": "Aristotle",
-    "category": "philosophy",
+    "category": "Philosophy",
     "difficulty": 39
   },
   {
     "id": "cL3IYAwrz4vWJ0pwsEveb",
     "text": "Where there is a will, there is a way.",
     "author": "Common Proverb",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 45
   },
   {
     "id": "73f8u2Fbq0wa1LvHr3-Qr",
     "text": "Say what you mean and mean what you say.",
     "author": "Common Saying",
-    "category": "wisdom",
+    "category": "Wisdom",
     "difficulty": 49
+  },
+  {
+    "id": "24W50F7xJk-AQHW5vxUp-",
+    "text": "Outside of a dog, a book is your best friend. Inside of a dog it is too dark to read.",
+    "author": "Groucho Marx",
+    "category": "Humor",
+    "difficulty": 54
+  },
+  {
+    "id": "olMLOG_r2l_TdS1lzVxAF",
+    "text": "I can resist everything except temptation.",
+    "author": "Oscar Wilde",
+    "category": "Humor",
+    "difficulty": 74
+  },
+  {
+    "id": "0JkeWC1F8rFgrJwE7Ev3m",
+    "text": "The cure for boredom is curiosity. There is no cure for curiosity.",
+    "author": "Dorothy Parker",
+    "category": "Humor",
+    "difficulty": 58
+  },
+  {
+    "id": "ENXhLmfEuwxbc97wQv8b9",
+    "text": "Everything is funny, as long as it is happening to somebody else.",
+    "author": "Will Rogers",
+    "category": "Humor",
+    "difficulty": 72
+  },
+  {
+    "id": "kipQYKFAydNdEzm7HPBM9",
+    "text": "I am not afraid of death, I just do not want to be there when it happens.",
+    "author": "Woody Allen",
+    "category": "Humor",
+    "difficulty": 67
+  },
+  {
+    "id": "mOYVr-FrSlvZjYxT8mu02",
+    "text": "The secret of being a bore is to tell everything.",
+    "author": "Voltaire",
+    "category": "Humor",
+    "difficulty": 69
+  },
+  {
+    "id": "fIdXmh1qs8L4LgRq8mt8s",
+    "text": "I intend to live forever. So far, so good.",
+    "author": "Steven Wright",
+    "category": "Humor",
+    "difficulty": 60
+  },
+  {
+    "id": "f7DW3uhcmfQk_BzTnNB1l",
+    "text": "I am free of all prejudices. I hate everyone equally.",
+    "author": "W.C. Fields",
+    "category": "Humor",
+    "difficulty": 68
+  },
+  {
+    "id": "MQlqmtNC_ot5-HefByT9T",
+    "text": "I find television very educating. Every time somebody turns on the set, I go into the other room and read a book.",
+    "author": "Groucho Marx",
+    "category": "Humor",
+    "difficulty": 77
+  },
+  {
+    "id": "iJiBd6taBg2_J9-Elcnwz",
+    "text": "When choosing between two evils, I always like to try the one I have never tried before.",
+    "author": "Mae West",
+    "category": "Humor",
+    "difficulty": 76
+  },
+  {
+    "id": "K_puokDO3Zrl0N-VWvac8",
+    "text": "If you live to be one hundred, you have got it made. Very few people die past that age.",
+    "author": "George Burns",
+    "category": "Humor",
+    "difficulty": 76
+  },
+  {
+    "id": "ho7J6-bU-sp-6aoW4q84R",
+    "text": "I used to do drugs. I still do, but I used to, too.",
+    "author": "Mitch Hedberg",
+    "category": "Humor",
+    "difficulty": 45
+  },
+  {
+    "id": "HM-5vzDwgI6xZg_Q3npzq",
+    "text": "You can observe a lot by just watching.",
+    "author": "Yogi Berra",
+    "category": "Humor",
+    "difficulty": 80
+  },
+  {
+    "id": "WiqyALgUSoMzXsSKT2p65",
+    "text": "In theory there is no difference between theory and practice. In practice there is.",
+    "author": "Yogi Berra",
+    "category": "Humor",
+    "difficulty": 55
+  },
+  {
+    "id": "ZSurXrtFNNziYJlDPgGmG",
+    "text": "I love being married. It is so great to find that one special person you want to annoy for the rest of your life.",
+    "author": "Rita Rudner",
+    "category": "Humor",
+    "difficulty": 82
+  },
+  {
+    "id": "gIozoGvNCWAyznGa0NOvg",
+    "text": "A smile is a curve that sets everything straight.",
+    "author": "Phyllis Diller",
+    "category": "Humor",
+    "difficulty": 70
+  },
+  {
+    "id": "dWu5w2_duQStR9W6fQSo6",
+    "text": "I like long walks, especially when they are taken by people who annoy me.",
+    "author": "Fred Allen",
+    "category": "Humor",
+    "difficulty": 79
+  },
+  {
+    "id": "Je_UdvopBACHAS3TIp4Wi",
+    "text": "It is not that we have a short time to live, but that we waste a great deal of it.",
+    "author": "Seneca",
+    "category": "Philosophy",
+    "difficulty": 60
+  },
+  {
+    "id": "abByttBmvT8CcpeHAPCWe",
+    "text": "It is not what happens to you, but how you react to it that matters.",
+    "author": "Epictetus",
+    "category": "Philosophy",
+    "difficulty": 58
+  },
+  {
+    "id": "1I2Op7JiWe9tjDFv-G0Z-",
+    "text": "The happiness of your life depends upon the quality of your thoughts.",
+    "author": "Marcus Aurelius",
+    "category": "Philosophy",
+    "difficulty": 70
+  },
+  {
+    "id": "dlupNmVjOKOAVzobW1jE7",
+    "text": "The measure of a man is what he does with power.",
+    "author": "Plato",
+    "category": "Philosophy",
+    "difficulty": 69
+  },
+  {
+    "id": "vqp04IfLeuluB0R3Wgr8D",
+    "text": "The good life is one inspired by love and guided by knowledge.",
+    "author": "Bertrand Russell",
+    "category": "Philosophy",
+    "difficulty": 73
+  },
+  {
+    "id": "XersjH5ze1QRKMa8HvdPp",
+    "text": "One is not born, but rather becomes, a woman.",
+    "author": "Simone de Beauvoir",
+    "category": "Philosophy",
+    "difficulty": 72
+  },
+  {
+    "id": "lVyF5hpSTd8jGc6Y2bkWb",
+    "text": "In the depth of winter, I finally learned that within me there lay an invincible summer.",
+    "author": "Albert Camus",
+    "category": "Philosophy",
+    "difficulty": 81
+  },
+  {
+    "id": "r3xJdOeG0_rXE3D4DvK4o",
+    "text": "The only freedom which deserves the name is that of pursuing our own good in our own way.",
+    "author": "John Stuart Mill",
+    "category": "Philosophy",
+    "difficulty": 73
+  },
+  {
+    "id": "ueoZLZzIt4KADBwjHtlnY",
+    "text": "All of humanity problems stem from our inability to sit quietly in a room alone.",
+    "author": "Blaise Pascal",
+    "category": "Philosophy",
+    "difficulty": 82
+  },
+  {
+    "id": "AnjZS74ul98-sjZJn5HJc",
+    "text": "Act only according to that principle which you could will to be a universal law.",
+    "author": "Immanuel Kant",
+    "category": "Philosophy",
+    "difficulty": 82
+  },
+  {
+    "id": "yOqKf8_s5RDyfJxy9hidE",
+    "text": "I think, therefore I am.",
+    "author": "Rene Descartes",
+    "category": "Philosophy",
+    "difficulty": 51
+  },
+  {
+    "id": "TD-yUomB7SXWLe2Ka2yWf",
+    "text": "We suffer more often in imagination than in reality.",
+    "author": "Seneca",
+    "category": "Philosophy",
+    "difficulty": 68
+  },
+  {
+    "id": "YgNJE7ocO8HA9qn67sIaT",
+    "text": "You have power over your mind, not outside events. Realize this, and you will find strength.",
+    "author": "Marcus Aurelius",
+    "category": "Philosophy",
+    "difficulty": 84
+  },
+  {
+    "id": "y9NnSRYXmhGoVHM_h9hp0",
+    "text": "No man is free who is not master of himself.",
+    "author": "Epictetus",
+    "category": "Philosophy",
+    "difficulty": 68
+  },
+  {
+    "id": "_-pkTUtCdfUaaluDIXQzZ",
+    "text": "Life can only be understood backwards, but it must be lived forwards.",
+    "author": "Soren Kierkegaard",
+    "category": "Philosophy",
+    "difficulty": 80
+  },
+  {
+    "id": "XnK2OPCpUWtfFeVZuG1EM",
+    "text": "Man is condemned to be free, because once thrown into the world, he is responsible for everything he does.",
+    "author": "Jean-Paul Sartre",
+    "category": "Philosophy",
+    "difficulty": 73
+  },
+  {
+    "id": "K1GRrsqv7Nd3kaFxyDLM0",
+    "text": "Judge a man by his questions rather than by his answers.",
+    "author": "Voltaire",
+    "category": "Philosophy",
+    "difficulty": 67
+  },
+  {
+    "id": "-pfAA_VmWuivc06tJkVDn",
+    "text": "Wise men speak because they have something to say; fools because they have to say something.",
+    "author": "Plato",
+    "category": "Philosophy",
+    "difficulty": 64
   }
 ]
