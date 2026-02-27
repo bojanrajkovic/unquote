@@ -13,6 +13,9 @@ linters:
   settings:
     errcheck:
       check-type-assertions: true
+    gosec:
+      excludes:
+        - G704 # SSRF taint analysis — not applicable to CLI apps
     gocyclo:
       min-complexity: 15
     govet:
