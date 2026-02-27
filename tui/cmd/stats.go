@@ -84,10 +84,10 @@ func renderStatsOutput(stats *api.PlayerStatsResponse) string {
 	}
 
 	for _, r := range rows {
-		b.WriteString(fmt.Sprintf("  %s  %s\n",
+		fmt.Fprintf(&b, "  %s  %s\n",
 			labelStyle.Width(16).Render(r.label),
 			valueStyle.Render(r.value),
-		))
+		)
 	}
 
 	// Solve-time graph (last 30 days)
