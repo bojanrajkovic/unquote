@@ -31,7 +31,7 @@ pre-commit:
 
     # Web checks (TypeScript/Svelte)
     web-fmt:
-      glob: "web/**/*.{ts,svelte,css}"
+      glob: "web/**/*.{ts,svelte,css,html}"
       run: mise run //web:fmt
       stage_fixed: true
 
