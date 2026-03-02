@@ -1,6 +1,23 @@
 // Inline conventional commits configuration
 // (avoids needing @commitlint/config-conventional as a dependency)
 export default {
+  plugins: [
+    {
+      rules: {
+        // Built-in subject-case only supports whole-string casing (lower-case,
+        // sentence-case, etc.). This custom rule enforces just the first
+        // character so identifiers like getStats stay natural.
+        'subject-first-char-case': ({ subject }) => {
+          if (!subject) return [true];
+          const first = subject[0];
+          return [
+            first === first.toLowerCase(),
+            'subject must start with a lowercase letter',
+          ];
+        },
+      },
+    },
+  ],
   rules: {
     // Type must be one of the allowed values
     'type-enum': [
@@ -16,7 +33,7 @@ export default {
 
     // Subject rules
     'subject-empty': [2, 'never'],
-    'subject-case': [2, 'always', 'lower-case'],
+    'subject-first-char-case': [2, 'always'],
     'subject-full-stop': [2, 'never', '.'],
 
     // Header rules
