@@ -1,4 +1,4 @@
-import { and, eq, sql, asc } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { DateTime } from "luxon";
 import { players, gameSessions } from "./schema.js";
@@ -6,6 +6,8 @@ import { generateClaimCode } from "./claim-code.js";
 import type { PlayerStats } from "./types.js";
 import { PlayerNotFoundError } from "./types.js";
 import { decodeGameId } from "../game/game-id.js";
+
+type SessionRow = { gameId: string; completionTime: number; solvedAt: Date };
 
 /**
  * Calculate current and best consecutive-day streaks from an array of UTC date strings.
@@ -159,46 +161,46 @@ export class PgPlayerStore {
    * Returns null if the claim code does not match any player.
    */
   async getStats(claimCode: string): Promise<PlayerStats | null> {
-    const player = await this.db
-      .select({ id: players.id })
-      .from(players)
-      .where(eq(players.claimCode, claimCode))
-      .limit(1);
-
-    const found = player[0];
-    if (!found) {
-      return null;
-    }
-
-    const playerId = found.id;
-
-    // Aggregate stats
-    const [stats] = await this.db
-      .select({
-        gamesPlayed: sql<number>`cast(count(*) as int)`,
-        bestTime: sql<number | null>`min(${gameSessions.completionTime})`,
-        averageTime: sql<number | null>`avg(${gameSessions.completionTime})`,
-      })
-      .from(gameSessions)
-      .where(eq(gameSessions.playerId, playerId));
-
-    const gamesPlayed = stats?.gamesPlayed ?? 0;
-    const gamesSolved = gamesPlayed; // All recorded sessions are solves
-    const winRate = gamesPlayed > 0 ? gamesSolved / gamesPlayed : 0;
-    const bestTime = stats?.bestTime ?? null;
-    const averageTime =
-      stats?.averageTime !== null && stats?.averageTime !== undefined ? Math.round(Number(stats.averageTime)) : null;
-
-    // Recent solves — derive puzzle date from game ID (not solvedAt, which may
-    // reflect when the session was recorded rather than the puzzle's live date).
-    const allSessions = await this.db
+    // Single query: LEFT JOIN so we can distinguish "player not found" (0 rows)
+    // from "player exists, no sessions" (1 row with null session columns).
+    const rows = await this.db
       .select({
         gameId: gameSessions.gameId,
         completionTime: gameSessions.completionTime,
+        solvedAt: gameSessions.solvedAt,
       })
-      .from(gameSessions)
-      .where(eq(gameSessions.playerId, playerId));
+      .from(players)
+      .leftJoin(gameSessions, eq(gameSessions.playerId, players.id))
+      .where(eq(players.claimCode, claimCode));
 
+    if (rows.length === 0) {
+      return null;
+    }
+
+    // Filter out the null-session row from a player with no games
+    const allSessions = rows.filter((r): r is SessionRow => r.gameId !== null);
+
+    const gamesPlayed = allSessions.length;
+    const gamesSolved = gamesPlayed; // All recorded sessions are solves
+    const winRate = gamesPlayed > 0 ? gamesSolved / gamesPlayed : 0;
+
+    let bestTime: number | null = null;
+    let averageTime: number | null = null;
+    if (gamesPlayed > 0) {
+      let sum = 0;
+      let min = Infinity;
+      for (const s of allSessions) {
+        sum += s.completionTime;
+        if (s.completionTime < min) {
+          min = s.completionTime;
+        }
+      }
+      bestTime = min;
+      averageTime = Math.round(sum / gamesPlayed);
+    }
+
+    // Recent solves — derive puzzle date from game ID (not solvedAt, which may
+    // reflect when the session was recorded rather than the puzzle's live date).
     const thirtyDaysAgo = DateTime.utc().minus({ days: 30 }).toISODate() ?? "";
     const recentSolves = allSessions
       .map((s) => {
@@ -209,17 +211,10 @@ export class PgPlayerStore {
       .filter((s): s is { date: string; completionTime: number } => s !== null && s.date >= thirtyDaysAgo)
       .toSorted((a, b) => a.date.localeCompare(b.date));
 
-    // Streak calculation from all distinct solve dates (group by date to deduplicate)
-    const solveDates = await this.db
-      .select({
-        date: sql<string>`${gameSessions.solvedAt}::date::text`,
-      })
-      .from(gameSessions)
-      .where(eq(gameSessions.playerId, playerId))
-      .groupBy(sql`${gameSessions.solvedAt}::date`)
-      .orderBy(asc(sql`${gameSessions.solvedAt}::date`));
-
-    const { currentStreak, bestStreak } = calculateStreaks(solveDates.map((r) => r.date));
+    // Streak calculation from distinct solve dates
+    const solveDateSet = new Set(allSessions.map((s) => DateTime.fromJSDate(s.solvedAt, { zone: "utc" }).toISODate()));
+    const solveDates = [...solveDateSet].filter((d): d is string => d !== null).toSorted();
+    const { currentStreak, bestStreak } = calculateStreaks(solveDates);
 
     return {
       gamesPlayed,
