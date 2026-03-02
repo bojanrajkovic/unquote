@@ -163,12 +163,13 @@
   <title>Unquote — Stats</title>
 </svelte:head>
 
-<div class="stats-screen">
+<main class="stats-screen">
   <header class="compact-header">
-    <span class="compact-logo">Unquote</span>
+    <a href="/" class="compact-logo">Unquote</a>
     <nav class="header-nav">
+      <span class="btn-nav-current">Stats</span>
       <a href="/faq" class="btn-nav">FAQ</a>
-      <a href="/game" class="btn-back">← Today's Puzzle</a>
+      <a href="/game" class="btn-back">← Puzzle</a>
     </nav>
   </header>
 
@@ -187,7 +188,7 @@
     {:else}
       <!-- Stats heading: title + inline claim code — AC1.7 -->
       <div class="stats-heading">
-        <span class="stats-title">Your Statistics</span>
+        <span class="stats-title">Your statistics</span>
         <span class="stats-claim-code">{identity.claimCode ?? ""}</span>
       </div>
 
@@ -354,7 +355,7 @@
       </div>
     {/if}
   </div>
-</div>
+</main>
 
 <style>
   .stats-screen {
@@ -428,6 +429,7 @@
     font-weight: 700;
     color: var(--color-gold);
     line-height: 1;
+    font-variant-numeric: tabular-nums;
   }
 
   .stat-label {
@@ -511,6 +513,7 @@
     font-size: 0.85rem;
     font-weight: 700;
     color: var(--color-text-primary);
+    font-variant-numeric: tabular-nums;
   }
 
   .stat-kv-val.highlight {
@@ -558,7 +561,9 @@
       color 0.15s;
   }
   .register-cta:hover {
-    background: var(--color-gold);
-    color: var(--color-surface);
+    background: var(--color-gold-glow);
+    border-color: var(--color-gold);
+    box-shadow: 0 0 22px rgba(212, 161, 64, 0.18);
+    color: var(--color-gold-bright);
   }
 </style>

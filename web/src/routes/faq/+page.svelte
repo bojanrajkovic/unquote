@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { identity } from "$lib/state/identity.svelte.js";
 
   // ── FAQ data ────────────────────────────────────────────────────────────
 
@@ -228,10 +229,16 @@
   <title>Unquote — FAQ</title>
 </svelte:head>
 
-<div class="faq-screen">
+<main class="faq-screen">
   <header class="compact-header">
-    <span class="compact-logo">Unquote</span>
-    <a href="/game" class="btn-back">← Today's Puzzle</a>
+    <a href="/" class="compact-logo">Unquote</a>
+    <nav class="header-nav">
+      <span class="btn-nav-current">FAQ</span>
+      {#if identity.claimCode}
+        <a href="/stats" class="btn-nav">Stats</a>
+      {/if}
+      <a href="/game" class="btn-back">← Puzzle</a>
+    </nav>
   </header>
 
   <div class="faq-body">
@@ -278,7 +285,7 @@
       </div>
     {/each}
   </div>
-</div>
+</main>
 
 <style>
   .faq-screen {
