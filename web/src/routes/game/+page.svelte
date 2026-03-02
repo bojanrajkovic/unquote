@@ -18,6 +18,27 @@
     kind: "warning" | "error" | "loading";
   } | null = $state(null);
 
+  // ── Crossfade state ─────────────────────────────────────────────────
+  // Drives pure CSS opacity transitions instead of Svelte's in:/out: directives,
+  // which can't reliably overlap two {#if} blocks for a simultaneous crossfade.
+  // If the puzzle is already loaded (e.g. returning from FAQ), skip the crossfade.
+  let puzzleReady = $state(!!game.puzzle);
+  let skeletonRemoved = $state(!!game.puzzle);
+
+  $effect(() => {
+    if (game.puzzle && !puzzleReady) {
+      // Puzzle just loaded. Wait one frame for the DOM to paint,
+      // then flip the opacity classes so both layers crossfade.
+      requestAnimationFrame(() => {
+        puzzleReady = true;
+        // After the CSS transition completes, remove skeleton from DOM.
+        setTimeout(() => {
+          skeletonRemoved = true;
+        }, 600);
+      });
+    }
+  });
+
   // ── Derived: word groups for puzzle grid (groups cells by word, splitting on spaces) ──
   const wordGroups = $derived(
     game.cells
@@ -277,192 +298,268 @@
     <p class="error-msg">{game.errorMessage ?? "Failed to load puzzle."}</p>
     <a href="/" class="btn-back-link">← Back</a>
   </main>
-{:else if !game.puzzle}
-  <!-- Loading state -->
-  <main class="screen-center">
-    <p class="loading-msg">Loading puzzle…</p>
-  </main>
 {:else}
-  <!-- svelte-ignore a11y_click_events_have_key_events -->
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="game-wrap" onclick={focusKb}>
-    <!-- Header -->
-    <header class="compact-header">
-      <span class="compact-logo">Unquote</span>
-      <nav class="header-nav">
-        <a href="/faq" class="btn-nav">FAQ</a>
-        {#if identity.claimCode}
-          <a href="/stats" class="btn-nav">Stats →</a>
-        {/if}
-      </nav>
-    </header>
-
-    <div class="game-inner">
-      <!-- Meta bar: date · difficulty · timer -->
-      <div class="game-meta-bar">
-        <span id="game-date"
-          >{game.puzzle ? fmtDate(game.puzzle.date) : ""}</span
-        >
-        <span class="meta-sep">·</span>
-        {#if game.puzzle}
-          {@const [label, cls] = diffInfo(game.puzzle.difficulty)}
-          <span class="badge badge-{cls}">{label}</span>
-        {/if}
-        <span class="meta-sep">·</span>
-        <span class="timer">
-          {game.status === "solved" && game.completionTime !== null
-            ? formatTimer(game.completionTime)
-            : timerDisplay}
-        </span>
-      </div>
-
-      <!-- Clues + progress: hidden after solve -->
-      {#if !revealComplete}
-        <div style="padding: 0.4rem 0 0" out:fade={{ duration: 400 }}>
-          <hr class="rule" />
-          <div class="game-clues">
-            <span class="clues-label">Clues</span>
-            <div class="clue-chips">
-              {#each game.puzzle.hints as hint}
-                <span class="clue-chip"
-                  >{hint.cipherLetter} = {hint.plainLetter}</span
-                >
-              {/each}
+  <div class="game-crossfade">
+    {#if !skeletonRemoved}
+      <!-- Loading skeleton — fades out via CSS transition when puzzleReady flips -->
+      <main class="game-wrap crossfade-layer" class:crossfade-out={puzzleReady}>
+        <header class="compact-header">
+          <a href="/" class="compact-logo">Unquote</a>
+        </header>
+        <div class="game-inner">
+          <div class="game-meta-bar">
+            <span class="skel skel-text" style="width: 5rem"></span>
+            <span class="meta-sep">·</span>
+            <span class="skel skel-badge"></span>
+            <span class="meta-sep">·</span>
+            <span class="skel skel-text" style="width: 3rem"></span>
+          </div>
+          <div style="padding: 0.4rem 0 0">
+            <hr class="rule" />
+            <div class="game-clues" style="min-height: 2.2rem">
+              <span class="skel skel-text" style="width: 3rem"></span>
+              <span class="skel skel-chip"></span>
+              <span class="skel skel-chip"></span>
+            </div>
+            <hr class="rule" />
+            <div class="progress-track">
+              <div class="progress-fill" style="width: 0%"></div>
             </div>
           </div>
-          <hr class="rule" />
-          <div class="progress-track">
-            <div
-              class="progress-fill"
-              style="width: {(game.progress * 100).toFixed(1)}%"
-            ></div>
+          <div class="skel-grid">
+            {#each [5, 3, 7, 4, 6, 2, 5, 8, 3] as wordLen}
+              <div class="skel-word">
+                {#each Array(wordLen) as _}
+                  <div class="skel-cell">
+                    <div class="skel skel-cell-input"></div>
+                    <div class="skel skel-cell-cipher"></div>
+                  </div>
+                {/each}
+              </div>
+            {/each}
           </div>
+          <div class="skel skel-author"></div>
         </div>
-      {/if}
+      </main>
+    {/if}
 
-      {#if !revealComplete}
-        <!-- Puzzle grid (AC2.1–2.17) -->
-        <div
-          class="puzzle-grid"
-          class:game-solved={game.status === "solved"}
-          role="application"
-          aria-label="Cryptogram puzzle"
-          out:fade={{ duration: 400 }}
-        >
-          {#each wordGroups as word}
-            <div class="puzzle-word" role="group">
-              {#each word as cell (cell.index)}
-                {#if cell.kind === "punctuation"}
-                  <div class="cell punctuation" aria-hidden="true">
-                    {cell.char}
-                  </div>
-                {:else if cell.kind === "hint"}
-                  <div class="cell hint">
-                    <div class="cell-input">{cell.plainLetter}</div>
-                    <div class="cell-cipher">{cell.cipherLetter}</div>
-                  </div>
-                {:else if cell.kind === "letter"}
-                  <button
-                    class="cell letter"
-                    class:active={cell.editIndex === game.cursorEditIdx}
-                    class:related={cell.cipherLetter === activeCipherLetter &&
-                      cell.editIndex !== game.cursorEditIdx}
-                    class:conflict={game.conflicts.has(cell.cipherLetter)}
-                    class:correct={game.status === "solved"}
-                    style="--edit-idx: {cell.editIndex}"
-                    tabindex="0"
-                    onclick={() => handleCellClick(cell.editIndex)}
-                    onkeydown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        handleCellClick(cell.editIndex);
-                      }
-                    }}
-                    aria-label="Cipher {cell.cipherLetter}, guess: {cell.guess ??
-                      'empty'}"
-                  >
-                    <div class="cell-input">{cell.guess ?? "·"}</div>
-                    <div class="cell-cipher">{cell.cipherLetter}</div>
-                  </button>
-                {/if}
-              {/each}
+    {#if game.puzzle}
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <div
+        class="game-wrap crossfade-layer puzzle-layer"
+        class:crossfade-in={puzzleReady}
+        ontransitionend={(e) => {
+          if (e.propertyName === "opacity" && puzzleReady) {
+            if (game.status === "playing" && !game.solvedElsewhere) {
+              game.startTime = Date.now();
+            }
+          }
+        }}
+        onclick={focusKb}
+      >
+        <!-- Header -->
+        <header class="compact-header">
+          <a href="/" class="compact-logo">Unquote</a>
+          <nav class="header-nav">
+            <span class="btn-nav-current">Puzzle</span>
+            <a href="/faq" class="btn-nav">FAQ</a>
+            {#if identity.claimCode}
+              <a href="/stats" class="btn-nav">Stats →</a>
+            {/if}
+          </nav>
+        </header>
+
+        <div class="game-inner">
+          <!-- Meta bar: date · difficulty · timer -->
+          <div class="game-meta-bar">
+            <span id="game-date"
+              >{game.puzzle ? fmtDate(game.puzzle.date) : ""}</span
+            >
+            <span class="meta-sep">·</span>
+            {#if game.puzzle}
+              {@const [label, cls] = diffInfo(game.puzzle.difficulty)}
+              <span class="badge badge-{cls}">{label}</span>
+            {/if}
+            <span class="meta-sep">·</span>
+            <span class="timer">
+              {game.status === "solved" && game.completionTime !== null
+                ? formatTimer(game.completionTime)
+                : timerDisplay}
+            </span>
+          </div>
+
+          <!-- Clues + progress: hidden after solve -->
+          {#if !revealComplete}
+            <div style="padding: 0.4rem 0 0" out:fade={{ duration: 400 }}>
+              <hr class="rule" />
+              <div class="game-clues">
+                <span class="clues-label">Clues</span>
+                <div class="clue-chips">
+                  {#each game.puzzle.hints as hint}
+                    <span class="clue-chip"
+                      >{hint.cipherLetter} = {hint.plainLetter}</span
+                    >
+                  {/each}
+                </div>
+              </div>
+              <hr class="rule" />
+              <div class="progress-track">
+                <div
+                  class="progress-fill"
+                  style="width: {(game.progress * 100).toFixed(1)}%"
+                ></div>
+              </div>
             </div>
-          {/each}
-        </div>
-
-        <!-- Attribution -->
-        <div class="puzzle-author" class:hidden={game.status === "solved"}>
-          — {game.puzzle.author}
-        </div>
-      {/if}
-
-      {#if !revealComplete}
-        <div class="ornament-rule"><span>✦ · ✦ · ✦</span></div>
-      {/if}
-
-      <!-- Solved card (AC2.11, cross-client-sync.AC2.1) -->
-      {#if solvedCardVisible}
-        <div
-          class="solved-card"
-          class:solved-elsewhere={game.solvedElsewhere}
-          aria-live="polite"
-          aria-atomic="true"
-          in:fade={{ duration: 500, delay: game.solvedElsewhere ? 0 : 300 }}
-        >
-          {#if game.solvedElsewhere}
-            <div class="solved-eyebrow">✦ Already Solved ✦</div>
-            <p class="solved-elsewhere-msg">Solved on another device</p>
-          {:else}
-            <div class="solved-eyebrow">✦ Decoded ✦</div>
-            <blockquote class="solved-quote">
-              "{assembleSolution(game.cells)}"
-            </blockquote>
-            <div class="solved-attribution">— {game.puzzle.author}</div>
           {/if}
-          <div class="solved-stats">
-            <div class="stat-group">
-              <span class="stat-value">
-                {game.completionTime !== null
-                  ? formatTimer(game.completionTime)
-                  : "—"}
-              </span>
-              <span class="stat-label">Time</span>
+
+          {#if !revealComplete}
+            <!-- Puzzle grid (AC2.1–2.17) -->
+            <div
+              class="puzzle-grid"
+              class:game-solved={game.status === "solved"}
+              role="application"
+              aria-label="Cryptogram puzzle"
+              out:fade={{ duration: 400 }}
+            >
+              {#each wordGroups as word}
+                <div class="puzzle-word" role="group">
+                  {#each word as cell (cell.index)}
+                    {#if cell.kind === "punctuation"}
+                      <div class="cell punctuation" aria-hidden="true">
+                        {cell.char}
+                      </div>
+                    {:else if cell.kind === "hint"}
+                      <div class="cell hint">
+                        <div class="cell-input">{cell.plainLetter}</div>
+                        <div class="cell-cipher">{cell.cipherLetter}</div>
+                      </div>
+                    {:else if cell.kind === "letter"}
+                      <button
+                        class="cell letter"
+                        class:active={cell.editIndex === game.cursorEditIdx}
+                        class:related={cell.cipherLetter ===
+                          activeCipherLetter &&
+                          cell.editIndex !== game.cursorEditIdx}
+                        class:conflict={game.conflicts.has(cell.cipherLetter)}
+                        class:correct={game.status === "solved"}
+                        style="--edit-idx: {cell.editIndex}"
+                        tabindex="0"
+                        onclick={() => handleCellClick(cell.editIndex)}
+                        onkeydown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            handleCellClick(cell.editIndex);
+                          }
+                        }}
+                        aria-label="Cipher {cell.cipherLetter}, guess: {cell.guess ??
+                          'empty'}"
+                      >
+                        <div class="cell-input">{cell.guess ?? "·"}</div>
+                        <div class="cell-cipher">{cell.cipherLetter}</div>
+                      </button>
+                    {/if}
+                  {/each}
+                </div>
+              {/each}
             </div>
-          </div>
-        </div>
-      {/if}
 
-      <!-- Status messages (AC2.12, AC2.13, AC2.14) -->
-      {#if statusMessage && !revealComplete}
-        <div class="game-status {statusMessage.kind}" aria-live="polite">
-          {statusMessage.text}
-        </div>
-      {/if}
+            <!-- Attribution -->
+            <div class="puzzle-author" class:hidden={game.status === "solved"}>
+              — {game.puzzle.author}
+            </div>
+          {/if}
 
-      <!-- Submit button + keyboard hints: hidden once solved -->
-      {#if !revealComplete}
-        <div class="game-actions">
-          <button
-            class="btn-primary"
-            onclick={submitSolution}
-            disabled={submitting || game.status !== "playing"}
-          >
-            {game.status === "solved" ? "Decoded ✓" : "Check Answer"}
-          </button>
-          <div class="keyboard-hints" aria-hidden="true">
-            <span><kbd>↵</kbd> submit</span>
-            <span><kbd>⌫</kbd> delete</span>
-            <span><kbd>←</kbd><kbd>→</kbd> navigate</span>
-            <span><kbd>Ctrl+C</kbd> clear</span>
-          </div>
+          {#if !revealComplete}
+            <div class="ornament-rule"><span>✦ · ✦ · ✦</span></div>
+          {/if}
+
+          <!-- Solved card (AC2.11, cross-client-sync.AC2.1) -->
+          {#if solvedCardVisible}
+            <div
+              class="solved-card"
+              class:solved-elsewhere={game.solvedElsewhere}
+              aria-live="polite"
+              aria-atomic="true"
+              in:fade={{ duration: 500, delay: game.solvedElsewhere ? 0 : 300 }}
+            >
+              {#if game.solvedElsewhere}
+                <div class="solved-eyebrow">✦ Already Solved ✦</div>
+                <p class="solved-elsewhere-msg">Solved on another device</p>
+              {:else}
+                <div class="solved-eyebrow">✦ Decoded ✦</div>
+                <blockquote class="solved-quote">
+                  "{assembleSolution(game.cells)}"
+                </blockquote>
+                <div class="solved-attribution">— {game.puzzle.author}</div>
+              {/if}
+              <div class="solved-stats">
+                <div class="stat-group">
+                  <span class="stat-value">
+                    {game.completionTime !== null
+                      ? formatTimer(game.completionTime)
+                      : "—"}
+                  </span>
+                  <span class="stat-label">Time</span>
+                </div>
+              </div>
+            </div>
+          {/if}
+
+          <!-- Status messages (AC2.12, AC2.13, AC2.14) -->
+          {#if statusMessage && !revealComplete}
+            <div class="game-status {statusMessage.kind}" aria-live="polite">
+              {statusMessage.text}
+            </div>
+          {/if}
+
+          <!-- Submit button + keyboard hints: hidden once solved -->
+          {#if !revealComplete}
+            <div class="game-actions">
+              <button
+                class="btn-primary"
+                onclick={submitSolution}
+                disabled={submitting || game.status !== "playing"}
+              >
+                {game.status === "solved" ? "Decoded ✓" : "Check Answer"}
+              </button>
+              <div class="keyboard-hints" aria-hidden="true">
+                <span><kbd>↵</kbd> submit</span>
+                <span><kbd>⌫</kbd> delete</span>
+                <span><kbd>←</kbd><kbd>→</kbd> navigate</span>
+                <span><kbd>Ctrl+C</kbd> clear</span>
+              </div>
+            </div>
+          {/if}
         </div>
-      {/if}
-    </div>
+      </div>
+    {/if}
   </div>
 {/if}
 
 <style>
   /* ── Layout ───────────────────────────────────────────────────── */
+
+  .game-crossfade {
+    display: grid;
+    min-height: 100dvh;
+  }
+
+  .crossfade-layer {
+    grid-area: 1 / 1;
+    transition: opacity 500ms ease;
+  }
+
+  .crossfade-out {
+    opacity: 0;
+  }
+
+  .puzzle-layer {
+    opacity: 0;
+  }
+  .puzzle-layer.crossfade-in {
+    opacity: 1;
+  }
 
   .game-wrap {
     display: flex;
@@ -525,6 +622,7 @@
     font-family: var(--font-mono);
     font-size: 0.77rem;
     letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
   }
 
   /* ── Clues + progress ─────────────────────────────────────────── */
@@ -801,6 +899,7 @@
     color: var(--color-text-primary);
     max-width: 500px;
     margin: 0;
+    text-wrap: pretty;
   }
 
   .solved-attribution {
@@ -826,6 +925,7 @@
     font-size: 1.3rem;
     font-weight: 700;
     color: var(--color-green);
+    font-variant-numeric: tabular-nums;
   }
 
   .stat-label {
@@ -920,5 +1020,84 @@
     color: var(--color-gold);
     text-decoration: none;
     font-size: 0.82rem;
+  }
+
+  /* ── Skeleton loader ───────────────────────────────────────── */
+
+  @keyframes shimmer {
+    0% {
+      opacity: 0.04;
+    }
+    50% {
+      opacity: 0.09;
+    }
+    100% {
+      opacity: 0.04;
+    }
+  }
+
+  .skel {
+    background: var(--color-text-primary);
+    opacity: 0.06;
+    border-radius: 2px;
+    animation: shimmer 1.8s ease-in-out infinite;
+  }
+
+  .skel-text {
+    display: inline-block;
+    height: 0.7rem;
+  }
+
+  .skel-badge {
+    display: inline-block;
+    width: 3.2rem;
+    height: 1.1rem;
+    border-radius: 2px;
+  }
+
+  .skel-chip {
+    display: inline-block;
+    width: 3.5rem;
+    height: 1.4rem;
+    border-radius: 2px;
+  }
+
+  .skel-grid {
+    padding: 1.4rem 0 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 28px;
+    row-gap: 2.2rem;
+  }
+
+  .skel-word {
+    display: flex;
+    gap: 4px;
+  }
+
+  .skel-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 30px;
+    gap: 5px;
+  }
+
+  .skel-cell-input {
+    width: 30px;
+    height: 36px;
+  }
+
+  .skel-cell-cipher {
+    width: 14px;
+    height: 10px;
+  }
+
+  .skel-author {
+    width: 8rem;
+    height: 0.85rem;
+    margin-left: auto;
+    margin-top: 1rem;
+    margin-bottom: 1.5rem;
   }
 </style>

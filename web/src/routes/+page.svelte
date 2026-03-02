@@ -207,8 +207,7 @@
   <!-- ── Choose ── -->
 {:else if step === "choose"}
   <div
-    class="screen"
-    style="padding-bottom: 3rem"
+    class="screen screen-padded"
     in:fly={{ y: 8, duration: TRANSITION_MS, delay: TRANSITION_MS }}
     out:fly={{ y: -8, duration: TRANSITION_MS }}
   >
@@ -401,7 +400,7 @@
         </p>
       </div>
 
-      <div class="ticket ticket-gold" style="padding: 2rem 2.5rem 1.5rem">
+      <div class="ticket ticket-gold ticket-input">
         <p class="ticket-label">Claim Code</p>
         <input
           type="text"
@@ -423,11 +422,7 @@
           Your claim code looks like <strong>AMBER-HAWK-7842</strong>.<br />
           You received it when you registered from the TUI or web.
         </p>
-        <button
-          class="btn-copy"
-          style="background:transparent;border-color:var(--color-gold-mid);color:var(--color-gold);margin-top:1rem;"
-          onclick={submitCode}
-        >
+        <button class="btn-copy btn-link-account" onclick={submitCode}>
           Link Account →
         </button>
       </div>
@@ -502,6 +497,7 @@
     margin-top: 1.4rem;
     line-height: 1.6;
     max-width: 380px;
+    text-wrap: balance;
   }
 
   /* Demo cells */
@@ -916,5 +912,20 @@
     color: var(--color-red);
     min-height: 1.2rem;
     text-align: center;
+  }
+
+  .screen-padded {
+    padding-bottom: 3rem;
+  }
+
+  .ticket-input {
+    padding: 2rem 2.5rem 1.5rem;
+  }
+
+  .btn-link-account {
+    background: transparent;
+    border-color: var(--color-gold-mid);
+    color: var(--color-gold);
+    margin-top: 1rem;
   }
 </style>
