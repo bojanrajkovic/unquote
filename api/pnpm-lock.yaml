@@ -16,6 +16,9 @@ catalogs:
     '@types/luxon':
       specifier: ^3.4.0
       version: 3.7.1
+    '@types/node':
+      specifier: ^24.0.0
+      version: 24.10.15
     '@types/pg':
       specifier: ^8.11.0
       version: 8.16.0
@@ -114,9 +117,6 @@ catalogs:
     ajv-formats:
       specifier: ^3.0.0
       version: 3.0.1
-    awilix:
-      specifier: ^13.0.0
-      version: 13.0.0
     drizzle-orm:
       specifier: ^0.45.0
       version: 0.45.1
@@ -277,7 +277,7 @@ importers:
         version: 3.0.1(patch_hash=5e2c1c896124c3f00a28269fcd286b8e2b62b5d4cfdb7c541d42dfb558017ab8)(ajv@8.18.0)
       awilix:
         specifier: catalog:prod
-        version: 13.0.0
+        version: 13.0.1
       drizzle-orm:
         specifier: catalog:prod
         version: 0.45.1(@electric-sql/pglite@0.3.15)(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(pg@8.18.0)
@@ -1775,9 +1775,9 @@ packages:
   avvio@9.1.0:
     resolution: {integrity: sha512-fYASnYi600CsH/j9EQov7lECAniYiBFiiAtBNuZYLA2leLe9qOvZzqYHFjtIj6gD2VMoMLP14834LFWvr4IfDw==}
 
-  awilix@13.0.0:
-    resolution: {integrity: sha512-kVpYTF+hFM3KD1EeMZvdRBbhY2UufBk1DAony89CeywsNGn8IaofSK4h9rnm8FehnptYk6iY8eVDlRNRHB4vdg==}
-    engines: {node: '>=16.3.0'}
+  awilix@13.0.1:
+    resolution: {integrity: sha512-lxEuCVHbtO7obn1laV/1bdI9L/gjvShjLt14AFuu4Jew+FQ1L+QQHXf0AVTpC0/pNJOD1mPXt4cWtbjSL1nPnw==}
+    engines: {node: '>=20.0.0'}
 
   balanced-match@4.0.4:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
@@ -3736,7 +3736,7 @@ snapshots:
       '@fastify/error': 4.2.0
       fastq: 1.20.1
 
-  awilix@13.0.0:
+  awilix@13.0.1:
     dependencies:
       fast-glob: 3.3.3
 
