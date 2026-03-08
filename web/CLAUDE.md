@@ -1,6 +1,6 @@
 # @unquote/web
 
-Last verified: 2026-02-24
+Last verified: 2026-03-08
 
 SvelteKit 5 static SPA for the Unquote cryptoquip game. Builds to a fully static site (no SSR) deployed to S3/CloudFront.
 
@@ -8,14 +8,16 @@ SvelteKit 5 static SPA for the Unquote cryptoquip game. Builds to a fully static
 
 - **Framework**: SvelteKit 5 with `adapter-static` (fully prerendered, client-side routing)
 - **UI**: Svelte 5 (runes mode: `$state`, `$derived`, `$effect`) + Tailwind CSS v4
-- **Testing**: Vitest with jsdom environment
+- **Testing**: Vitest with jsdom environment; Playwright for E2E screenshot tests
 - **Build**: Vite 7, TypeScript 5.9
 
 ## Commands
 
 - `pnpm run dev` - Start dev server
 - `pnpm run build` - Build static site to `build/`
+- `pnpm run preview` - Preview production build locally
 - `pnpm run test` - Run tests (vitest)
+- `pnpm run test:e2e` - Run E2E tests (Playwright, requires build and preview server)
 - `pnpm run check` - Type checking (svelte-check)
 - `pnpm run format` - Format with Prettier + prettier-plugin-svelte
 
