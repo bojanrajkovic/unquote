@@ -12,5 +12,9 @@ node_modules/
 .env.*
 !.env.example
 
+# Playwright test results and reports
+test-results/
+playwright-report/
+
 # Editor
 .DS_Store

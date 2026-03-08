@@ -54,22 +54,22 @@ test.describe("share card screenshots", () => {
       timeout: 15000,
     });
 
-    // Find the off-screen share card container and make it visible
-    const cardLocator = page.locator('[style*="left: -9999px"]');
+    // Find the off-screen share card container using the wrapper div
+    const cardWrapper = page.locator('div:has(> [data-testid="stats-card"])');
 
     // Check if element exists
-    const elementCount = await cardLocator.count();
+    const elementCount = await cardWrapper.count();
     expect(elementCount).toBeGreaterThan(0);
 
     // Store the text content BEFORE modifying styles
-    const cardText = await cardLocator.first().textContent();
+    const cardText = await cardWrapper.first().textContent();
     expect(cardText).toContain("UNQUOTE");
     expect(cardText).toContain("playunquote.com");
     expect(cardText).toContain("42"); // games played
     expect(cardText).toContain("90%"); // win rate
 
     // Now make it visible by modifying styles
-    await cardLocator.first().evaluate((el) => {
+    await cardWrapper.first().evaluate((el) => {
       (el as HTMLElement).style.position = "static";
       (el as HTMLElement).style.left = "auto";
       (el as HTMLElement).style.top = "auto";
@@ -78,11 +78,15 @@ test.describe("share card screenshots", () => {
     // Wait for fonts to load
     await page.evaluate(() => document.fonts.ready);
 
-    // Add a small delay for rendering to settle
-    await page.waitForTimeout(500);
+    // Wait for one animation frame to allow the browser to lay out the element
+    // after style changes, ensuring the rendered dimensions match expectations
+    await page.evaluate(
+      () => new Promise((resolve) => requestAnimationFrame(resolve)),
+    );
 
-    // Take screenshot of the entire page
-    const screenshot = await page.screenshot({
+    // Take element screenshot of the inner card (card is now visible after style changes)
+    const cardEl = page.locator('[data-testid="stats-card"]');
+    const screenshot = await cardEl.screenshot({
       path: "test-results/stats-share-card.png",
     });
     expect(screenshot).toBeTruthy();
@@ -141,21 +145,21 @@ test.describe("share card screenshots", () => {
     await page.goto("/game");
     await page.waitForSelector(".solved-card", { timeout: 15000 });
 
-    // Find the off-screen share card container
-    const cardLocator = page.locator('[style*="left: -9999px"]');
+    // Find the off-screen share card container using the wrapper div
+    const cardWrapper = page.locator('div:has(> [data-testid="session-card"])');
 
     // Check if element exists
-    const elementCount = await cardLocator.count();
+    const elementCount = await cardWrapper.count();
     expect(elementCount).toBeGreaterThan(0);
 
     // Store the text content BEFORE modifying styles
-    const cardText = await cardLocator.first().textContent();
+    const cardText = await cardWrapper.first().textContent();
     expect(cardText).toContain("UNQUOTE");
     expect(cardText).toContain("playunquote.com");
     expect(cardText).toContain("SOLVED");
 
     // Now make it visible by modifying styles
-    await cardLocator.first().evaluate((el) => {
+    await cardWrapper.first().evaluate((el) => {
       (el as HTMLElement).style.position = "static";
       (el as HTMLElement).style.left = "auto";
       (el as HTMLElement).style.top = "auto";
@@ -164,11 +168,15 @@ test.describe("share card screenshots", () => {
     // Wait for fonts to load
     await page.evaluate(() => document.fonts.ready);
 
-    // Add a small delay for rendering to settle
-    await page.waitForTimeout(500);
+    // Wait for one animation frame to allow the browser to lay out the element
+    // after style changes, ensuring the rendered dimensions match expectations
+    await page.evaluate(
+      () => new Promise((resolve) => requestAnimationFrame(resolve)),
+    );
 
-    // Take screenshot of the entire page
-    const screenshot = await page.screenshot({
+    // Take element screenshot of the inner card (card is now visible after style changes)
+    const cardEl = page.locator('[data-testid="session-card"]');
+    const screenshot = await cardEl.screenshot({
       path: "test-results/session-share-card.png",
     });
     expect(screenshot).toBeTruthy();
