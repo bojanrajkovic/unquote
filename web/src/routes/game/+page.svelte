@@ -21,6 +21,7 @@
     kind: "warning" | "error" | "loading";
   } | null = $state(null);
   let sessionShareFeedback = $state<string | null>(null);
+  // Not reactive — intentional cache for streak API call, reset on page load
   let cachedStreak: number | null = null;
 
   // ── Crossfade state ─────────────────────────────────────────────────

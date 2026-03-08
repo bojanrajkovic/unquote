@@ -1,3 +1,5 @@
+// pattern: Functional Core
+
 import type { Cell } from "../puzzle";
 import type { PlayerStats } from "../api";
 
@@ -11,13 +13,13 @@ function fmtMs(ms: number): string {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-export interface SessionShareData {
+export type SessionShareData = {
   puzzleNumber: string; // e.g. "42" — derived from puzzle date or ID
   solved: boolean;
   completionTime: number | null; // ms
-  cells: Cell[];
+  cells: ReadonlyArray<Cell>;
   currentStreak: number | null; // null for anonymous players
-}
+};
 
 /**
  * Build the Wordle-style letter decode grid from the cell array.
@@ -26,13 +28,13 @@ export interface SessionShareData {
  * (not decoded). Spaces become actual spaces. Punctuation is omitted.
  * Lines wrap at ~30 characters to keep the grid readable in social posts.
  */
-export function buildLetterGrid(cells: Cell[]): string {
+export function buildLetterGrid(cells: ReadonlyArray<Cell>): string {
   const WRAP_AT = 30;
   const GOLD = "\u{1F7E8}"; // yellow/gold square
   const WHITE = "\u2B1C"; // white square
 
   // Build flat array of tokens: emoji for letters/hints, space for spaces, skip punctuation
-  const tokens: string[] = [];
+  const tokens: Array<string> = [];
   for (const cell of cells) {
     switch (cell.kind) {
       case "letter":
@@ -53,7 +55,7 @@ export function buildLetterGrid(cells: Cell[]): string {
   // Join and wrap at word boundaries (~WRAP_AT chars per line)
   // Split on spaces to get "words" (runs of emoji between spaces)
   const words = tokens.join("").split(" ");
-  const lines: string[] = [];
+  const lines: Array<string> = [];
   let currentLine = "";
 
   for (const word of words) {
@@ -123,12 +125,10 @@ export function formatStatsText(stats: PlayerStats): string {
   const played = `\u{1F3AE} ${stats.gamesPlayed} played \u00B7 ${stats.gamesSolved} solved \u00B7 ${pct}%`;
   const streak = `\u{1F525} ${stats.currentStreak}-day streak (best: ${stats.bestStreak})`;
 
-  let times: string;
-  if (stats.bestTime !== null && stats.averageTime !== null) {
-    times = `\u23F1\uFE0F Best ${fmtMs(stats.bestTime)} \u00B7 Avg ${fmtMs(stats.averageTime)}`;
-  } else {
-    times = `\u23F1\uFE0F No solves yet`;
-  }
+  const times =
+    stats.bestTime !== null && stats.averageTime !== null
+      ? `\u23F1\uFE0F Best ${fmtMs(stats.bestTime)} \u00B7 Avg ${fmtMs(stats.averageTime)}`
+      : `\u23F1\uFE0F No solves yet`;
 
   return [
     "UNQUOTE Stats",

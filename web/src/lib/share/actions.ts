@@ -1,3 +1,5 @@
+// pattern: Imperative Shell
+
 const FEEDBACK_DURATION_MS = 2500;
 
 /**

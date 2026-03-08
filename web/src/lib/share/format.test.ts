@@ -8,6 +8,26 @@ import {
 import { buildCells } from "../puzzle";
 import type { Hint, PlayerStats } from "../api";
 
+// ─── Test data factory ────────────────────────────────────────────────────────
+
+/**
+ * Factory helper for creating PlayerStats test data with defaults.
+ */
+function createTestStats(overrides?: Partial<PlayerStats>): PlayerStats {
+  return {
+    claimCode: "ABC123",
+    gamesPlayed: 42,
+    gamesSolved: 38,
+    winRate: 0.905,
+    currentStreak: 12,
+    bestStreak: 18,
+    bestTime: 102000,
+    averageTime: 151000,
+    recentSolves: [],
+    ...overrides,
+  };
+}
+
 // ─── buildLetterGrid ──────────────────────────────────────────────────────────
 
 describe("buildLetterGrid", () => {
@@ -216,17 +236,7 @@ describe("formatSessionText", () => {
 
 describe("formatStatsText", () => {
   it("shareable-stats.AC2.3: includes games played, solved count, and win rate", () => {
-    const stats: PlayerStats = {
-      claimCode: "ABC123",
-      gamesPlayed: 42,
-      gamesSolved: 38,
-      winRate: 0.905,
-      currentStreak: 12,
-      bestStreak: 18,
-      bestTime: 102000,
-      averageTime: 151000,
-      recentSolves: [],
-    };
+    const stats = createTestStats();
     const text = formatStatsText(stats);
     expect(text).toContain("🎮");
     expect(text).toContain("42 played");
@@ -235,17 +245,7 @@ describe("formatStatsText", () => {
   });
 
   it("shareable-stats.AC2.3: includes streak information", () => {
-    const stats: PlayerStats = {
-      claimCode: "ABC123",
-      gamesPlayed: 42,
-      gamesSolved: 38,
-      winRate: 0.905,
-      currentStreak: 12,
-      bestStreak: 18,
-      bestTime: 102000,
-      averageTime: 151000,
-      recentSolves: [],
-    };
+    const stats = createTestStats();
     const text = formatStatsText(stats);
     expect(text).toContain("🔥");
     expect(text).toContain("12-day streak");
@@ -253,17 +253,7 @@ describe("formatStatsText", () => {
   });
 
   it("shareable-stats.AC2.3: includes best and average times", () => {
-    const stats: PlayerStats = {
-      claimCode: "ABC123",
-      gamesPlayed: 42,
-      gamesSolved: 38,
-      winRate: 0.905,
-      currentStreak: 12,
-      bestStreak: 18,
-      bestTime: 102000,
-      averageTime: 151000,
-      recentSolves: [],
-    };
+    const stats = createTestStats();
     const text = formatStatsText(stats);
     expect(text).toContain("⏱️");
     expect(text).toContain("Best 1:42");
@@ -271,8 +261,7 @@ describe("formatStatsText", () => {
   });
 
   it("shareable-stats.AC2.6: handles null bestTime and averageTime gracefully", () => {
-    const stats: PlayerStats = {
-      claimCode: "ABC123",
+    const stats = createTestStats({
       gamesPlayed: 5,
       gamesSolved: 0,
       winRate: 0,
@@ -280,48 +269,26 @@ describe("formatStatsText", () => {
       bestStreak: 0,
       bestTime: null,
       averageTime: null,
-      recentSolves: [],
-    };
+    });
     const text = formatStatsText(stats);
     expect(text).toContain("No solves yet");
     expect(text).toContain("⏱️");
   });
 
   it("includes footer URL", () => {
-    const stats: PlayerStats = {
-      claimCode: "ABC123",
-      gamesPlayed: 42,
-      gamesSolved: 38,
-      winRate: 0.905,
-      currentStreak: 12,
-      bestStreak: 18,
-      bestTime: 102000,
-      averageTime: 151000,
-      recentSolves: [],
-    };
+    const stats = createTestStats();
     const text = formatStatsText(stats);
     expect(text).toContain("playunquote.com");
   });
 
   it("includes UNQUOTE Stats header", () => {
-    const stats: PlayerStats = {
-      claimCode: "ABC123",
-      gamesPlayed: 42,
-      gamesSolved: 38,
-      winRate: 0.905,
-      currentStreak: 12,
-      bestStreak: 18,
-      bestTime: 102000,
-      averageTime: 151000,
-      recentSolves: [],
-    };
+    const stats = createTestStats();
     const text = formatStatsText(stats);
     expect(text).toContain("UNQUOTE Stats");
   });
 
   it("handles win rate rounding correctly", () => {
-    const stats: PlayerStats = {
-      claimCode: "ABC123",
+    const stats = createTestStats({
       gamesPlayed: 100,
       gamesSolved: 95,
       winRate: 0.951, // should round to 95%
@@ -329,8 +296,7 @@ describe("formatStatsText", () => {
       bestStreak: 10,
       bestTime: 100000,
       averageTime: 150000,
-      recentSolves: [],
-    };
+    });
     const text = formatStatsText(stats);
     expect(text).toContain("95%");
   });
