@@ -9,12 +9,16 @@ import (
 
 // Helper to create SessionShareData without field alignment issues
 func newSessionData(puzzleNum string, solved bool, completionMs int64, cells []puzzle.Cell, streak *int) SessionShareData {
+	streakInt := 0
+	if streak != nil {
+		streakInt = *streak
+	}
 	return SessionShareData{
-		Cells:         cells,
-		CompletionMs:  completionMs,
-		PuzzleNumber:  puzzleNum,
-		CurrentStreak: streak,
-		Solved:        solved,
+		Cells:        cells,
+		PuzzleNumber: puzzleNum,
+		CompletionMs: completionMs,
+		Streak:       streakInt,
+		Solved:       solved,
 	}
 }
 

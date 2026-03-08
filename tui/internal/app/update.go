@@ -325,10 +325,9 @@ func (m Model) handleSolvedKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 	case "c":
 		// Build session share data from current model state
-		var streak *int
+		var streak int
 		if m.claimCode != "" && m.stats != nil {
-			s := m.stats.CurrentStreak
-			streak = &s
+			streak = m.stats.CurrentStreak
 		}
 
 		var completionMs int64
@@ -337,11 +336,11 @@ func (m Model) handleSolvedKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 
 		data := share.SessionShareData{
-			Cells:         m.cells,
-			CurrentStreak: streak,
-			PuzzleNumber:  m.puzzle.Date,
-			CompletionMs:  completionMs,
-			Solved:        true,
+			Cells:        m.cells,
+			PuzzleNumber: m.puzzle.Date,
+			CompletionMs: completionMs,
+			Streak:       streak,
+			Solved:       true,
 		}
 
 		text := share.FormatSessionText(data)

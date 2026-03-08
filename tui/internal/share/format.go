@@ -13,11 +13,11 @@ const wrapAt = 30
 
 // SessionShareData holds the data needed to format a session result.
 type SessionShareData struct {
-	Cells         []puzzle.Cell
-	CurrentStreak *int   // nil for anonymous players
-	CompletionMs  int64  // completion time in milliseconds
-	PuzzleNumber  string // e.g. "2026-03-07" — the puzzle date
-	Solved        bool
+	Cells        []puzzle.Cell
+	PuzzleNumber string // e.g. "2026-03-07" — the puzzle date
+	CompletionMs int64  // completion time in milliseconds
+	Streak       int    // current streak, 0 if not available
+	Solved       bool
 }
 
 // fmtMs formats milliseconds as "M:SS" (no leading zero on minutes).
@@ -109,8 +109,8 @@ func FormatSessionText(data SessionShareData) string {
 	var parts []string
 	parts = append(parts, header, "", grid)
 
-	if data.CurrentStreak != nil && *data.CurrentStreak > 0 {
-		parts = append(parts, "", fmt.Sprintf("\U0001F525 %d-day streak", *data.CurrentStreak))
+	if data.Streak > 0 {
+		parts = append(parts, "", fmt.Sprintf("\U0001F525 %d-day streak", data.Streak))
 	}
 
 	parts = append(parts, "", "playunquote.com")
