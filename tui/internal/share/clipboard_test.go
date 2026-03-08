@@ -2,11 +2,12 @@ package share
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 )
 
-// Test CopyToClipboard returns true on success
-func TestCopyToClipboard_Success(t *testing.T) {
+// AC3.3: CopyToClipboard returns true on success when clipboard available
+func TestCopyToClipboard_AC3_3_Success(t *testing.T) {
 	// This test is difficult to fully verify without a real clipboard.
 	// We test that the function executes without error for a supported system.
 	// On systems without clipboard support, this will test the fallback.
@@ -22,14 +23,14 @@ func TestCopyToClipboard_Success(t *testing.T) {
 	// On unsupported systems, text should be written to buffer
 	if result == false {
 		output := buf.String()
-		if !contains(output, text) {
+		if !strings.Contains(output, text) {
 			t.Errorf("expected fallback text in output, got: %q", output)
 		}
 	}
 }
 
-// Test CopyToClipboard writes to output on fallback
-func TestCopyToClipboard_FallbackWritesText(t *testing.T) {
+// AC3.3: CopyToClipboard writes text to output on clipboard unavailable fallback
+func TestCopyToClipboard_AC3_3_FallbackWritesText(t *testing.T) {
 	// This test verifies that when clipboard fails, we still write to the output writer
 	var buf bytes.Buffer
 	text := "Share this text"
@@ -44,7 +45,7 @@ func TestCopyToClipboard_FallbackWritesText(t *testing.T) {
 	}
 }
 
-// Test CopyToClipboard with empty text
+// Test CopyToClipboard with empty text (should handle gracefully)
 func TestCopyToClipboard_EmptyText(_ *testing.T) {
 	var buf bytes.Buffer
 
@@ -54,7 +55,7 @@ func TestCopyToClipboard_EmptyText(_ *testing.T) {
 	_ = result
 }
 
-// Test CopyToClipboard with multiline text
+// Test CopyToClipboard with multiline text (should preserve newlines)
 func TestCopyToClipboard_MultilineText(t *testing.T) {
 	var buf bytes.Buffer
 	text := "Line 1\nLine 2\nLine 3"
@@ -64,7 +65,7 @@ func TestCopyToClipboard_MultilineText(t *testing.T) {
 	// If using fallback, verify multiline text is preserved
 	if !result {
 		output := buf.String()
-		if !contains(output, "Line 1") || !contains(output, "Line 2") {
+		if !strings.Contains(output, "Line 1") || !strings.Contains(output, "Line 2") {
 			t.Errorf("multiline text not preserved in fallback")
 		}
 	}

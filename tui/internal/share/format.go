@@ -13,10 +13,10 @@ const wrapAt = 30
 
 // SessionShareData holds the data needed to format a session result.
 type SessionShareData struct {
-	Cells        []puzzle.Cell
 	PuzzleNumber string // e.g. "2026-03-07" — the puzzle date
-	CompletionMs int64  // completion time in milliseconds
-	Streak       int    // current streak, 0 if not available
+	Cells        []puzzle.Cell
+	CompletionMs int64 // completion time in milliseconds
+	Streak       int   // current streak, 0 if not available
 	Solved       bool
 }
 

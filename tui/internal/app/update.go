@@ -351,7 +351,6 @@ func (m Model) handleSolvedKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		} else {
 			m.shareFeedback = "Printed to stdout"
 		}
-		m.shareFeedbackEnd = time.Now().Add(2500 * time.Millisecond)
 
 		return m, tea.Tick(2500*time.Millisecond, func(_ time.Time) tea.Msg {
 			return clearShareFeedbackMsg{}
