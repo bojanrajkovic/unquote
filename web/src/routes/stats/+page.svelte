@@ -1,5 +1,7 @@
 <script lang="ts">
   import { identity } from "$lib/state/identity.svelte.js";
+  import { formatStatsText } from "$lib/share/format.js";
+  import { copyTextToClipboard, showFeedback } from "$lib/share/actions.js";
   import type { StatsPageData } from "./+page.js";
 
   // Format milliseconds as M:SS (no leading zero on minutes) — e.g. "2:08".
@@ -15,6 +17,15 @@
   }
 
   const { data }: Props = $props();
+
+  let shareFeedback = $state<string | null>(null);
+
+  function shareStats() {
+    if (!data.stats) return;
+    const text = formatStatsText(data.stats);
+    copyTextToClipboard(text);
+    showFeedback((v) => (shareFeedback = v));
+  }
 
   // ── Chart helpers ─────────────────────────────────────────────────────────
 
@@ -190,6 +201,13 @@
       <div class="stats-heading">
         <span class="stats-title">Your statistics</span>
         <span class="stats-claim-code">{identity.claimCode ?? ""}</span>
+        <button
+          class="btn-ghost share-btn"
+          onclick={shareStats}
+          disabled={shareFeedback !== null}
+        >
+          {shareFeedback ?? "Share"}
+        </button>
       </div>
 
       <!-- Primary stat tiles — AC1.7 -->
@@ -382,6 +400,11 @@
     align-items: baseline;
     justify-content: space-between;
     gap: 1rem;
+  }
+
+  .share-btn {
+    margin-left: auto;
+    font-size: 0.8rem;
   }
 
   .stats-title {
