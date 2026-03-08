@@ -1,3 +1,5 @@
+// pattern: Imperative Shell
+
 import { domToBlob } from "modern-screenshot";
 
 const FONT_TIMEOUT_MS = 3000;

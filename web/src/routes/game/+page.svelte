@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, tick } from "svelte";
   import { fade } from "svelte/transition";
   import { game } from "$lib/state/game.svelte.js";
   import { identity } from "$lib/state/identity.svelte.js";
@@ -29,8 +29,10 @@
   } | null = $state(null);
   let sessionShareFeedback = $state<string | null>(null);
   let sessionCardEl: HTMLElement | undefined = $state();
-  // Not reactive — intentional cache for streak API call, reset on page load
-  let cachedStreak: number | null = null;
+  // Reactive cache for streak API call (reset on page load).
+  // Must be reactive so SessionShareCard re-renders when streak is fetched,
+  // ensuring the captured image includes the streak badge.
+  let cachedStreak: number | null = $state(null);
 
   // ── Crossfade state ─────────────────────────────────────────────────
   // Drives pure CSS opacity transitions instead of Svelte's in:/out: directives,
@@ -269,6 +271,9 @@
       try {
         const stats = await getStats(identity.claimCode);
         cachedStreak = stats.currentStreak;
+        // Wait for Svelte to re-render the SessionShareCard with the streak
+        // before capturing, so the image includes the streak badge
+        await tick();
       } catch {
         // Streak unavailable — share without it
       }

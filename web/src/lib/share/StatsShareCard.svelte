@@ -1,17 +1,12 @@
 <script lang="ts">
   import type { PlayerStats } from "../api";
+  import { fmtMs } from "./format.js";
 
   export interface Props {
     stats: PlayerStats;
   }
 
   const { stats }: Props = $props();
-
-  function fmtMs(ms: number): string {
-    const m = Math.floor(ms / 60000);
-    const s = Math.floor((ms % 60000) / 1000);
-    return `${m}:${String(s).padStart(2, "0")}`;
-  }
 
   // Build sparkline points from recentSolves
   const sparklinePoints = $derived.by(() => {
@@ -229,7 +224,3 @@
     playunquote.com
   </div>
 </div>
-
-<style>
-  /* Scoped styles if needed */
-</style>

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { identity } from "$lib/state/identity.svelte.js";
   import StatsShareCard from "$lib/share/StatsShareCard.svelte";
-  import { formatStatsText } from "$lib/share/format.js";
+  import { formatStatsText, fmtMs } from "$lib/share/format.js";
   import { captureElementAsBlob } from "$lib/share/capture.js";
   import {
     copyImageToClipboard,
@@ -10,14 +10,6 @@
     showFeedback,
   } from "$lib/share/actions.js";
   import type { StatsPageData } from "./+page.js";
-
-  // Format milliseconds as M:SS (no leading zero on minutes) — e.g. "2:08".
-  // Distinct from formatTimer() which zero-pads minutes.
-  function fmtMs(ms: number): string {
-    const m = Math.floor(ms / 60000);
-    const s = Math.floor((ms % 60000) / 1000);
-    return `${m}:${String(s).padStart(2, "0")}`;
-  }
 
   interface Props {
     data: StatsPageData;

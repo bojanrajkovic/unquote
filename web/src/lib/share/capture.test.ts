@@ -27,16 +27,16 @@ describe("captureElementAsBlob", () => {
     }
   });
 
-  it("AC1.1: handles capture gracefully in test environment (returns null)", async () => {
+  it("AC1.1: handles missing canvas gracefully in jsdom environment (returns null)", async () => {
     const result = await captureElementAsBlob(mockElement);
-    // In jsdom, canvas is not available, so capture returns null
-    // This verifies error handling works
-    expect(typeof result === "object" || result === null).toBe(true);
+    // In jsdom, canvas is not available, so domToBlob fails and we return null
+    expect(result).toBeNull();
   });
 
-  it("returns null when modern-screenshot fails", async () => {
-    // Verify that errors are caught and null is returned
+  it("AC1.1: error handling path returns null on capture failure", async () => {
+    // Verify that any errors from domToBlob are caught and null is returned.
+    // This test confirms the error-handling contract without mocking domToBlob.
     const result = await captureElementAsBlob(mockElement);
-    expect(result === null || result instanceof Blob).toBe(true);
+    expect(result).toBeNull();
   });
 });

@@ -5,9 +5,9 @@ import type { PlayerStats } from "../api";
 
 /**
  * Format elapsed milliseconds as "M:SS" (no leading zero on minutes).
- * Matches the fmtMs() pattern used in stats/+page.svelte.
+ * E.g. 128000 → "2:08"
  */
-function fmtMs(ms: number): string {
+export function fmtMs(ms: number): string {
   const m = Math.floor(ms / 60000);
   const s = Math.floor((ms % 60000) / 1000);
   return `${m}:${String(s).padStart(2, "0")}`;
