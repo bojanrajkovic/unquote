@@ -1,3 +1,5 @@
+// pattern: Imperative Shell
+
 /**
  * Check if the browser supports writing images to clipboard via ClipboardItem.
  * Returns false if the API is unavailable or restricted.

@@ -97,12 +97,14 @@ func GenerateSessionCard(data SessionShareData) image.Image {
 	}
 	dc.DrawStringAnchored(status, 600, 200, 0.5, 0.5)
 
-	// Time below status (Space Mono Bold, 72pt)
-	face = truetype.NewFace(fontSpaceMonoBold, &truetype.Options{Size: 72})
-	dc.SetFontFace(face)
+	// Time below status (Space Mono Bold, 72pt) — only when solved
+	if data.Solved && data.CompletionMs > 0 {
+		face = truetype.NewFace(fontSpaceMonoBold, &truetype.Options{Size: 72})
+		dc.SetFontFace(face)
 
-	timeStr := fmtMs(data.CompletionMs)
-	dc.DrawStringAnchored(timeStr, 600, 320, 0.5, 0.5)
+		timeStr := fmtMs(data.CompletionMs)
+		dc.DrawStringAnchored(timeStr, 600, 320, 0.5, 0.5)
+	}
 
 	// Bottom-left: Letter grid (small colored rectangles)
 	drawLetterGrid(dc, data.Cells)
@@ -237,9 +239,9 @@ func drawStatsTiles(dc *gg.Context, stats *api.PlayerStatsResponse) {
 		col   int
 	}{
 		{"PLAYED", fmtInt(stats.GamesPlayed), 0, 0},
-		{"SOLVED", fmtInt(stats.GamesSolved), 0, 1},
-		{"WIN RATE", fmtPercent(stats.WinRate), 1, 0},
-		{"STREAK", fmtInt(stats.CurrentStreak), 1, 1},
+		{"WIN RATE", fmtPercent(stats.WinRate), 0, 1},
+		{"CURRENT STREAK", fmtInt(stats.CurrentStreak), 1, 0},
+		{"BEST STREAK", fmtInt(stats.BestStreak), 1, 1},
 	}
 
 	tileWidth := 260.0
