@@ -1,6 +1,7 @@
 <script lang="ts">
   import { identity } from "$lib/state/identity.svelte.js";
   import StatsShareCard from "$lib/share/StatsShareCard.svelte";
+  import ShareMenu from "$lib/share/ShareMenu.svelte";
   import { formatStatsText, fmtMs } from "$lib/share/format.js";
   import { captureElementAsBlob } from "$lib/share/capture.js";
   import {
@@ -8,7 +9,9 @@
     copyTextToClipboard,
     downloadBlob,
     showFeedback,
+    nativeShareImage,
   } from "$lib/share/actions.js";
+  import { canNativeShare } from "$lib/share/detect.js";
   import type { StatsPageData } from "./+page.js";
 
   interface Props {
@@ -20,27 +23,47 @@
   let shareFeedback = $state<string | null>(null);
   let statsCardEl: HTMLElement | undefined = $state();
 
-  async function shareStats() {
-    if (!data.stats) return;
-
-    // Try image clipboard first
-    if (statsCardEl) {
-      const blob = await captureElementAsBlob(statsCardEl);
-      if (blob) {
-        const copied = await copyImageToClipboard(blob);
-        if (!copied) {
-          // Fallback: download PNG
-          downloadBlob(blob, "unquote-stats.png");
-        }
-        showFeedback((v) => (shareFeedback = v));
-        return;
+  async function handleCopyImage() {
+    if (!data.stats || !statsCardEl) return;
+    const blob = await captureElementAsBlob(statsCardEl);
+    if (blob) {
+      const ok = await copyImageToClipboard(blob);
+      if (ok) {
+        showFeedback((v) => (shareFeedback = v ? "Copied!" : null));
+      } else {
+        // AC1.10: fallback to download
+        downloadBlob(blob, "unquote-stats.png");
+        showFeedback((v) => (shareFeedback = v ? "Downloaded!" : null));
       }
     }
+  }
 
-    // Fallback: text clipboard
-    const text = formatStatsText(data.stats);
-    copyTextToClipboard(text);
-    showFeedback((v) => (shareFeedback = v));
+  async function handleCopyText() {
+    if (!data.stats) return;
+    await copyTextToClipboard(formatStatsText(data.stats));
+    showFeedback((v) => (shareFeedback = v ? "Copied!" : null));
+  }
+
+  async function handleDownload() {
+    if (!data.stats || !statsCardEl) return;
+    const blob = await captureElementAsBlob(statsCardEl);
+    if (blob) {
+      downloadBlob(blob, "unquote-stats.png");
+      showFeedback((v) => (shareFeedback = v ? "Downloaded!" : null));
+    }
+  }
+
+  async function handleNativeShare() {
+    if (!data.stats || !statsCardEl) return;
+    const blob = await captureElementAsBlob(statsCardEl);
+    if (blob) {
+      await nativeShareImage(
+        blob,
+        "unquote-stats.png",
+        "UNQUOTE Stats",
+        formatStatsText(data.stats),
+      );
+    }
   }
 
   // ── Chart helpers ─────────────────────────────────────────────────────────
@@ -227,13 +250,13 @@
       <div class="stats-heading">
         <span class="stats-title">Your statistics</span>
         <span class="stats-claim-code">{identity.claimCode ?? ""}</span>
-        <button
-          class="btn-ghost share-btn"
-          onclick={shareStats}
-          disabled={shareFeedback !== null}
-        >
-          {shareFeedback ?? "Share"}
-        </button>
+        <ShareMenu
+          onCopyImage={handleCopyImage}
+          onCopyText={handleCopyText}
+          onDownload={handleDownload}
+          onNativeShare={canNativeShare() ? handleNativeShare : undefined}
+          feedback={shareFeedback}
+        />
       </div>
 
       <!-- Primary stat tiles — AC1.7 -->
@@ -426,11 +449,6 @@
     align-items: baseline;
     justify-content: space-between;
     gap: 1rem;
-  }
-
-  .share-btn {
-    margin-left: auto;
-    font-size: 0.8rem;
   }
 
   .stats-title {

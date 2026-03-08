@@ -1,11 +1,13 @@
 <script lang="ts">
   import { canCopyImage } from "./detect.js";
 
+  type Callback = () => Promise<void> | void;
+
   interface Props {
-    onCopyImage: () => void;
-    onCopyText: () => void;
-    onDownload: () => void;
-    onNativeShare?: () => void;
+    onCopyImage: Callback;
+    onCopyText: Callback;
+    onDownload: Callback;
+    onNativeShare: Callback | undefined;
     feedback: string | null;
   }
 
@@ -19,8 +21,10 @@
 
   let isOpen = $state(false);
 
-  function handleMenuClick(callback: () => void) {
-    callback();
+  function handleMenuClick(callback: (() => Promise<void> | void) | undefined) {
+    if (callback) {
+      callback();
+    }
     isOpen = false;
   }
 
@@ -100,6 +104,7 @@
   .share-menu-wrapper {
     position: relative;
     display: inline-block;
+    margin-left: auto;
   }
 
   .share-btn {
