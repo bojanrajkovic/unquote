@@ -364,3 +364,50 @@ func TestGenerateSessionCard_EmptyCells(t *testing.T) {
 		t.Errorf("expected 1200x628, got %dx%d", bounds.Dx(), bounds.Dy())
 	}
 }
+
+// AC5.2: GenerateStatsCard with single recent solve produces valid PNG (edge case)
+func TestGenerateStatsCard_SingleRecentSolve(t *testing.T) {
+	bestTime := float64(102000) // 1:42
+	avgTime := float64(102000)  // Same as best
+	stats := &api.PlayerStatsResponse{
+		ClaimCode:     "TEST-CODE",
+		GamesPlayed:   1,
+		GamesSolved:   1,
+		WinRate:       1.0,
+		CurrentStreak: 1,
+		BestStreak:    1,
+		BestTime:      &bestTime,
+		AverageTime:   &avgTime,
+		RecentSolves: []api.RecentSolve{
+			{Date: "2026-03-08", CompletionTime: 102000},
+		},
+	}
+
+	img := GenerateStatsCard(stats)
+
+	if img == nil {
+		t.Errorf("GenerateStatsCard returned nil image for single recent solve")
+		return
+	}
+
+	// Encode to PNG to verify it's a valid image
+	var buf bytes.Buffer
+	err := png.Encode(&buf, img)
+	if err != nil {
+		t.Errorf("failed to encode stats card to PNG: %v", err)
+		return
+	}
+
+	// Verify PNG can be decoded back
+	decodedImg, err := png.Decode(bytes.NewReader(buf.Bytes()))
+	if err != nil {
+		t.Errorf("failed to decode PNG: %v", err)
+		return
+	}
+
+	// Verify dimensions are correct (1200x628)
+	bounds := decodedImg.Bounds()
+	if bounds.Dx() != 1200 || bounds.Dy() != 628 {
+		t.Errorf("expected 1200x628, got %dx%d", bounds.Dx(), bounds.Dy())
+	}
+}

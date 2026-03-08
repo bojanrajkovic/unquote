@@ -2,6 +2,7 @@ package share
 
 import (
 	"image"
+	"strconv"
 
 	"github.com/fogleman/gg"
 	"github.com/golang/freetype/truetype"
@@ -22,6 +23,29 @@ const (
 	colorTeal        = "#7dd4e8" // sparkline
 )
 
+// Package-level fonts parsed once at init time to avoid repeated parsing
+var (
+	fontSpaceMonoRegular      *truetype.Font
+	fontSpaceMonoBold         *truetype.Font
+	fontCormorantGaramondSemi *truetype.Font
+)
+
+func init() {
+	var err error
+	fontSpaceMonoRegular, err = truetype.Parse(fonts.SpaceMonoRegular)
+	if err != nil {
+		panic("failed to parse SpaceMonoRegular font: " + err.Error())
+	}
+	fontSpaceMonoBold, err = truetype.Parse(fonts.SpaceMonoBold)
+	if err != nil {
+		panic("failed to parse SpaceMonoBold font: " + err.Error())
+	}
+	fontCormorantGaramondSemi, err = truetype.Parse(fonts.CormorantGaramondSemiBold)
+	if err != nil {
+		panic("failed to parse CormorantGaramondSemiBold font: " + err.Error())
+	}
+}
+
 // newCardContext creates a 1200x628 context with navy background.
 func newCardContext() *gg.Context {
 	dc := gg.NewContext(1200, 628)
@@ -32,8 +56,7 @@ func newCardContext() *gg.Context {
 
 // drawWordmark draws the UNQUOTE wordmark in the top-left.
 func drawWordmark(dc *gg.Context) {
-	font, _ := truetype.Parse(fonts.SpaceMonoBold)
-	face := truetype.NewFace(font, &truetype.Options{Size: 28})
+	face := truetype.NewFace(fontSpaceMonoBold, &truetype.Options{Size: 28})
 	dc.SetFontFace(face)
 	dc.SetHexColor(colorGold)
 	dc.DrawString("UNQUOTE", 48, 52)
@@ -41,8 +64,7 @@ func drawWordmark(dc *gg.Context) {
 
 // drawFooter draws the playunquote.com footer centered at the bottom.
 func drawFooter(dc *gg.Context) {
-	font, _ := truetype.Parse(fonts.SpaceMonoRegular)
-	face := truetype.NewFace(font, &truetype.Options{Size: 16})
+	face := truetype.NewFace(fontSpaceMonoRegular, &truetype.Options{Size: 16})
 	dc.SetFontFace(face)
 	dc.SetHexColor(colorTextMuted)
 	dc.DrawStringAnchored("playunquote.com", 600, 604, 0.5, 0.5)
@@ -56,16 +78,14 @@ func GenerateSessionCard(data SessionShareData) image.Image {
 	drawWordmark(dc)
 
 	// Top-right: puzzle date (muted)
-	font, _ := truetype.Parse(fonts.SpaceMonoRegular)
-	face := truetype.NewFace(font, &truetype.Options{Size: 16})
+	face := truetype.NewFace(fontSpaceMonoRegular, &truetype.Options{Size: 16})
 	dc.SetFontFace(face)
 	dc.SetHexColor(colorTextMuted)
 	dc.DrawStringAnchored(data.PuzzleNumber, 1152, 40, 1.0, 0.0)
 
 	// Center: Status + Time
 	// Status: "SOLVED" or "UNSOLVED" in Cormorant Garamond (64pt)
-	font, _ = truetype.Parse(fonts.CormorantGaramondSemiBold)
-	face = truetype.NewFace(font, &truetype.Options{Size: 64})
+	face = truetype.NewFace(fontCormorantGaramondSemi, &truetype.Options{Size: 64})
 	dc.SetFontFace(face)
 	dc.SetHexColor(colorGold)
 
@@ -78,8 +98,7 @@ func GenerateSessionCard(data SessionShareData) image.Image {
 	dc.DrawStringAnchored(status, 600, 200, 0.5, 0.5)
 
 	// Time below status (Space Mono Bold, 72pt)
-	font, _ = truetype.Parse(fonts.SpaceMonoBold)
-	face = truetype.NewFace(font, &truetype.Options{Size: 72})
+	face = truetype.NewFace(fontSpaceMonoBold, &truetype.Options{Size: 72})
 	dc.SetFontFace(face)
 
 	timeStr := fmtMs(data.CompletionMs)
@@ -127,12 +146,11 @@ func drawLetterGrid(dc *gg.Context, cells []puzzle.Cell) {
 			shouldDraw = true
 			color = colorGold
 		case puzzle.CellPunctuation:
-			if cell.Char != ' ' {
-				continue
-			}
 			// Space: new line
-			col = 0
-			row++
+			if cell.Char == ' ' {
+				col = 0
+				row++
+			}
 			continue
 		}
 
@@ -161,36 +179,25 @@ func drawStreakBadge(dc *gg.Context, streak int) {
 	dc.Fill()
 
 	// Streak label
-	font, _ := truetype.Parse(fonts.SpaceMonoRegular)
-	face := truetype.NewFace(font, &truetype.Options{Size: 12})
+	face := truetype.NewFace(fontSpaceMonoRegular, &truetype.Options{Size: 12})
 	dc.SetFontFace(face)
 	dc.SetHexColor(colorTextMuted)
 	dc.DrawStringAnchored("STREAK", 1050, 440, 0.5, 0.0)
 
 	// Streak count
-	font, _ = truetype.Parse(fonts.SpaceMonoBold)
-	face = truetype.NewFace(font, &truetype.Options{Size: 48})
+	face = truetype.NewFace(fontSpaceMonoBold, &truetype.Options{Size: 48})
 	dc.SetFontFace(face)
 	dc.SetHexColor(colorGold)
 	streakStr := fmtInt(streak)
 	dc.DrawStringAnchored(streakStr, 1050, 520, 0.5, 0.5)
 }
 
-// fmtInt formats an integer as a string.
+// fmtInt formats a non-negative integer as a string, clamping negative values to 0.
 func fmtInt(n int) string {
 	if n < 0 {
-		return "0"
+		n = 0
 	}
-	// Simple integer to string conversion
-	if n == 0 {
-		return "0"
-	}
-	result := ""
-	for n > 0 {
-		result = string(rune('0'+n%10)) + result
-		n /= 10
-	}
-	return result
+	return strconv.Itoa(n)
 }
 
 // GenerateStatsCard generates a branded PNG card for stats share.
@@ -259,15 +266,13 @@ func drawStatsTiles(dc *gg.Context, stats *api.PlayerStatsResponse) {
 		dc.Stroke()
 
 		// Label (muted, small)
-		font, _ := truetype.Parse(fonts.SpaceMonoRegular)
-		face := truetype.NewFace(font, &truetype.Options{Size: 12})
+		face := truetype.NewFace(fontSpaceMonoRegular, &truetype.Options{Size: 12})
 		dc.SetFontFace(face)
 		dc.SetHexColor(colorTextMuted)
 		dc.DrawStringAnchored(tile.label, x+tileWidth/2, y+25, 0.5, 0.5)
 
 		// Value (gold, large)
-		font, _ = truetype.Parse(fonts.SpaceMonoBold)
-		face = truetype.NewFace(font, &truetype.Options{Size: 36})
+		face = truetype.NewFace(fontSpaceMonoBold, &truetype.Options{Size: 36})
 		dc.SetFontFace(face)
 		dc.SetHexColor(colorGold)
 		dc.DrawStringAnchored(tile.value, x+tileWidth/2, y+70, 0.5, 0.5)
@@ -282,8 +287,7 @@ func fmtPercent(rate float64) string {
 
 // drawTimesLine draws the best time and average time at the bottom-center.
 func drawTimesLine(dc *gg.Context, stats *api.PlayerStatsResponse) {
-	font, _ := truetype.Parse(fonts.SpaceMonoRegular)
-	face := truetype.NewFace(font, &truetype.Options{Size: 14})
+	face := truetype.NewFace(fontSpaceMonoRegular, &truetype.Options{Size: 14})
 	dc.SetFontFace(face)
 	dc.SetHexColor(colorTextMuted)
 
@@ -305,16 +309,29 @@ func drawSparkline(dc *gg.Context, stats *api.PlayerStatsResponse) {
 		return
 	}
 
+	numSolves := len(stats.RecentSolves)
+	if numSolves > 20 {
+		numSolves = 20 // Limit to last 20
+	}
+
+	// For a single solve, just draw a dot at center instead of attempting line connection
+	if numSolves <= 1 {
+		startX := 350.0
+		startY := 450.0
+		width := 500.0
+		height := 80.0
+		dc.SetHexColor(colorTeal)
+		dc.SetLineWidth(2)
+		dc.DrawCircle(startX+width/2, startY+height/2, 3)
+		dc.Fill()
+		return
+	}
+
 	// Simple sparkline: connect recent solve times with lines
 	startX := 350.0
 	startY := 450.0
 	width := 500.0
 	height := 80.0
-
-	numSolves := len(stats.RecentSolves)
-	if numSolves > 20 {
-		numSolves = 20 // Limit to last 20
-	}
 
 	recentSolves := stats.RecentSolves
 	if len(recentSolves) > numSolves {
