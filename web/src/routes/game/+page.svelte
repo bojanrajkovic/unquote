@@ -6,6 +6,7 @@
   import { assembleSolution, formatTimer } from "$lib/puzzle.js";
   import { checkSolution, recordSession, getStats } from "$lib/api.js";
   import SessionShareCard from "$lib/share/SessionShareCard.svelte";
+  import ShareMenu from "$lib/share/ShareMenu.svelte";
   import { formatSessionText, buildLetterGrid } from "$lib/share/format.js";
   import type { SessionShareData } from "$lib/share/format.js";
   import { captureElementAsBlob } from "$lib/share/capture.js";
@@ -14,7 +15,9 @@
     copyTextToClipboard,
     downloadBlob,
     showFeedback,
+    nativeShareImage,
   } from "$lib/share/actions.js";
+  import { canNativeShare } from "$lib/share/detect.js";
   import type { Cell } from "$lib/puzzle.js";
 
   // ── Local state ───────────────────────────────────────────────────────
@@ -263,10 +266,7 @@
     }
   }
 
-  async function shareSession() {
-    if (!game.puzzle || game.status !== "solved") return;
-
-    // Fetch streak for registered players (cached after first call)
+  async function fetchStreakIfNeeded() {
     if (identity.claimCode && cachedStreak === null) {
       try {
         const stats = await getStats(identity.claimCode);
@@ -278,33 +278,73 @@
         // Streak unavailable — share without it
       }
     }
+  }
 
-    // Try image clipboard first
-    if (sessionCardEl) {
-      const blob = await captureElementAsBlob(sessionCardEl);
-      if (blob) {
-        const copied = await copyImageToClipboard(blob);
-        if (!copied) {
-          // Fallback: download PNG
-          downloadBlob(blob, "unquote-session.png");
-        }
-        showFeedback((v) => (sessionShareFeedback = v));
-        return;
+  async function handleCopyImage() {
+    if (!game.puzzle || game.status !== "solved" || !sessionCardEl) return;
+
+    await fetchStreakIfNeeded();
+    const blob = await captureElementAsBlob(sessionCardEl);
+    if (blob) {
+      const ok = await copyImageToClipboard(blob);
+      if (ok) {
+        showFeedback((v) => (sessionShareFeedback = v ? "Copied!" : null));
+      } else {
+        // AC1.10: fallback to download
+        downloadBlob(blob, "unquote-session.png");
+        showFeedback((v) => (sessionShareFeedback = v ? "Downloaded!" : null));
       }
     }
+  }
 
-    // Fallback: text clipboard
+  async function handleCopyText() {
+    if (!game.puzzle || game.status !== "solved") return;
+
     const data: SessionShareData = {
       puzzleNumber: game.puzzle.date,
-      solved: true, // we only show share on solved state
+      solved: true,
       completionTime: game.completionTime,
       cells: game.cells,
       currentStreak: identity.claimCode ? cachedStreak : null,
     };
 
     const text = formatSessionText(data);
-    copyTextToClipboard(text);
-    showFeedback((v) => (sessionShareFeedback = v));
+    await copyTextToClipboard(text);
+    showFeedback((v) => (sessionShareFeedback = v ? "Copied!" : null));
+  }
+
+  async function handleDownload() {
+    if (!game.puzzle || game.status !== "solved" || !sessionCardEl) return;
+
+    await fetchStreakIfNeeded();
+    const blob = await captureElementAsBlob(sessionCardEl);
+    if (blob) {
+      downloadBlob(blob, "unquote-session.png");
+      showFeedback((v) => (sessionShareFeedback = v ? "Downloaded!" : null));
+    }
+  }
+
+  async function handleNativeShare() {
+    if (!game.puzzle || game.status !== "solved" || !sessionCardEl) return;
+
+    await fetchStreakIfNeeded();
+    const blob = await captureElementAsBlob(sessionCardEl);
+    if (blob) {
+      const data: SessionShareData = {
+        puzzleNumber: game.puzzle.date,
+        solved: true,
+        completionTime: game.completionTime,
+        cells: game.cells,
+        currentStreak: identity.claimCode ? cachedStreak : null,
+      };
+      const text = formatSessionText(data);
+      await nativeShareImage(
+        blob,
+        "unquote-session.png",
+        "UNQUOTE Result",
+        text,
+      );
+    }
   }
 
   function handleCellClick(editIdx: number) {
@@ -583,13 +623,15 @@
                 </div>
               </div>
               {#if !game.solvedElsewhere}
-                <button
-                  class="btn-ghost share-btn"
-                  onclick={shareSession}
-                  disabled={sessionShareFeedback !== null}
-                >
-                  {sessionShareFeedback ?? "Share"}
-                </button>
+                <ShareMenu
+                  onCopyImage={handleCopyImage}
+                  onCopyText={handleCopyText}
+                  onDownload={handleDownload}
+                  onNativeShare={canNativeShare()
+                    ? handleNativeShare
+                    : undefined}
+                  feedback={sessionShareFeedback}
+                />
               {/if}
             </div>
           {/if}
@@ -999,10 +1041,6 @@
   .solved-stats {
     display: flex;
     gap: 2rem;
-  }
-
-  .solved-card .share-btn {
-    font-size: 0.8rem;
   }
 
   .stat-group {
