@@ -45,14 +45,14 @@ type Model struct {
 	stats           *api.PlayerStatsResponse
 	form            *huh.Form
 	optIn           *bool
-	cells           []puzzle.Cell
 	startTime       time.Time
-	elapsedAtPause  time.Duration
 	claimCode       string
 	errorMsg        string
 	statusMsg       string
 	loadingMsg      string
 	shareFeedback   string // "Copied!" or "Printed to stdout"
+	cells           []puzzle.Cell
+	elapsedAtPause  time.Duration
 	state           State
 	cursorPos       int
 	width           int
