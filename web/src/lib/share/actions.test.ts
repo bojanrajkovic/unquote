@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { copyImageToClipboard, downloadBlob } from "./actions";
+import {
+  copyImageToClipboard,
+  downloadBlob,
+  nativeShareImage,
+} from "./actions";
 
 describe("copyImageToClipboard", () => {
   afterEach(() => {
@@ -93,5 +97,143 @@ describe("downloadBlob", () => {
     expect(mockElement.download).toBe("test.png");
     expect(clickSpy).toHaveBeenCalled();
     expect(createElementSpy).toHaveBeenCalledWith("a");
+  });
+});
+
+describe("nativeShareImage", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("AC1.6: returns true on successful share", async () => {
+    const mockShare = vi.fn().mockResolvedValue(undefined);
+    const originalNavigator = navigator;
+
+    Object.defineProperty(globalThis, "navigator", {
+      value: {
+        ...originalNavigator,
+        share: mockShare,
+      },
+      writable: true,
+      configurable: true,
+    });
+
+    try {
+      const blob = new Blob(["test"], { type: "image/png" });
+      const result = await nativeShareImage(
+        blob,
+        "test.png",
+        "Test Title",
+        "Test Text",
+      );
+      expect(result).toBe(true);
+      expect(mockShare).toHaveBeenCalled();
+    } finally {
+      Object.defineProperty(globalThis, "navigator", {
+        value: originalNavigator,
+        writable: true,
+        configurable: true,
+      });
+    }
+  });
+
+  it("AC1.6: returns true on user cancel (AbortError)", async () => {
+    const abortError = new DOMException("User cancelled", "AbortError");
+    const mockShare = vi.fn().mockRejectedValue(abortError);
+    const originalNavigator = navigator;
+
+    Object.defineProperty(globalThis, "navigator", {
+      value: {
+        ...originalNavigator,
+        share: mockShare,
+      },
+      writable: true,
+      configurable: true,
+    });
+
+    try {
+      const blob = new Blob(["test"], { type: "image/png" });
+      const result = await nativeShareImage(
+        blob,
+        "test.png",
+        "Test Title",
+        "Test Text",
+      );
+      expect(result).toBe(true);
+    } finally {
+      Object.defineProperty(globalThis, "navigator", {
+        value: originalNavigator,
+        writable: true,
+        configurable: true,
+      });
+    }
+  });
+
+  it("AC1.10: returns false on share failure (non-AbortError)", async () => {
+    const mockShare = vi.fn().mockRejectedValue(new Error("Share failed"));
+    const originalNavigator = navigator;
+
+    Object.defineProperty(globalThis, "navigator", {
+      value: {
+        ...originalNavigator,
+        share: mockShare,
+      },
+      writable: true,
+      configurable: true,
+    });
+
+    try {
+      const blob = new Blob(["test"], { type: "image/png" });
+      const result = await nativeShareImage(
+        blob,
+        "test.png",
+        "Test Title",
+        "Test Text",
+      );
+      expect(result).toBe(false);
+    } finally {
+      Object.defineProperty(globalThis, "navigator", {
+        value: originalNavigator,
+        writable: true,
+        configurable: true,
+      });
+    }
+  });
+
+  it("passes blob as File to navigator.share", async () => {
+    const mockShare = vi.fn().mockResolvedValue(undefined);
+    const originalNavigator = navigator;
+
+    Object.defineProperty(globalThis, "navigator", {
+      value: {
+        ...originalNavigator,
+        share: mockShare,
+      },
+      writable: true,
+      configurable: true,
+    });
+
+    try {
+      const blob = new Blob(["test"], { type: "image/png" });
+      await nativeShareImage(blob, "test.png", "Test Title", "Test Text");
+
+      expect(mockShare).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: "Test Title",
+          text: "Test Text",
+          files: expect.arrayContaining([expect.any(File)]),
+        }),
+      );
+
+      const callArgs = mockShare.mock.calls[0][0];
+      expect(callArgs.files[0].name).toBe("test.png");
+      expect(callArgs.files[0].type).toBe("image/png");
+    } finally {
+      Object.defineProperty(globalThis, "navigator", {
+        value: originalNavigator,
+        writable: true,
+        configurable: true,
+      });
+    }
   });
 });

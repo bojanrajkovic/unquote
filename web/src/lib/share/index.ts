@@ -9,5 +9,7 @@ export {
   showFeedback,
   copyImageToClipboard,
   downloadBlob,
+  nativeShareImage,
 } from "./actions.js";
+export { canCopyImage, canNativeShare } from "./detect.js";
 export { captureElementAsBlob } from "./capture.js";

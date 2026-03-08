@@ -56,3 +56,29 @@ export function downloadBlob(blob: Blob, filename: string): void {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+/**
+ * Share a PNG blob via the native Web Share API (share sheet).
+ * Wraps the blob in a File object for Web Share Level 2.
+ *
+ * Returns true if share completed, false if cancelled or failed.
+ * Must be called from a user gesture (click handler).
+ */
+export async function nativeShareImage(
+  blob: Blob,
+  filename: string,
+  title: string,
+  text: string,
+): Promise<boolean> {
+  try {
+    const file = new File([blob], filename, { type: "image/png" });
+    await navigator.share({ title, text, files: [file] });
+    return true;
+  } catch (err) {
+    // AbortError = user cancelled share sheet — not a failure
+    if (err instanceof DOMException && err.name === "AbortError") {
+      return true;
+    }
+    return false;
+  }
+}
