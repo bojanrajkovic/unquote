@@ -208,8 +208,7 @@ func GenerateStatsCard(stats *api.PlayerStatsResponse) image.Image {
 	drawWordmark(dc)
 
 	// Top-right: "PLAYER STATS"
-	font, _ := truetype.Parse(fonts.SpaceMonoRegular)
-	face := truetype.NewFace(font, &truetype.Options{Size: 16})
+	face := truetype.NewFace(fontSpaceMonoRegular, &truetype.Options{Size: 16})
 	dc.SetFontFace(face)
 	dc.SetHexColor(colorTextMuted)
 	dc.DrawStringAnchored("PLAYER STATS", 1152, 40, 1.0, 0.0)
