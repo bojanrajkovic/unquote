@@ -1,7 +1,14 @@
 <script lang="ts">
   import { identity } from "$lib/state/identity.svelte.js";
+  import StatsShareCard from "$lib/share/StatsShareCard.svelte";
   import { formatStatsText } from "$lib/share/format.js";
-  import { copyTextToClipboard, showFeedback } from "$lib/share/actions.js";
+  import { captureElementAsBlob } from "$lib/share/capture.js";
+  import {
+    copyImageToClipboard,
+    copyTextToClipboard,
+    downloadBlob,
+    showFeedback,
+  } from "$lib/share/actions.js";
   import type { StatsPageData } from "./+page.js";
 
   // Format milliseconds as M:SS (no leading zero on minutes) — e.g. "2:08".
@@ -19,9 +26,26 @@
   const { data }: Props = $props();
 
   let shareFeedback = $state<string | null>(null);
+  let statsCardEl: HTMLElement | undefined = $state();
 
-  function shareStats() {
+  async function shareStats() {
     if (!data.stats) return;
+
+    // Try image clipboard first
+    if (statsCardEl) {
+      const blob = await captureElementAsBlob(statsCardEl);
+      if (blob) {
+        const copied = await copyImageToClipboard(blob);
+        if (!copied) {
+          // Fallback: download PNG
+          downloadBlob(blob, "unquote-stats.png");
+        }
+        showFeedback((v) => (shareFeedback = v));
+        return;
+      }
+    }
+
+    // Fallback: text clipboard
     const text = formatStatsText(data.stats);
     copyTextToClipboard(text);
     showFeedback((v) => (shareFeedback = v));
@@ -173,6 +197,16 @@
 <svelte:head>
   <title>Unquote — Stats</title>
 </svelte:head>
+
+<!-- Hidden off-screen share card for capture -->
+{#if data.stats}
+  <div
+    bind:this={statsCardEl}
+    style="position: absolute; left: -9999px; top: -9999px;"
+  >
+    <StatsShareCard stats={data.stats} />
+  </div>
+{/if}
 
 <main class="stats-screen">
   <header class="compact-header">

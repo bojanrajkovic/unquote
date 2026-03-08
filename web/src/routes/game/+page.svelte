@@ -5,9 +5,16 @@
   import { identity } from "$lib/state/identity.svelte.js";
   import { assembleSolution, formatTimer } from "$lib/puzzle.js";
   import { checkSolution, recordSession, getStats } from "$lib/api.js";
-  import { formatSessionText } from "$lib/share/format.js";
+  import SessionShareCard from "$lib/share/SessionShareCard.svelte";
+  import { formatSessionText, buildLetterGrid } from "$lib/share/format.js";
   import type { SessionShareData } from "$lib/share/format.js";
-  import { copyTextToClipboard, showFeedback } from "$lib/share/actions.js";
+  import { captureElementAsBlob } from "$lib/share/capture.js";
+  import {
+    copyImageToClipboard,
+    copyTextToClipboard,
+    downloadBlob,
+    showFeedback,
+  } from "$lib/share/actions.js";
   import type { Cell } from "$lib/puzzle.js";
 
   // ── Local state ───────────────────────────────────────────────────────
@@ -21,6 +28,7 @@
     kind: "warning" | "error" | "loading";
   } | null = $state(null);
   let sessionShareFeedback = $state<string | null>(null);
+  let sessionCardEl: HTMLElement | undefined = $state();
   // Not reactive — intentional cache for streak API call, reset on page load
   let cachedStreak: number | null = null;
 
@@ -69,6 +77,9 @@
   const activeCipherLetter = $derived(
     game.editables[game.cursorEditIdx]?.cipherLetter ?? null,
   );
+
+  // ── Derived: letter grid for session share card ───────────────────────
+  const sessionLetterGrid = $derived(buildLetterGrid(game.cells));
 
   // ── Timer: runs when playing, stops when solved/checking ─────────────
   $effect(() => {
@@ -263,6 +274,21 @@
       }
     }
 
+    // Try image clipboard first
+    if (sessionCardEl) {
+      const blob = await captureElementAsBlob(sessionCardEl);
+      if (blob) {
+        const copied = await copyImageToClipboard(blob);
+        if (!copied) {
+          // Fallback: download PNG
+          downloadBlob(blob, "unquote-session.png");
+        }
+        showFeedback((v) => (sessionShareFeedback = v));
+        return;
+      }
+    }
+
+    // Fallback: text clipboard
     const data: SessionShareData = {
       puzzleNumber: game.puzzle.date,
       solved: true, // we only show share on solved state
@@ -306,6 +332,22 @@
 <svelte:head>
   <title>Unquote — Today's Puzzle</title>
 </svelte:head>
+
+<!-- Hidden off-screen share card for capture -->
+{#if game.status === "solved" && !game.solvedElsewhere && game.puzzle}
+  <div
+    bind:this={sessionCardEl}
+    style="position: absolute; left: -9999px; top: -9999px;"
+  >
+    <SessionShareCard
+      puzzleNumber={game.puzzle.date}
+      solved={true}
+      completionTime={game.completionTime}
+      letterGrid={sessionLetterGrid}
+      currentStreak={identity.claimCode ? cachedStreak : null}
+    />
+  </div>
+{/if}
 
 <!-- Hidden keyboard capture input (AC2.17) -->
 <!-- position: fixed keeps it off-screen on all viewport sizes -->
