@@ -39,26 +39,28 @@ type Options struct {
 
 // Model holds the application state
 type Model struct {
-	startTime       time.Time
-	optIn           *bool
-	form            *huh.Form
-	puzzle          *api.Puzzle
-	client          *api.Client
-	cfg             *config.Config
-	stats           *api.PlayerStatsResponse
-	claimCode       string
-	errorMsg        string
-	statusMsg       string
-	loadingMsg      string
-	cells           []puzzle.Cell
-	state           State
-	cursorPos       int
-	width           int
-	height          int
-	elapsedAtPause  time.Duration
-	opts            Options
-	sizeReady       bool
-	solvedElsewhere bool
+	client           *api.Client
+	cfg              *config.Config
+	puzzle           *api.Puzzle
+	stats            *api.PlayerStatsResponse
+	form             *huh.Form
+	optIn            *bool
+	cells            []puzzle.Cell
+	startTime        time.Time
+	elapsedAtPause   time.Duration
+	shareFeedbackEnd time.Time
+	claimCode        string
+	errorMsg         string
+	statusMsg        string
+	loadingMsg       string
+	shareFeedback    string // "Copied!" or "Printed to stdout"
+	state            State
+	cursorPos        int
+	width            int
+	height           int
+	opts             Options
+	sizeReady        bool
+	solvedElsewhere  bool
 }
 
 // New creates a new Model with initial state

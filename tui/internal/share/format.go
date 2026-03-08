@@ -12,12 +12,11 @@ import (
 const wrapAt = 30
 
 // SessionShareData holds the data needed to format a session result.
-// nolint:govet // Field alignment warning is not applicable for this struct layout
 type SessionShareData struct {
 	Cells         []puzzle.Cell
+	CurrentStreak *int   // nil for anonymous players
 	CompletionMs  int64  // completion time in milliseconds
 	PuzzleNumber  string // e.g. "2026-03-07" — the puzzle date
-	CurrentStreak *int   // nil for anonymous players
 	Solved        bool
 }
 

@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 	"unicode"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/bojanrajkovic/unquote/tui/internal/config"
 	"github.com/bojanrajkovic/unquote/tui/internal/puzzle"
+	"github.com/bojanrajkovic/unquote/tui/internal/share"
 	"github.com/bojanrajkovic/unquote/tui/internal/ui"
 )
 
@@ -76,6 +78,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case statsFetchedMsg:
 		return m.handleStatsFetched(msg)
+
+	case clearShareFeedbackMsg:
+		m.shareFeedback = ""
+		return m, nil
 	}
 
 	// Forward unhandled messages to huh form during onboarding (e.g. focus,
@@ -127,11 +133,7 @@ func (m Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m.handlePlayingKeyMsg(msg)
 
 	case StateSolved:
-		if msg.String() == "s" && m.claimCode != "" {
-			m.state = StateLoading
-			return m, fetchStatsCmd(m.client, m.claimCode)
-		}
-		return m, nil
+		return m.handleSolvedKeyMsg(msg)
 
 	case StateOnboarding:
 		return m.handleOnboardingKeyMsg(msg)
@@ -310,6 +312,51 @@ func (m Model) handleErrorKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return m, fetchRandomPuzzleCmd(m.client)
 		}
 		return m, fetchPuzzleCmd(m.client)
+	}
+	return m, nil
+}
+
+func (m Model) handleSolvedKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case "s":
+		if m.claimCode != "" {
+			m.state = StateLoading
+			return m, fetchStatsCmd(m.client, m.claimCode)
+		}
+	case "c":
+		// Build session share data from current model state
+		var streak *int
+		if m.claimCode != "" && m.stats != nil {
+			s := m.stats.CurrentStreak
+			streak = &s
+		}
+
+		var completionMs int64
+		if m.elapsedAtPause > 0 {
+			completionMs = m.elapsedAtPause.Milliseconds()
+		}
+
+		data := share.SessionShareData{
+			Cells:         m.cells,
+			CurrentStreak: streak,
+			PuzzleNumber:  m.puzzle.Date,
+			CompletionMs:  completionMs,
+			Solved:        true,
+		}
+
+		text := share.FormatSessionText(data)
+		ok := share.CopyToClipboard(text, os.Stderr)
+
+		if ok {
+			m.shareFeedback = "Copied to clipboard!"
+		} else {
+			m.shareFeedback = "Printed to stdout"
+		}
+		m.shareFeedbackEnd = time.Now().Add(2500 * time.Millisecond)
+
+		return m, tea.Tick(2500*time.Millisecond, func(_ time.Time) tea.Msg {
+			return clearShareFeedbackMsg{}
+		})
 	}
 	return m, nil
 }
