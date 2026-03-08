@@ -352,6 +352,13 @@ func (m Model) handleSolvedKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.shareFeedback = "Printed to stdout"
 		}
 
+		// Progressive enhancement: generate and share image
+		img := share.GenerateSessionCard(data)
+		if share.CopyImageToClipboard(img) {
+			m.shareFeedback = "Copied image to clipboard!"
+		}
+		share.DisplayInlineImage(img) // silent no-op if terminal doesn't support it
+
 		return m, tea.Tick(2500*time.Millisecond, func(_ time.Time) tea.Msg {
 			return clearShareFeedbackMsg{}
 		})

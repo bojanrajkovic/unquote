@@ -33,6 +33,7 @@ func formatOptMs(ms *float64) string {
 // newStatsCmd returns a command that fetches and prints player stats to stdout.
 func newStatsCmd(insecure *bool) *cobra.Command {
 	var shareFlag bool
+	var imageFlag bool
 
 	cmd := &cobra.Command{
 		Use:   "stats",
@@ -61,8 +62,17 @@ func newStatsCmd(insecure *bool) *cobra.Command {
 			if shareFlag {
 				text := share.FormatStatsText(stats)
 				ok := share.CopyToClipboard(text, cmd.OutOrStdout())
+
+				if imageFlag {
+					img := share.GenerateStatsCard(stats)
+					if share.CopyImageToClipboard(img) {
+						fmt.Fprintln(cmd.ErrOrStderr(), "Image copied to clipboard!")
+					}
+					share.DisplayInlineImage(img)
+				}
+
 				if ok {
-					fmt.Fprintln(cmd.ErrOrStderr(), "Stats copied to clipboard!")
+					fmt.Fprintln(cmd.ErrOrStderr(), "Stats text copied to clipboard!")
 				}
 				return nil
 			}
@@ -74,6 +84,7 @@ func newStatsCmd(insecure *bool) *cobra.Command {
 	}
 
 	cmd.Flags().BoolVar(&shareFlag, "share", false, "Copy stats as shareable text to clipboard")
+	cmd.Flags().BoolVar(&imageFlag, "image", false, "Generate and copy branded PNG image (use with --share)")
 
 	return cmd
 }
