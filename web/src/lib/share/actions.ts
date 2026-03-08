@@ -30,3 +30,29 @@ export function showFeedback(
   const id = setTimeout(() => setter(null), FEEDBACK_DURATION_MS);
   return () => clearTimeout(id);
 }
+
+/**
+ * Copy a PNG blob to clipboard via ClipboardItem API.
+ * Returns true on success, false if the API is unavailable or fails.
+ */
+export async function copyImageToClipboard(blob: Blob): Promise<boolean> {
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Trigger a browser download of a PNG blob.
+ * Creates a temporary object URL and clicks a hidden anchor.
+ */
+export function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
