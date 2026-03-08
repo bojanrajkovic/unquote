@@ -1,6 +1,6 @@
 # Unquote
 
-Last verified: 2026-02-24
+Last verified: 2026-03-08
 
 A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encrypted quotes by substituting letters.
 
@@ -26,6 +26,7 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 - `pnpm run dev` - Start SvelteKit dev server
 - `pnpm run build` - Build static site
 - `pnpm run test` - Run tests (vitest)
+- `pnpm run test:e2e` - Run E2E tests (Playwright, requires build and preview server)
 - `pnpm run check` - Svelte type checking (svelte-check)
 - `pnpm run format` - Format with Prettier
 
@@ -121,6 +122,7 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 - `internal/app/` - Bubble Tea model, update loop, and views
 - `internal/config/` - Player config persistence (claim code, stats preference; XDG config directory)
 - `internal/puzzle/` - Domain logic (cells, navigation, solution assembly)
+- `internal/share/` - Shareable text formatting, image card generation, clipboard
 - `internal/storage/` - Session persistence (XDG state directory)
 - `internal/ui/` - Styling and text wrapping utilities
 - `internal/versioninfo/` - Build-time version info (ldflags injection)

@@ -57,6 +57,16 @@ Svelte 5 runes with singleton class instances (not stores). Two global state obj
 | `/game`  | Game screen (puzzle grid, keyboard, timer, solution check) |
 | `/stats` | Player statistics (requires claim code)                    |
 
+### Share Module (`lib/share/`)
+
+Wordle-style sharing for session results and player stats. Follows Functional Core / Imperative Shell split.
+
+- **Functional Core** (`format.ts`): Pure formatters. `formatSessionText(data)` and `formatStatsText(stats)` produce emoji-grid text. `buildLetterGrid(cells)` renders decode progress as gold/white squares.
+- **Imperative Shell** (`actions.ts`): Side-effectful clipboard, download, and Web Share API operations. All return `boolean` for success/failure.
+- **Image capture** (`capture.ts`): `captureElementAsBlob(element)` renders Svelte card components to PNG via `modern-screenshot`. Returns `null` on failure.
+- **Capability detection** (`detect.ts`): `canCopyImage()` and `canNativeShare()` check browser API availability at runtime.
+- **Components**: `SessionShareCard.svelte`, `StatsShareCard.svelte` (1200x628 branded cards for image capture), `ShareMenu.svelte` (dropdown with progressive enhancement: text copy, image copy, native share, download).
+
 ### Key Contracts
 
 - **Puzzle cells**: `buildCells()` returns `Cell[]` (LetterCell, HintCell, PunctCell, SpaceCell). LetterCells have `editIndex` for cursor navigation.
@@ -77,5 +87,6 @@ Svelte 5 runes with singleton class instances (not stores). Two global state obj
 
 ## Dependencies
 
-- **Uses**: Unquote REST API (`/game/*`, `/player/*` endpoints)
+- **Uses**: Unquote REST API (`/game/*`, `/player/*` endpoints), `modern-screenshot` (DOM-to-PNG capture for share cards)
 - **Used by**: End users via browser; deployed to S3/CloudFront by `web-deploy.yml`
+- **Dev**: `@playwright/test` for E2E screenshot tests (`web/tests/`)
