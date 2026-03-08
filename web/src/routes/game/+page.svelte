@@ -4,7 +4,10 @@
   import { game } from "$lib/state/game.svelte.js";
   import { identity } from "$lib/state/identity.svelte.js";
   import { assembleSolution, formatTimer } from "$lib/puzzle.js";
-  import { checkSolution, recordSession } from "$lib/api.js";
+  import { checkSolution, recordSession, getStats } from "$lib/api.js";
+  import { formatSessionText } from "$lib/share/format.js";
+  import type { SessionShareData } from "$lib/share/format.js";
+  import { copyTextToClipboard, showFeedback } from "$lib/share/actions.js";
   import type { Cell } from "$lib/puzzle.js";
 
   // ── Local state ───────────────────────────────────────────────────────
@@ -17,6 +20,8 @@
     text: string;
     kind: "warning" | "error" | "loading";
   } | null = $state(null);
+  let sessionShareFeedback = $state<string | null>(null);
+  let cachedStreak: number | null = null;
 
   // ── Crossfade state ─────────────────────────────────────────────────
   // Drives pure CSS opacity transitions instead of Svelte's in:/out: directives,
@@ -242,6 +247,32 @@
     } finally {
       submitting = false;
     }
+  }
+
+  async function shareSession() {
+    if (!game.puzzle || game.status !== "solved") return;
+
+    // Fetch streak for registered players (cached after first call)
+    if (identity.claimCode && cachedStreak === null) {
+      try {
+        const stats = await getStats(identity.claimCode);
+        cachedStreak = stats.currentStreak;
+      } catch {
+        // Streak unavailable — share without it
+      }
+    }
+
+    const data: SessionShareData = {
+      puzzleNumber: game.puzzle.date,
+      solved: true, // we only show share on solved state
+      completionTime: game.completionTime,
+      cells: game.cells,
+      currentStreak: identity.claimCode ? cachedStreak : null,
+    };
+
+    const text = formatSessionText(data);
+    copyTextToClipboard(text);
+    showFeedback((v) => (sessionShareFeedback = v));
   }
 
   function handleCellClick(editIdx: number) {
@@ -503,6 +534,15 @@
                   <span class="stat-label">Time</span>
                 </div>
               </div>
+              {#if !game.solvedElsewhere}
+                <button
+                  class="btn-ghost share-btn"
+                  onclick={shareSession}
+                  disabled={sessionShareFeedback !== null}
+                >
+                  {sessionShareFeedback ?? "Share"}
+                </button>
+              {/if}
             </div>
           {/if}
 
@@ -911,6 +951,10 @@
   .solved-stats {
     display: flex;
     gap: 2rem;
+  }
+
+  .solved-card .share-btn {
+    font-size: 0.8rem;
   }
 
   .stat-group {
