@@ -39,23 +39,24 @@ type Options struct {
 
 // Model holds the application state
 type Model struct {
-	startTime       time.Time
-	optIn           *bool
-	form            *huh.Form
-	puzzle          *api.Puzzle
 	client          *api.Client
 	cfg             *config.Config
+	puzzle          *api.Puzzle
 	stats           *api.PlayerStatsResponse
+	form            *huh.Form
+	optIn           *bool
+	startTime       time.Time
 	claimCode       string
 	errorMsg        string
 	statusMsg       string
 	loadingMsg      string
+	shareFeedback   string // "Copied!" or "Printed to stdout"
 	cells           []puzzle.Cell
+	elapsedAtPause  time.Duration
 	state           State
 	cursorPos       int
 	width           int
 	height          int
-	elapsedAtPause  time.Duration
 	opts            Options
 	sizeReady       bool
 	solvedElsewhere bool

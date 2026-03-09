@@ -1,20 +1,70 @@
 <script lang="ts">
   import { identity } from "$lib/state/identity.svelte.js";
+  import StatsShareCard from "$lib/share/StatsShareCard.svelte";
+  import ShareMenu from "$lib/share/ShareMenu.svelte";
+  import { formatStatsText, fmtMs } from "$lib/share/format.js";
+  import { captureElementAsBlob } from "$lib/share/capture.js";
+  import {
+    copyImageToClipboard,
+    copyTextToClipboard,
+    downloadBlob,
+    showFeedback,
+    nativeShareImage,
+  } from "$lib/share/actions.js";
+  import { canNativeShare } from "$lib/share/detect.js";
   import type { StatsPageData } from "./+page.js";
-
-  // Format milliseconds as M:SS (no leading zero on minutes) — e.g. "2:08".
-  // Distinct from formatTimer() which zero-pads minutes.
-  function fmtMs(ms: number): string {
-    const m = Math.floor(ms / 60000);
-    const s = Math.floor((ms % 60000) / 1000);
-    return `${m}:${String(s).padStart(2, "0")}`;
-  }
 
   interface Props {
     data: StatsPageData;
   }
 
   const { data }: Props = $props();
+
+  let shareFeedback = $state<string | null>(null);
+  let statsCardEl: HTMLElement | undefined = $state();
+
+  async function handleCopyImage() {
+    if (!data.stats || !statsCardEl) return;
+    const blob = await captureElementAsBlob(statsCardEl);
+    if (blob) {
+      const ok = await copyImageToClipboard(blob);
+      if (ok) {
+        showFeedback((v) => (shareFeedback = v ? "Copied!" : null));
+      } else {
+        // AC1.10: fallback to download
+        downloadBlob(blob, "unquote-stats.png");
+        showFeedback((v) => (shareFeedback = v ? "Downloaded!" : null));
+      }
+    }
+  }
+
+  async function handleCopyText() {
+    if (!data.stats) return;
+    await copyTextToClipboard(formatStatsText(data.stats));
+    showFeedback((v) => (shareFeedback = v ? "Copied!" : null));
+  }
+
+  async function handleDownload() {
+    if (!data.stats || !statsCardEl) return;
+    const blob = await captureElementAsBlob(statsCardEl);
+    if (blob) {
+      downloadBlob(blob, "unquote-stats.png");
+      showFeedback((v) => (shareFeedback = v ? "Downloaded!" : null));
+    }
+  }
+
+  async function handleNativeShare() {
+    if (!data.stats || !statsCardEl) return;
+    const blob = await captureElementAsBlob(statsCardEl);
+    if (blob) {
+      await nativeShareImage(
+        blob,
+        "unquote-stats.png",
+        "UNQUOTE Stats",
+        formatStatsText(data.stats),
+      );
+    }
+  }
 
   // ── Chart helpers ─────────────────────────────────────────────────────────
 
@@ -163,6 +213,16 @@
   <title>Unquote — Stats</title>
 </svelte:head>
 
+<!-- Hidden off-screen share card for capture -->
+{#if data.stats}
+  <div
+    bind:this={statsCardEl}
+    style="position: absolute; left: -9999px; top: -9999px;"
+  >
+    <StatsShareCard stats={data.stats} />
+  </div>
+{/if}
+
 <main class="stats-screen">
   <header class="compact-header">
     <a href="/" class="compact-logo">Unquote</a>
@@ -190,6 +250,13 @@
       <div class="stats-heading">
         <span class="stats-title">Your statistics</span>
         <span class="stats-claim-code">{identity.claimCode ?? ""}</span>
+        <ShareMenu
+          onCopyImage={handleCopyImage}
+          onCopyText={handleCopyText}
+          onDownload={handleDownload}
+          onNativeShare={canNativeShare() ? handleNativeShare : undefined}
+          feedback={shareFeedback}
+        />
       </div>
 
       <!-- Primary stat tiles — AC1.7 -->

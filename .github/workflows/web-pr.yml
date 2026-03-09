@@ -74,6 +74,53 @@ jobs:
         working-directory: web
         run: pnpm run build
 
+      - name: Install Playwright browsers
+        working-directory: web
+        run: pnpm exec playwright install chromium --with-deps
+
+      - name: Run E2E tests
+        working-directory: web
+        run: pnpm run test:e2e
+
+      - name: Upload share card screenshots
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: share-card-screenshots
+          path: web/test-results/*.png
+          retention-days: 7
+          if-no-files-found: ignore
+
+  comment:
+    name: PR Screenshot Comment
+    needs: validate
+    if: always() && needs.validate.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Find existing comment
+        uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: github-actions[bot]
+          body-includes: "Share Card Screenshots"
+
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            ## Share Card Screenshots
+
+            Screenshots captured from Playwright E2E tests.
+            Download from [Actions artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+
+            > Updated for commit ${{ github.event.pull_request.head.sha }}
+
   web-result:
     name: Web Result
     needs: [changes, validate]

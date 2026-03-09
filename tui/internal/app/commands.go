@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"io"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -9,6 +10,7 @@ import (
 	"github.com/bojanrajkovic/unquote/tui/internal/api"
 	"github.com/bojanrajkovic/unquote/tui/internal/config"
 	"github.com/bojanrajkovic/unquote/tui/internal/puzzle"
+	"github.com/bojanrajkovic/unquote/tui/internal/share"
 	"github.com/bojanrajkovic/unquote/tui/internal/storage"
 )
 
@@ -240,5 +242,29 @@ func saveSolvedSessionCmd(gameID string, cells []puzzle.Cell, completionTime tim
 		// interrupt the celebration of solving. File system errors are rare.
 		_ = storage.SaveSession(session)
 		return nil
+	}
+}
+
+// shareSessionCmd runs clipboard + image share operations off the main event loop.
+// Uses io.Discard for the text clipboard fallback to avoid writing directly to
+// the terminal, which would corrupt Bubble Tea's display.
+func shareSessionCmd(data share.SessionShareData) tea.Cmd {
+	return func() tea.Msg {
+		text := share.FormatSessionText(data)
+		textOK := share.CopyToClipboard(text, io.Discard)
+
+		feedback := "Sharing not available"
+		if textOK {
+			feedback = "Copied to clipboard!"
+		}
+
+		// Progressive enhancement: generate and share image
+		img := share.GenerateSessionCard(data)
+		if share.CopyImageToClipboard(img) {
+			feedback = "Copied image to clipboard!"
+		}
+		share.DisplayInlineImage(img)
+
+		return shareSessionResultMsg{feedback: feedback}
 	}
 }

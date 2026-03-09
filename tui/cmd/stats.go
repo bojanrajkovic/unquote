@@ -12,6 +12,7 @@ import (
 
 	"github.com/bojanrajkovic/unquote/tui/internal/api"
 	"github.com/bojanrajkovic/unquote/tui/internal/config"
+	"github.com/bojanrajkovic/unquote/tui/internal/share"
 	"github.com/bojanrajkovic/unquote/tui/internal/ui"
 )
 
@@ -31,7 +32,10 @@ func formatOptMs(ms *float64) string {
 
 // newStatsCmd returns a command that fetches and prints player stats to stdout.
 func newStatsCmd(insecure *bool) *cobra.Command {
-	return &cobra.Command{
+	var shareFlag bool
+	var imageFlag bool
+
+	cmd := &cobra.Command{
 		Use:   "stats",
 		Short: "View your player statistics",
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -55,11 +59,34 @@ func newStatsCmd(insecure *bool) *cobra.Command {
 				return fmt.Errorf("fetching stats: %w", err)
 			}
 
+			if shareFlag {
+				text := share.FormatStatsText(stats)
+				ok := share.CopyToClipboard(text, cmd.OutOrStdout())
+
+				if imageFlag {
+					img := share.GenerateStatsCard(stats)
+					if share.CopyImageToClipboard(img) {
+						fmt.Fprintln(cmd.ErrOrStderr(), "Image copied to clipboard!")
+					}
+					share.DisplayInlineImage(img)
+				}
+
+				if ok {
+					fmt.Fprintln(cmd.ErrOrStderr(), "Stats text copied to clipboard!")
+				}
+				return nil
+			}
+
 			out := cmd.OutOrStdout()
 			fmt.Fprintln(out, renderStatsOutput(stats))
 			return nil
 		},
 	}
+
+	cmd.Flags().BoolVar(&shareFlag, "share", false, "Copy stats as shareable text to clipboard")
+	cmd.Flags().BoolVar(&imageFlag, "image", false, "Generate and copy branded PNG image (use with --share)")
+
+	return cmd
 }
 
 func renderStatsOutput(stats *api.PlayerStatsResponse) string {

@@ -62,3 +62,11 @@ type remoteSessionMsg struct {
 type statsFetchedMsg struct {
 	stats *api.PlayerStatsResponse
 }
+
+// shareSessionResultMsg is sent when async share operations complete
+type shareSessionResultMsg struct {
+	feedback string
+}
+
+// clearShareFeedbackMsg is sent after a share feedback timeout expires
+type clearShareFeedbackMsg struct{}

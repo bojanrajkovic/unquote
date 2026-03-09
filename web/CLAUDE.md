@@ -1,6 +1,6 @@
 # @unquote/web
 
-Last verified: 2026-02-24
+Last verified: 2026-03-08
 
 SvelteKit 5 static SPA for the Unquote cryptoquip game. Builds to a fully static site (no SSR) deployed to S3/CloudFront.
 
@@ -8,14 +8,16 @@ SvelteKit 5 static SPA for the Unquote cryptoquip game. Builds to a fully static
 
 - **Framework**: SvelteKit 5 with `adapter-static` (fully prerendered, client-side routing)
 - **UI**: Svelte 5 (runes mode: `$state`, `$derived`, `$effect`) + Tailwind CSS v4
-- **Testing**: Vitest with jsdom environment
+- **Testing**: Vitest with jsdom environment; Playwright for E2E screenshot tests
 - **Build**: Vite 7, TypeScript 5.9
 
 ## Commands
 
 - `pnpm run dev` - Start dev server
 - `pnpm run build` - Build static site to `build/`
+- `pnpm run preview` - Preview production build locally
 - `pnpm run test` - Run tests (vitest)
+- `pnpm run test:e2e` - Run E2E tests (Playwright, requires build and preview server)
 - `pnpm run check` - Type checking (svelte-check)
 - `pnpm run format` - Format with Prettier + prettier-plugin-svelte
 
@@ -55,6 +57,16 @@ Svelte 5 runes with singleton class instances (not stores). Two global state obj
 | `/game`  | Game screen (puzzle grid, keyboard, timer, solution check) |
 | `/stats` | Player statistics (requires claim code)                    |
 
+### Share Module (`lib/share/`)
+
+Wordle-style sharing for session results and player stats. Follows Functional Core / Imperative Shell split.
+
+- **Functional Core** (`format.ts`): Pure formatters. `formatSessionText(data)` and `formatStatsText(stats)` produce emoji-grid text. `buildLetterGrid(cells)` renders decode progress as gold/white squares.
+- **Imperative Shell** (`actions.ts`): Side-effectful clipboard, download, and Web Share API operations. All return `boolean` for success/failure.
+- **Image capture** (`capture.ts`): `captureElementAsBlob(element)` renders Svelte card components to PNG via `modern-screenshot`. Returns `null` on failure.
+- **Capability detection** (`detect.ts`): `canCopyImage()` and `canNativeShare()` check browser API availability at runtime.
+- **Components**: `SessionShareCard.svelte`, `StatsShareCard.svelte` (1200x628 branded cards for image capture), `ShareMenu.svelte` (dropdown with progressive enhancement: text copy, image copy, native share, download).
+
 ### Key Contracts
 
 - **Puzzle cells**: `buildCells()` returns `Cell[]` (LetterCell, HintCell, PunctCell, SpaceCell). LetterCells have `editIndex` for cursor navigation.
@@ -75,5 +87,6 @@ Svelte 5 runes with singleton class instances (not stores). Two global state obj
 
 ## Dependencies
 
-- **Uses**: Unquote REST API (`/game/*`, `/player/*` endpoints)
+- **Uses**: Unquote REST API (`/game/*`, `/player/*` endpoints), `modern-screenshot` (DOM-to-PNG capture for share cards)
 - **Used by**: End users via browser; deployed to S3/CloudFront by `web-deploy.yml`
+- **Dev**: `@playwright/test` for E2E screenshot tests (`web/tests/`)

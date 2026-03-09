@@ -1,10 +1,23 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, tick } from "svelte";
   import { fade } from "svelte/transition";
   import { game } from "$lib/state/game.svelte.js";
   import { identity } from "$lib/state/identity.svelte.js";
   import { assembleSolution, formatTimer } from "$lib/puzzle.js";
-  import { checkSolution, recordSession } from "$lib/api.js";
+  import { checkSolution, recordSession, getStats } from "$lib/api.js";
+  import SessionShareCard from "$lib/share/SessionShareCard.svelte";
+  import ShareMenu from "$lib/share/ShareMenu.svelte";
+  import { formatSessionText, buildLetterGrid } from "$lib/share/format.js";
+  import type { SessionShareData } from "$lib/share/format.js";
+  import { captureElementAsBlob } from "$lib/share/capture.js";
+  import {
+    copyImageToClipboard,
+    copyTextToClipboard,
+    downloadBlob,
+    showFeedback,
+    nativeShareImage,
+  } from "$lib/share/actions.js";
+  import { canNativeShare } from "$lib/share/detect.js";
   import type { Cell } from "$lib/puzzle.js";
 
   // ── Local state ───────────────────────────────────────────────────────
@@ -17,6 +30,12 @@
     text: string;
     kind: "warning" | "error" | "loading";
   } | null = $state(null);
+  let sessionShareFeedback = $state<string | null>(null);
+  let sessionCardEl: HTMLElement | undefined = $state();
+  // Reactive cache for streak API call (reset on page load).
+  // Must be reactive so SessionShareCard re-renders when streak is fetched,
+  // ensuring the captured image includes the streak badge.
+  let cachedStreak: number | null = $state(null);
 
   // ── Crossfade state ─────────────────────────────────────────────────
   // Drives pure CSS opacity transitions instead of Svelte's in:/out: directives,
@@ -63,6 +82,9 @@
   const activeCipherLetter = $derived(
     game.editables[game.cursorEditIdx]?.cipherLetter ?? null,
   );
+
+  // ── Derived: letter grid for session share card ───────────────────────
+  const sessionLetterGrid = $derived(buildLetterGrid(game.cells));
 
   // ── Timer: runs when playing, stops when solved/checking ─────────────
   $effect(() => {
@@ -244,6 +266,87 @@
     }
   }
 
+  async function fetchStreakIfNeeded() {
+    if (identity.claimCode && cachedStreak === null) {
+      try {
+        const stats = await getStats(identity.claimCode);
+        cachedStreak = stats.currentStreak;
+        // Wait for Svelte to re-render the SessionShareCard with the streak
+        // before capturing, so the image includes the streak badge
+        await tick();
+      } catch {
+        // Streak unavailable — share without it
+      }
+    }
+  }
+
+  async function handleCopyImage() {
+    if (!game.puzzle || game.status !== "solved" || !sessionCardEl) return;
+
+    await fetchStreakIfNeeded();
+    const blob = await captureElementAsBlob(sessionCardEl);
+    if (blob) {
+      const ok = await copyImageToClipboard(blob);
+      if (ok) {
+        showFeedback((v) => (sessionShareFeedback = v ? "Copied!" : null));
+      } else {
+        // AC1.10: fallback to download
+        downloadBlob(blob, "unquote-session.png");
+        showFeedback((v) => (sessionShareFeedback = v ? "Downloaded!" : null));
+      }
+    }
+  }
+
+  async function handleCopyText() {
+    if (!game.puzzle || game.status !== "solved") return;
+
+    const data: SessionShareData = {
+      puzzleNumber: game.puzzle.date,
+      solved: true,
+      completionTime: game.completionTime,
+      cells: game.cells,
+      currentStreak: identity.claimCode ? cachedStreak : null,
+    };
+
+    const text = formatSessionText(data);
+    await copyTextToClipboard(text);
+    showFeedback((v) => (sessionShareFeedback = v ? "Copied!" : null));
+  }
+
+  async function handleDownload() {
+    if (!game.puzzle || game.status !== "solved" || !sessionCardEl) return;
+
+    await fetchStreakIfNeeded();
+    const blob = await captureElementAsBlob(sessionCardEl);
+    if (blob) {
+      downloadBlob(blob, "unquote-session.png");
+      showFeedback((v) => (sessionShareFeedback = v ? "Downloaded!" : null));
+    }
+  }
+
+  async function handleNativeShare() {
+    if (!game.puzzle || game.status !== "solved" || !sessionCardEl) return;
+
+    await fetchStreakIfNeeded();
+    const blob = await captureElementAsBlob(sessionCardEl);
+    if (blob) {
+      const data: SessionShareData = {
+        puzzleNumber: game.puzzle.date,
+        solved: true,
+        completionTime: game.completionTime,
+        cells: game.cells,
+        currentStreak: identity.claimCode ? cachedStreak : null,
+      };
+      const text = formatSessionText(data);
+      await nativeShareImage(
+        blob,
+        "unquote-session.png",
+        "UNQUOTE Result",
+        text,
+      );
+    }
+  }
+
   function handleCellClick(editIdx: number) {
     game.setCursor(editIdx);
     focusKb(); // re-focus hidden input (AC2.17)
@@ -274,6 +377,22 @@
 <svelte:head>
   <title>Unquote — Today's Puzzle</title>
 </svelte:head>
+
+<!-- Hidden off-screen share card for capture -->
+{#if game.status === "solved" && !game.solvedElsewhere && game.puzzle}
+  <div
+    bind:this={sessionCardEl}
+    style="position: absolute; left: -9999px; top: -9999px;"
+  >
+    <SessionShareCard
+      puzzleNumber={game.puzzle.date}
+      solved={true}
+      completionTime={game.completionTime}
+      letterGrid={sessionLetterGrid}
+      currentStreak={identity.claimCode ? cachedStreak : null}
+    />
+  </div>
+{/if}
 
 <!-- Hidden keyboard capture input (AC2.17) -->
 <!-- position: fixed keeps it off-screen on all viewport sizes -->
@@ -503,6 +622,17 @@
                   <span class="stat-label">Time</span>
                 </div>
               </div>
+              {#if !game.solvedElsewhere}
+                <ShareMenu
+                  onCopyImage={handleCopyImage}
+                  onCopyText={handleCopyText}
+                  onDownload={handleDownload}
+                  onNativeShare={canNativeShare()
+                    ? handleNativeShare
+                    : undefined}
+                  feedback={sessionShareFeedback}
+                />
+              {/if}
             </div>
           {/if}
 
