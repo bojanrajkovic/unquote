@@ -141,35 +141,47 @@ test.describe("game route", () => {
 
       const letterCells = page.locator(".cell.letter");
 
-      // Type a few letters: press 'a', 'e', 'i'
-      // This fills the first few cells and moves cursor forward
-      await page.keyboard.press("a");
-      await page.waitForTimeout(50);
+      // Press 'x' to fill first cell (cell 0, cipher B)
+      await page.keyboard.press("x");
+      const firstCell = letterCells.first();
+      const firstCellInput = firstCell.locator(".cell-input");
+      await expect(firstCellInput).toContainText("X");
 
-      await page.keyboard.press("e");
-      await page.waitForTimeout(50);
+      // Verify second cell is now active (cursor moved to cell 1, cipher C)
+      const secondCell = letterCells.nth(1);
+      await expect(secondCell).toHaveClass(/active/);
 
-      await page.keyboard.press("i");
-      await page.waitForTimeout(50);
+      // Press 'y' to fill second cell
+      // Note: cells 1 and 2 both have cipher C, so typing on cell 1 fills both
+      await page.keyboard.press("y");
+      await expect(secondCell.locator(".cell-input")).toContainText("Y");
 
-      // Now we're at cursor position 3 (after typing 3 letters)
-      // Press Backspace to go back and clear
+      // Verify third cell is now active (cursor moved to cell 2, also cipher C)
+      const thirdCell = letterCells.nth(2);
+      await expect(thirdCell).toHaveClass(/active/);
+
+      // Press Backspace on cell 2 (cipher C, which has guess 'Y')
+      // Since cell has a guess, we clear the guess but DON'T move cursor
       await page.keyboard.press("Backspace");
-      await page.waitForTimeout(100);
+      // Cursor still on cell 2 (now empty), but it's not active—it shows as "related"
+      // because cursor didn't move
+      const thirdCellAfterBackspace = page.locator(".cell.letter").nth(2);
+      const thirdCellInputAfterBackspace =
+        thirdCellAfterBackspace.locator(".cell-input");
+      await expect(thirdCellInputAfterBackspace).toContainText("·");
 
-      // Verify at least one cell is cleared (guess is "·")
-      // This confirms backspace worked
-      let hasEmptyCell = false;
-      const cellCount = await letterCells.count();
-      for (let i = 0; i < Math.min(3, cellCount); i++) {
-        const cellInput = letterCells.nth(i).locator(".cell-input");
-        const text = await cellInput.textContent();
-        if (text === "·") {
-          hasEmptyCell = true;
-          break;
-        }
-      }
-      expect(hasEmptyCell).toBeTruthy();
+      // Press Backspace again on cell 2 (now empty)
+      // Since cell is empty and we're not on first cell, move back and clear prev
+      await page.keyboard.press("Backspace");
+      const secondCellAfterSecondBackspace = page
+        .locator(".cell.letter")
+        .nth(1);
+      // Second cell should now be active
+      await expect(secondCellAfterSecondBackspace).toHaveClass(/active/);
+      // Second cell should be cleared
+      await expect(
+        secondCellAfterSecondBackspace.locator(".cell-input"),
+      ).toContainText("·");
     });
 
     test("playwright-e2e.AC3.5: Ctrl+C clears all guesses", async ({
