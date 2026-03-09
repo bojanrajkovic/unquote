@@ -232,4 +232,185 @@ test.describe("game route", () => {
       await expect(fifthCell).toHaveClass(/active/);
     });
   });
+
+  // ── Task 3: Conflict Highlighting Test ──
+
+  test("playwright-e2e.AC3.7: conflict highlighting when two ciphers map to same plain letter", async ({
+    page,
+  }) => {
+    // Mock API
+    await mockApi(page, { sessionNotFound: true });
+
+    // Navigate to /game
+    await page.goto("/game");
+
+    // Wait for puzzle grid
+    const puzzleGrid = page.locator(".puzzle-grid");
+    await expect(puzzleGrid).toBeVisible({ timeout: 10000 });
+
+    // The first editable cell is B (editIndex 0)
+    // Typing 'h' assigns B→H, which conflicts with hint X→H
+    await page.keyboard.press("h");
+
+    // Assert that conflict cells exist (at least the B cell should be marked as conflict)
+    const conflictCells = page.locator(".cell.letter.conflict");
+    await expect(conflictCells).not.toHaveCount(0);
+
+    // Capture screenshot
+    await captureScreenshot(page, "game-conflict.png");
+  });
+
+  // ── Task 4: Full Solve Flow Test ──
+
+  test("playwright-e2e.AC3.8: full solve shows solved card with decoded quote", async ({
+    page,
+  }) => {
+    // Mock API: check endpoint returns correct: true
+    await mockApi(page, {
+      checkResult: { correct: true },
+      sessionNotFound: true,
+    });
+
+    // Navigate to /game
+    await page.goto("/game");
+
+    // Wait for puzzle grid
+    const puzzleGrid = page.locator(".puzzle-grid");
+    await expect(puzzleGrid).toBeVisible({ timeout: 10000 });
+
+    // Type the correct solution: E, L, L, O, W, O, R, L, D
+    // The cipher map is: B→E, C→L, D→O, F→W, G→R, A→D
+    // MOCK_PUZZLE "XBCCD FDGCA" maps to "HELLO WORLD"
+    // Editable cells left-to-right: B, C, C, D, F, D, G, C, A
+    const solutionLetters = ["e", "l", "l", "o", "w", "o", "r", "l", "d"];
+
+    for (const letter of solutionLetters) {
+      await page.keyboard.press(letter);
+    }
+
+    // Press Enter to submit
+    await page.keyboard.press("Enter");
+
+    // Wait for .solved-card to appear (with flip animation timeout)
+    const solvedCard = page.locator(".solved-card");
+    await expect(solvedCard).toBeVisible({ timeout: 15000 });
+
+    // Assert solved card contains the decoded quote "HELLO WORLD"
+    await expect(solvedCard).toContainText("HELLO WORLD");
+
+    // Assert solved card contains attribution "Test Author"
+    await expect(solvedCard).toContainText("Test Author");
+
+    // Assert timer/stat shows completion time (format: MM:SS)
+    const timePattern = /\d+:\d{2}/;
+    const solvedCardText = await solvedCard.textContent();
+    expect(solvedCardText).toMatch(timePattern);
+
+    // Capture screenshot
+    await captureScreenshot(page, "game-solved.png");
+  });
+
+  // ── Task 5: Incorrect Solve and Validation Guard Tests ──
+
+  test("playwright-e2e.AC3.9: incorrect solution shows 'Not quite' message", async ({
+    page,
+  }) => {
+    // Mock API: check endpoint returns correct: false
+    await mockApi(page, {
+      checkResult: { correct: false },
+      sessionNotFound: true,
+    });
+
+    // Navigate to /game
+    await page.goto("/game");
+
+    // Wait for puzzle grid
+    const puzzleGrid = page.locator(".puzzle-grid");
+    await expect(puzzleGrid).toBeVisible({ timeout: 10000 });
+
+    // Type 9 different wrong letters (no conflicts) to fill all editable cells
+    // MOCK_PUZZLE editable cells are: B, C, C, D, F, D, G, C, A (9 cells)
+    // Using cipher letters: B, C, D, F, G, A, and others
+    // Fill with: J, K, M, N, P, Q, R, S, T (9 letters that avoid conflicts with the cipher set)
+    const wrongLetters = ["j", "k", "m", "n", "p", "q", "r", "s", "t"];
+    for (const letter of wrongLetters) {
+      await page.keyboard.press(letter);
+    }
+
+    // Press Enter to submit
+    await page.keyboard.press("Enter");
+
+    // Wait for status message to appear
+    const statusMessage = page.locator(".game-status");
+    await expect(statusMessage).toBeVisible({ timeout: 5000 });
+
+    // Assert status message contains "Not quite"
+    await expect(statusMessage).toContainText(/Not quite/i);
+  });
+
+  test("playwright-e2e.AC3.10: submit with empty cells shows warning", async ({
+    page,
+  }) => {
+    // Mock API
+    await mockApi(page, { sessionNotFound: true });
+
+    // Navigate to /game
+    await page.goto("/game");
+
+    // Wait for puzzle grid
+    const puzzleGrid = page.locator(".puzzle-grid");
+    await expect(puzzleGrid).toBeVisible({ timeout: 10000 });
+
+    // Do NOT type any letters (all cells empty)
+    // Click the Check Answer button (.btn-primary)
+    const checkButton = page.locator(".btn-primary", {
+      hasText: /Check Answer/i,
+    });
+    await checkButton.click();
+
+    // Wait for status message
+    const statusMessage = page.locator(".game-status");
+    await expect(statusMessage).toBeVisible({ timeout: 5000 });
+
+    // Assert status message contains "Fill in all letters first"
+    await expect(statusMessage).toContainText(/Fill in all letters first/i);
+  });
+
+  test("playwright-e2e.AC3.11: submit with conflicts shows warning", async ({
+    page,
+  }) => {
+    // Mock API
+    await mockApi(page, { sessionNotFound: true });
+
+    // Navigate to /game
+    await page.goto("/game");
+
+    // Wait for puzzle grid
+    const puzzleGrid = page.locator(".puzzle-grid");
+    await expect(puzzleGrid).toBeVisible({ timeout: 10000 });
+
+    // Fill all cells with at least one conflict:
+    // Type "h" on first cell (B) to create conflict with hint X→H
+    // Then fill remaining cells with any non-conflicting letters
+    const cellLetters = ["h", "x", "x", "x", "x", "x", "x", "x", "x"];
+
+    for (const letter of cellLetters) {
+      await page.keyboard.press(letter);
+    }
+
+    // Click the Check Answer button
+    const checkButton = page.locator(".btn-primary", {
+      hasText: /Check Answer/i,
+    });
+    await checkButton.click();
+
+    // Wait for status message
+    const statusMessage = page.locator(".game-status");
+    await expect(statusMessage).toBeVisible({ timeout: 5000 });
+
+    // Assert status message contains "Resolve letter conflicts first"
+    await expect(statusMessage).toContainText(
+      /Resolve letter conflicts first/i,
+    );
+  });
 });
