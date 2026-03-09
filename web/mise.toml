@@ -25,6 +25,14 @@ run = "pnpm run check"
 description = "Run TypeScript type checking"
 run = "pnpm run check"
 
+[tasks.test]
+description = "Run unit tests"
+run = "pnpm run test"
+
+[tasks."test:e2e"]
+description = "Run E2E tests (Playwright)"
+run = "pnpm run test:e2e"
+
 [tasks.fmt]
 description = "Format Svelte and TypeScript files"
 run = "pnpm run format"
