@@ -200,7 +200,7 @@ describe("nativeShareImage", () => {
     }
   });
 
-  it("passes blob as File to navigator.share", async () => {
+  it("shareable-stats.AC1.6: passes blob as File to navigator.share", async () => {
     const mockShare = vi.fn().mockResolvedValue(undefined);
     const originalNavigator = navigator;
 

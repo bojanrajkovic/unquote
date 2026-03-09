@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"time"
 	"unicode"
@@ -78,6 +77,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case statsFetchedMsg:
 		return m.handleStatsFetched(msg)
+
+	case shareSessionResultMsg:
+		m.shareFeedback = msg.feedback
+		return m, tea.Tick(2500*time.Millisecond, func(_ time.Time) tea.Msg {
+			return clearShareFeedbackMsg{}
+		})
 
 	case clearShareFeedbackMsg:
 		m.shareFeedback = ""
@@ -343,25 +348,8 @@ func (m Model) handleSolvedKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			Solved:       true,
 		}
 
-		text := share.FormatSessionText(data)
-		ok := share.CopyToClipboard(text, os.Stderr)
-
-		if ok {
-			m.shareFeedback = "Copied to clipboard!"
-		} else {
-			m.shareFeedback = "Printed to stdout"
-		}
-
-		// Progressive enhancement: generate and share image
-		img := share.GenerateSessionCard(data)
-		if share.CopyImageToClipboard(img) {
-			m.shareFeedback = "Copied image to clipboard!"
-		}
-		share.DisplayInlineImage(img) // silent no-op if terminal doesn't support it
-
-		return m, tea.Tick(2500*time.Millisecond, func(_ time.Time) tea.Msg {
-			return clearShareFeedbackMsg{}
-		})
+		m.shareFeedback = "Sharing..."
+		return m, shareSessionCmd(data)
 	}
 	return m, nil
 }

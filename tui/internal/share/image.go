@@ -2,6 +2,7 @@ package share
 
 import (
 	"image"
+	"math"
 	"strconv"
 
 	"github.com/fogleman/gg"
@@ -282,7 +283,7 @@ func drawStatsTiles(dc *gg.Context, stats *api.PlayerStatsResponse) {
 
 // fmtPercent formats a win rate (0.0-1.0) as a percentage string.
 func fmtPercent(rate float64) string {
-	pct := int(rate * 100)
+	pct := int(math.Round(rate * 100))
 	return fmtInt(pct) + "%"
 }
 

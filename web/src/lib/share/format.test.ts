@@ -95,7 +95,7 @@ describe("buildLetterGrid", () => {
     }
   });
 
-  it("returns empty string for empty cells array", () => {
+  it("shareable-stats.AC1.8: returns empty string for empty cells array", () => {
     const grid = buildLetterGrid([]);
     expect(grid).toBe("");
   });
@@ -179,7 +179,7 @@ describe("formatSessionText", () => {
     expect(text).toContain("12-day streak");
   });
 
-  it("omits streak line when currentStreak is null (anonymous player)", () => {
+  it("shareable-stats.AC1.3: omits streak line when currentStreak is null (anonymous player)", () => {
     const data: SessionShareData = {
       puzzleNumber: "42",
       solved: true,
@@ -192,7 +192,7 @@ describe("formatSessionText", () => {
     expect(text).not.toContain("day streak");
   });
 
-  it("omits streak line when currentStreak is 0", () => {
+  it("shareable-stats.AC1.3: omits streak line when currentStreak is 0", () => {
     const data: SessionShareData = {
       puzzleNumber: "42",
       solved: true,
@@ -205,7 +205,7 @@ describe("formatSessionText", () => {
     expect(text).not.toContain("day streak");
   });
 
-  it("shows cross mark emoji for unsolved puzzles", () => {
+  it("shareable-stats.AC1.3: shows cross mark emoji for unsolved puzzles", () => {
     const data: SessionShareData = {
       puzzleNumber: "42",
       solved: false,
@@ -218,7 +218,7 @@ describe("formatSessionText", () => {
     expect(text).not.toContain("✅");
   });
 
-  it("omits time from header for unsolved puzzles", () => {
+  it("shareable-stats.AC1.3: omits time from header for unsolved puzzles", () => {
     const data: SessionShareData = {
       puzzleNumber: "42",
       solved: false,
@@ -275,19 +275,19 @@ describe("formatStatsText", () => {
     expect(text).toContain("⏱️");
   });
 
-  it("includes footer URL", () => {
+  it("shareable-stats.AC2.3: includes footer URL", () => {
     const stats = createTestStats();
     const text = formatStatsText(stats);
     expect(text).toContain("playunquote.com");
   });
 
-  it("includes UNQUOTE Stats header", () => {
+  it("shareable-stats.AC2.3: includes UNQUOTE Stats header", () => {
     const stats = createTestStats();
     const text = formatStatsText(stats);
     expect(text).toContain("UNQUOTE Stats");
   });
 
-  it("handles win rate rounding correctly", () => {
+  it("shareable-stats.AC2.3: handles win rate rounding correctly", () => {
     const stats = createTestStats({
       gamesPlayed: 100,
       gamesSolved: 95,

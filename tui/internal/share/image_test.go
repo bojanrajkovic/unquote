@@ -206,7 +206,7 @@ func TestGenerateSessionCard_NilStreak(t *testing.T) {
 	}
 }
 
-// Test PNG encode/decode round-trip for session card
+// AC5.3: GenerateSessionCard PNG encode/decode round-trip
 func TestGenerateSessionCard_RoundTripPNG(t *testing.T) {
 	data := SessionShareData{
 		PuzzleNumber: "2026-03-07",
@@ -244,7 +244,7 @@ func TestGenerateSessionCard_RoundTripPNG(t *testing.T) {
 	}
 }
 
-// Test PNG encode/decode round-trip for stats card
+// AC5.3: GenerateStatsCard PNG encode/decode round-trip
 func TestGenerateStatsCard_RoundTripPNG(t *testing.T) {
 	bestTime := float64(102000) // 1:42
 	avgTime := float64(151000)  // 2:31
@@ -292,7 +292,7 @@ func TestGenerateStatsCard_RoundTripPNG(t *testing.T) {
 	}
 }
 
-// Test GenerateSessionCard with large completion time
+// AC5.1: GenerateSessionCard handles large completion time
 func TestGenerateSessionCard_LargeCompletionTime(t *testing.T) {
 	data := SessionShareData{
 		PuzzleNumber: "2026-03-07",
@@ -315,7 +315,7 @@ func TestGenerateSessionCard_LargeCompletionTime(t *testing.T) {
 	}
 }
 
-// Test GenerateStatsCard with high streak
+// AC5.2: GenerateStatsCard handles high streak values
 func TestGenerateStatsCard_HighStreak(t *testing.T) {
 	stats := &api.PlayerStatsResponse{
 		ClaimCode:     "TEST-CODE",
@@ -342,7 +342,7 @@ func TestGenerateStatsCard_HighStreak(t *testing.T) {
 	}
 }
 
-// Test GenerateSessionCard with empty cells
+// AC5.1: GenerateSessionCard handles empty cells
 func TestGenerateSessionCard_EmptyCells(t *testing.T) {
 	data := SessionShareData{
 		PuzzleNumber: "2026-03-07",

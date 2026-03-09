@@ -37,7 +37,7 @@ describe("canCopyImage", () => {
     }
   });
 
-  it("returns false when navigator is undefined", () => {
+  it("shareable-stats.AC1.9: returns false when navigator is undefined", () => {
     const originalNavigator = globalThis.navigator;
     Object.defineProperty(globalThis, "navigator", {
       value: undefined,
@@ -57,7 +57,7 @@ describe("canCopyImage", () => {
     }
   });
 
-  it("returns false when ClipboardItem is not available", () => {
+  it("shareable-stats.AC1.9: returns false when ClipboardItem is not available", () => {
     const originalClipboardItem = globalThis.ClipboardItem;
     Object.defineProperty(globalThis, "ClipboardItem", {
       value: undefined,
@@ -77,7 +77,7 @@ describe("canCopyImage", () => {
     }
   });
 
-  it("returns false when navigator.clipboard is not available", () => {
+  it("shareable-stats.AC1.9: returns false when navigator.clipboard is not available", () => {
     const originalClipboard = navigator.clipboard;
     Object.defineProperty(navigator, "clipboard", {
       value: undefined,
@@ -97,7 +97,7 @@ describe("canCopyImage", () => {
     }
   });
 
-  it("returns false when navigator.clipboard.write is not a function", () => {
+  it("shareable-stats.AC1.9: returns false when navigator.clipboard.write is not a function", () => {
     const originalClipboard = navigator.clipboard;
     Object.defineProperty(navigator, "clipboard", {
       value: { write: "not a function" },
@@ -150,7 +150,7 @@ describe("canNativeShare", () => {
     }
   });
 
-  it("returns false when navigator is undefined", () => {
+  it("shareable-stats.AC1.9: returns false when navigator is undefined", () => {
     const originalNavigator = globalThis.navigator;
     Object.defineProperty(globalThis, "navigator", {
       value: undefined,
@@ -170,7 +170,7 @@ describe("canNativeShare", () => {
     }
   });
 
-  it("returns false when navigator.share is not available", () => {
+  it("shareable-stats.AC1.9: returns false when navigator.share is not available", () => {
     const originalNavigator = navigator;
     Object.defineProperty(globalThis, "navigator", {
       value: {
@@ -194,7 +194,7 @@ describe("canNativeShare", () => {
     }
   });
 
-  it("returns false when navigator.canShare is not available", () => {
+  it("shareable-stats.AC1.9: returns false when navigator.canShare is not available", () => {
     const originalNavigator = navigator;
     Object.defineProperty(globalThis, "navigator", {
       value: {
@@ -218,7 +218,7 @@ describe("canNativeShare", () => {
     }
   });
 
-  it("returns false when canShare returns false", () => {
+  it("shareable-stats.AC1.9: returns false when canShare returns false", () => {
     const mockCanShare = vi.fn().mockReturnValue(false);
     const originalNavigator = navigator;
 
@@ -244,7 +244,7 @@ describe("canNativeShare", () => {
     }
   });
 
-  it("returns false when canShare throws an error", () => {
+  it("shareable-stats.AC1.9: returns false when canShare throws an error", () => {
     const mockCanShare = vi.fn().mockImplementation(() => {
       throw new Error("canShare failed");
     });

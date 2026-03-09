@@ -177,7 +177,7 @@ func TestFormatStatsText_AC4_1_NoSolves(t *testing.T) {
 	}
 }
 
-// Test BuildLetterGrid with solved cells (maps CellLetter with input to gold)
+// AC3.1: BuildLetterGrid maps CellLetter with input to gold squares
 func TestBuildLetterGrid_SolvedCells(t *testing.T) {
 	cells := puzzle.BuildCells("ABC", nil)
 	// All cells have Input set to 0, so all should be white
@@ -196,7 +196,7 @@ func TestBuildLetterGrid_SolvedCells(t *testing.T) {
 	}
 }
 
-// Test BuildLetterGrid with unsolved cells (maps CellLetter without input to white)
+// AC3.1: BuildLetterGrid maps CellLetter without input to white squares
 func TestBuildLetterGrid_UnsolvedCells(t *testing.T) {
 	cells := puzzle.BuildCells("ABC", nil)
 	// All cells have Input = 0, so all should be white
@@ -209,7 +209,7 @@ func TestBuildLetterGrid_UnsolvedCells(t *testing.T) {
 	}
 }
 
-// Test BuildLetterGrid with mixed solved and unsolved cells
+// AC3.1: BuildLetterGrid with mixed solved and unsolved cells
 func TestBuildLetterGrid_Mixed(t *testing.T) {
 	cells := puzzle.BuildCells("ABCD", nil)
 	// Set input for first 2 cells
@@ -233,7 +233,7 @@ func TestBuildLetterGrid_Mixed(t *testing.T) {
 	}
 }
 
-// Test BuildLetterGrid with spaces (preserves space CellPunctuation)
+// AC3.1: BuildLetterGrid preserves space CellPunctuation
 func TestBuildLetterGrid_WithSpaces(t *testing.T) {
 	cells := puzzle.BuildCells("A B", nil)
 
@@ -245,7 +245,7 @@ func TestBuildLetterGrid_WithSpaces(t *testing.T) {
 	}
 }
 
-// Test BuildLetterGrid with punctuation (omits non-space punctuation)
+// AC3.1: BuildLetterGrid omits non-space punctuation
 func TestBuildLetterGrid_WithPunctuation(t *testing.T) {
 	cells := puzzle.BuildCells("A,B.", nil)
 
@@ -257,7 +257,7 @@ func TestBuildLetterGrid_WithPunctuation(t *testing.T) {
 	}
 }
 
-// Test BuildLetterGrid with hint cells (maps CellHint to gold)
+// AC3.1: BuildLetterGrid maps CellHint to gold squares
 func TestBuildLetterGrid_WithHints(t *testing.T) {
 	hints := map[rune]rune{'A': 'X'}
 	cells := puzzle.BuildCells("ABC", hints)
@@ -275,7 +275,7 @@ func TestBuildLetterGrid_WithHints(t *testing.T) {
 	}
 }
 
-// Test BuildLetterGrid with empty cells (returns empty string)
+// AC3.1: BuildLetterGrid returns empty string for empty cells
 func TestBuildLetterGrid_Empty(t *testing.T) {
 	result := BuildLetterGrid([]puzzle.Cell{})
 
@@ -284,7 +284,7 @@ func TestBuildLetterGrid_Empty(t *testing.T) {
 	}
 }
 
-// Test fmtMs formatting via FormatSessionText which uses it internally
+// AC3.1: fmtMs formats various millisecond values correctly
 func TestFmtMs_Various(t *testing.T) {
 	testCases := []struct {
 		expected string
