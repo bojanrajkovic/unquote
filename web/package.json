@@ -16,7 +16,7 @@
     "test:e2e": "playwright test",
     "coverage:unit": "vitest run --coverage",
     "coverage:e2e": "VITE_COVERAGE=true pnpm run build && playwright test",
-    "coverage:merge": "mkdir -p .nyc_output && cp coverage/coverage-final.json .nyc_output/vitest-coverage.json 2>/dev/null; nyc merge .nyc_output .nyc_output/merged.json && nyc report",
+    "coverage:merge": "mkdir -p .nyc_output .nyc_merged && cp coverage/coverage-final.json .nyc_output/vitest-coverage.json 2>/dev/null; nyc merge .nyc_output .nyc_merged/merged.json && nyc report --temp-dir .nyc_merged",
     "coverage:full": "pnpm run coverage:unit && pnpm run coverage:e2e && pnpm run coverage:merge"
   },
   "devDependencies": {

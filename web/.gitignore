@@ -22,3 +22,4 @@ playwright-report/
 # Coverage artifacts
 coverage/
 .nyc_output/
+.nyc_merged/
