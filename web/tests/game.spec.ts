@@ -4,6 +4,8 @@ import {
   seedLocalStorage,
   mockApi,
   captureScreenshot,
+  MOCK_CLAIM_CODE,
+  MOCK_PUZZLE,
 } from "./fixtures.js";
 
 test.describe("game route", () => {
@@ -412,5 +414,151 @@ test.describe("game route", () => {
     await expect(statusMessage).toContainText(
       /Resolve letter conflicts first/i,
     );
+  });
+
+  // ── Task 6: Redirect, Error, Remote Completion, and Resume Tests ──
+
+  test("playwright-e2e.AC3.12: not-onboarded user redirected to /", async ({
+    page,
+  }) => {
+    // Navigate to / first to establish origin context
+    await page.goto("/");
+
+    // Re-seed localStorage with onboarded: false to override the beforeEach setup
+    await seedLocalStorage(page, { onboarded: false, claimCode: null });
+
+    // Reload the page to reinitialize identity state from localStorage
+    await page.reload();
+
+    // Wait for redirect to complete
+    await page.waitForURL("/");
+
+    // Assert URL is /
+    const urlPath = new URL(page.url()).pathname;
+    expect(urlPath).toBe("/");
+  });
+
+  test("playwright-e2e.AC3.13: API error loading puzzle shows error message", async ({
+    page,
+  }) => {
+    // Mock GET /game/today to return 500
+    await page.route("**/game/today", (route) =>
+      route.fulfill({ status: 500 }),
+    );
+
+    // Navigate to /game
+    await page.goto("/game");
+
+    // Wait for error message to appear
+    const errorMsg = page.locator(".error-msg");
+    await expect(errorMsg).toBeVisible({ timeout: 10000 });
+
+    // Assert error message text contains "Could not load" or similar
+    await expect(errorMsg).toContainText(/Could not load|error/i);
+
+    // Assert back button is visible
+    const backButton = page.locator(".btn-back-link");
+    await expect(backButton).toBeVisible();
+
+    // Capture screenshot
+    await captureScreenshot(page, "game-error.png");
+  });
+
+  test("playwright-e2e.AC3.14: remote completion shows solved-elsewhere card", async ({
+    page,
+  }) => {
+    // Seed localStorage with claim code
+    await seedLocalStorage(page, {
+      onboarded: true,
+      claimCode: MOCK_CLAIM_CODE,
+    });
+
+    // Mock API: puzzle returns MOCK_PUZZLE, session returns completion data
+    await mockApi(page, {
+      session: { completionTime: 95000, solvedAt: "2026-03-07T12:00:00Z" },
+    });
+
+    // Navigate to /game
+    await page.goto("/game");
+
+    // Wait for solved card to appear
+    const solvedCard = page.locator(".solved-card");
+    await expect(solvedCard).toBeVisible({ timeout: 15000 });
+
+    // Assert it has the solved-elsewhere class
+    await expect(solvedCard).toHaveClass(/solved-elsewhere/);
+
+    // Assert text contains "Already Solved" or "Solved on another device"
+    const solvedCardText = await solvedCard.textContent();
+    expect(solvedCardText).toMatch(/Already Solved|Solved on another device/i);
+
+    // Capture screenshot
+    await captureScreenshot(page, "game-solved-elsewhere.png");
+  });
+
+  test("playwright-e2e.AC3.15: same-day resume restores guesses from localStorage", async ({
+    page,
+  }) => {
+    // Get today's date dynamically
+    const todayDate = new Date().toISOString().split("T")[0];
+
+    // Create partial state with today's date
+    const partialState = {
+      date: todayDate,
+      puzzleId: MOCK_PUZZLE.id,
+      puzzle: { ...MOCK_PUZZLE, date: todayDate },
+      guesses: { B: "E", C: "L" },
+      startTime: Date.now() - 60000,
+      completionTime: null,
+      status: "playing" as const,
+    };
+
+    // Seed localStorage with partial state
+    await seedLocalStorage(page, {
+      onboarded: true,
+      puzzleState: partialState,
+    });
+
+    // Mock session as not found
+    await mockApi(page, { sessionNotFound: true });
+
+    // Navigate to /game
+    await page.goto("/game");
+
+    // Wait for puzzle grid
+    const puzzleGrid = page.locator(".puzzle-grid");
+    await expect(puzzleGrid).toBeVisible({ timeout: 10000 });
+
+    // Get all letter cells
+    const letterCells = page.locator(".cell.letter");
+
+    // Map cipher letter to index for "XBCCD FDGCA" (after X which is hint):
+    // Editable cells: B(0), C(1), C(2), D(3), F(4), D(5), G(6), C(7), A(8)
+    // We expect: B→E (index 0), C→L (indices 1, 2, 7), D and others empty
+
+    // Check first cell (B) has guess "E"
+    const firstCell = letterCells.first();
+    const firstCellInput = firstCell.locator(".cell-input");
+    await expect(firstCellInput).toContainText("E");
+
+    // Check second cell (C) has guess "L"
+    const secondCell = letterCells.nth(1);
+    const secondCellInput = secondCell.locator(".cell-input");
+    await expect(secondCellInput).toContainText("L");
+
+    // Check third cell (C) has guess "L"
+    const thirdCell = letterCells.nth(2);
+    const thirdCellInput = thirdCell.locator(".cell-input");
+    await expect(thirdCellInput).toContainText("L");
+
+    // Check fourth cell (D) is empty
+    const fourthCell = letterCells.nth(3);
+    const fourthCellInput = fourthCell.locator(".cell-input");
+    await expect(fourthCellInput).toContainText("·");
+
+    // Check fifth cell (F) is empty
+    const fifthCell = letterCells.nth(4);
+    const fifthCellInput = fifthCell.locator(".cell-input");
+    await expect(fifthCellInput).toContainText("·");
   });
 });
