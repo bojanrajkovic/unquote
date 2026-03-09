@@ -34,6 +34,7 @@
     "@opentelemetry/context-async-hooks": "catalog:testing",
     "@opentelemetry/sdk-trace-base": "catalog:testing",
     "@tsconfig/node24": "catalog:build",
+    "@vitest/coverage-istanbul": "catalog:testing",
     "@tsconfig/strictest": "catalog:build",
     "@types/luxon": "catalog:build",
     "@types/node": "catalog:build",

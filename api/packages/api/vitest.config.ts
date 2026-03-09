@@ -11,7 +11,7 @@ export default defineConfig({
     testTimeout: 10_000,
     coverage: {
       exclude: ["node_modules/", "dist/", "**/*.d.ts", "**/*.config.ts"],
-      provider: "v8",
+      provider: "istanbul",
       reporter: ["text", "json", "html"],
     },
   },
