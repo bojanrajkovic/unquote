@@ -266,25 +266,50 @@
     }
   }
 
+  // Pre-captured blob so clipboard write happens within the user gesture window.
+  // Re-captured when the card mounts or when the streak changes (so the badge
+  // appears in the image).
+  let cachedSessionBlob: Blob | null = $state(null);
+
+  async function captureSessionCard() {
+    if (sessionCardEl) {
+      cachedSessionBlob = await captureElementAsBlob(sessionCardEl);
+    }
+  }
+
+  $effect(() => {
+    if (sessionCardEl) {
+      // Capture eagerly; re-runs when sessionCardEl mounts or cachedStreak changes
+      void cachedStreak;
+      captureSessionCard();
+    }
+  });
+
   async function fetchStreakIfNeeded() {
     if (identity.claimCode && cachedStreak === null) {
       try {
         const stats = await getStats(identity.claimCode);
         cachedStreak = stats.currentStreak;
-        // Wait for Svelte to re-render the SessionShareCard with the streak
-        // before capturing, so the image includes the streak badge
+        // Wait for Svelte to re-render the SessionShareCard with the streak,
+        // then re-capture so the image includes the streak badge
         await tick();
+        await captureSessionCard();
       } catch {
         // Streak unavailable — share without it
       }
     }
   }
 
-  async function handleCopyImage() {
-    if (!game.puzzle || game.status !== "solved" || !sessionCardEl) return;
-
+  async function getSessionBlob(): Promise<Blob | null> {
+    if (cachedSessionBlob) return cachedSessionBlob;
     await fetchStreakIfNeeded();
-    const blob = await captureElementAsBlob(sessionCardEl);
+    return sessionCardEl ? captureElementAsBlob(sessionCardEl) : null;
+  }
+
+  async function handleCopyImage() {
+    if (!game.puzzle || game.status !== "solved") return;
+
+    const blob = await getSessionBlob();
     if (blob) {
       const ok = await copyImageToClipboard(blob);
       if (ok) {
@@ -314,10 +339,9 @@
   }
 
   async function handleDownload() {
-    if (!game.puzzle || game.status !== "solved" || !sessionCardEl) return;
+    if (!game.puzzle || game.status !== "solved") return;
 
-    await fetchStreakIfNeeded();
-    const blob = await captureElementAsBlob(sessionCardEl);
+    const blob = await getSessionBlob();
     if (blob) {
       downloadBlob(blob, "unquote-session.png");
       showFeedback((v) => (sessionShareFeedback = v ? "Downloaded!" : null));
@@ -325,10 +349,9 @@
   }
 
   async function handleNativeShare() {
-    if (!game.puzzle || game.status !== "solved" || !sessionCardEl) return;
+    if (!game.puzzle || game.status !== "solved") return;
 
-    await fetchStreakIfNeeded();
-    const blob = await captureElementAsBlob(sessionCardEl);
+    const blob = await getSessionBlob();
     if (blob) {
       const data: SessionShareData = {
         puzzleNumber: game.puzzle.date,
@@ -378,19 +401,20 @@
   <title>Unquote — Today's Puzzle</title>
 </svelte:head>
 
-<!-- Hidden off-screen share card for capture -->
+<!-- Hidden off-screen share card for capture.
+     The outer wrapper positions off-screen; bind:this targets the inner
+     card element so modern-screenshot's clone doesn't inherit left:-9999px. -->
 {#if game.status === "solved" && !game.solvedElsewhere && game.puzzle}
-  <div
-    bind:this={sessionCardEl}
-    style="position: absolute; left: -9999px; top: -9999px;"
-  >
-    <SessionShareCard
-      puzzleNumber={game.puzzle.date}
-      solved={true}
-      completionTime={game.completionTime}
-      letterGrid={sessionLetterGrid}
-      currentStreak={identity.claimCode ? cachedStreak : null}
-    />
+  <div style="position: absolute; left: -9999px; top: -9999px;">
+    <div bind:this={sessionCardEl}>
+      <SessionShareCard
+        puzzleNumber={game.puzzle.date}
+        solved={true}
+        completionTime={game.completionTime}
+        letterGrid={sessionLetterGrid}
+        currentStreak={identity.claimCode ? cachedStreak : null}
+      />
+    </div>
   </div>
 {/if}
 
