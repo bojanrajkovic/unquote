@@ -421,21 +421,21 @@ test.describe("game route", () => {
   test("playwright-e2e.AC3.12: not-onboarded user redirected to /", async ({
     page,
   }) => {
-    // Navigate to / first to establish origin context
+    // Clear localStorage of all identity state
+    await page.goto("/");
+    await page.evaluate(() => {
+      localStorage.removeItem("unquote_has_onboarded");
+      localStorage.removeItem("unquote_claim_code");
+    });
+
+    // Navigate to / to trigger the route loader with fresh onboarded state
     await page.goto("/");
 
-    // Re-seed localStorage with onboarded: false to override the beforeEach setup
-    await seedLocalStorage(page, { onboarded: false, claimCode: null });
+    // Now navigate to /game - with onboarded false, the loader should redirect to /
+    await page.goto("/game");
 
-    // Reload the page to reinitialize identity state from localStorage
-    await page.reload();
-
-    // Wait for redirect to complete
-    await page.waitForURL("/");
-
-    // Assert URL is /
-    const urlPath = new URL(page.url()).pathname;
-    expect(urlPath).toBe("/");
+    // Verify we're at / (redirect happened)
+    await expect(page).toHaveURL(/\/$/);
   });
 
   test("playwright-e2e.AC3.13: API error loading puzzle shows error message", async ({
