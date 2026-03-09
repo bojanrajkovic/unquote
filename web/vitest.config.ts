@@ -29,6 +29,7 @@ export default defineConfig({
         "build/",
         "**/*.d.ts",
         "**/*.config.ts",
+        "**/*.svelte.ts",
         "tests/",
       ],
     },
