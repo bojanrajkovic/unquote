@@ -23,9 +23,27 @@
   let shareFeedback = $state<string | null>(null);
   let statsCardEl: HTMLElement | undefined = $state();
 
+  // Pre-captured blob so clipboard write happens within the user gesture window.
+  // Eagerly captured once the card element mounts; re-captured if stats change.
+  let cachedBlob: Blob | null = $state(null);
+
+  $effect(() => {
+    if (statsCardEl && data.stats) {
+      captureElementAsBlob(statsCardEl).then((blob) => {
+        cachedBlob = blob;
+      });
+    }
+  });
+
+  async function getBlob(): Promise<Blob | null> {
+    return (
+      cachedBlob ?? (statsCardEl ? captureElementAsBlob(statsCardEl) : null)
+    );
+  }
+
   async function handleCopyImage() {
-    if (!data.stats || !statsCardEl) return;
-    const blob = await captureElementAsBlob(statsCardEl);
+    if (!data.stats) return;
+    const blob = await getBlob();
     if (blob) {
       const ok = await copyImageToClipboard(blob);
       if (ok) {
@@ -45,8 +63,8 @@
   }
 
   async function handleDownload() {
-    if (!data.stats || !statsCardEl) return;
-    const blob = await captureElementAsBlob(statsCardEl);
+    if (!data.stats) return;
+    const blob = await getBlob();
     if (blob) {
       downloadBlob(blob, "unquote-stats.png");
       showFeedback((v) => (shareFeedback = v ? "Downloaded!" : null));
@@ -54,8 +72,8 @@
   }
 
   async function handleNativeShare() {
-    if (!data.stats || !statsCardEl) return;
-    const blob = await captureElementAsBlob(statsCardEl);
+    if (!data.stats) return;
+    const blob = await getBlob();
     if (blob) {
       await nativeShareImage(
         blob,
@@ -213,13 +231,14 @@
   <title>Unquote — Stats</title>
 </svelte:head>
 
-<!-- Hidden off-screen share card for capture -->
+<!-- Hidden off-screen share card for capture.
+     The outer wrapper positions off-screen; bind:this targets the inner
+     card element so modern-screenshot's clone doesn't inherit left:-9999px. -->
 {#if data.stats}
-  <div
-    bind:this={statsCardEl}
-    style="position: absolute; left: -9999px; top: -9999px;"
-  >
-    <StatsShareCard stats={data.stats} />
+  <div style="position: absolute; left: -9999px; top: -9999px;">
+    <div bind:this={statsCardEl}>
+      <StatsShareCard stats={data.stats} />
+    </div>
   </div>
 {/if}
 
