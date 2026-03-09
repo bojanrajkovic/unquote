@@ -1,6 +1,6 @@
 # Unquote
 
-Last verified: 2026-03-08
+Last verified: 2026-03-09
 
 A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encrypted quotes by substituting letters.
 
@@ -27,6 +27,7 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 - `pnpm run build` - Build static site
 - `pnpm run test` - Run tests (vitest)
 - `pnpm run test:e2e` - Run E2E tests (Playwright, requires build and preview server)
+- `pnpm run coverage:full` - Run unit + E2E coverage and merge reports (Istanbul)
 - `pnpm run check` - Svelte type checking (svelte-check)
 - `pnpm run format` - Format with Prettier
 
