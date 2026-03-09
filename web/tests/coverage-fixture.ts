@@ -18,6 +18,7 @@ export const test = base.extend({
 
     // Collect coverage after the test completes
     try {
+      // Istanbul injects __coverage__ at runtime; no type available
       const coverage = await page.evaluate(() => (window as any).__coverage__);
       if (coverage) {
         if (!fs.existsSync(NYC_OUTPUT_DIR)) {
