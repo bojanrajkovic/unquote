@@ -13,7 +13,11 @@
     "format": "prettier --write --plugin prettier-plugin-svelte .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "coverage:unit": "vitest run --coverage",
+    "coverage:e2e": "VITE_COVERAGE=true pnpm run build && playwright test",
+    "coverage:merge": "mkdir -p .nyc_output && cp coverage/coverage-final.json .nyc_output/vitest-coverage.json 2>/dev/null; nyc merge .nyc_output .nyc_output/merged.json && nyc report",
+    "coverage:full": "pnpm run coverage:unit && pnpm run coverage:e2e && pnpm run coverage:merge"
   },
   "devDependencies": {
     "@playwright/test": "1.58.2",
