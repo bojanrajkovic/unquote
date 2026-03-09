@@ -30,6 +30,7 @@ export default defineConfig({
         "**/*.d.ts",
         "**/*.config.ts",
         "**/*.svelte.ts",
+        "**/*.svelte",
         "tests/",
       ],
     },
