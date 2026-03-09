@@ -187,12 +187,30 @@ export async function mockApi(
 
 /**
  * Captures an informational screenshot at a key state.
- * Waits for fonts to load before capture.
+ * Waits for fonts to load and all finite Web Animations (Svelte fly/fade
+ * transitions) to complete before capture.
+ *
+ * Svelte 5 transitions use element.animate() (Web Animations API), which
+ * is unaffected by Playwright's animations:"disabled" CSS override.
+ * We poll getAnimations() instead of awaiting .finished promises because
+ * Svelte's animation lifecycle can leave promises unresolved.
  */
 export async function captureScreenshot(
   page: Page,
   filename: string,
 ): Promise<void> {
   await page.evaluate(() => document.fonts.ready);
+  await page.waitForFunction(
+    () => {
+      const running = document.getAnimations().filter((a) => {
+        if (a.playState !== "running") return false;
+        const t = a.effect?.getComputedTiming();
+        return t != null && Number.isFinite(t.endTime);
+      });
+      return running.length === 0;
+    },
+    null,
+    { timeout: 5000 },
+  );
   await page.screenshot({ path: `test-results/${filename}`, fullPage: true });
 }
