@@ -8,7 +8,7 @@ SvelteKit 5 static SPA for the Unquote cryptoquip game. Builds to a fully static
 
 - **Framework**: SvelteKit 5 with `adapter-static` (fully prerendered, client-side routing)
 - **UI**: Svelte 5 (runes mode: `$state`, `$derived`, `$effect`) + Tailwind CSS v4
-- **Testing**: Vitest (unit) + Playwright (E2E), Istanbul coverage across both
+- **Testing**: Vitest (unit, V8 coverage) + Playwright (E2E)
 - **Build**: Vite 7, TypeScript 5.9
 
 ## Commands
@@ -16,18 +16,17 @@ SvelteKit 5 static SPA for the Unquote cryptoquip game. Builds to a fully static
 - `pnpm run dev` - Start dev server
 - `pnpm run build` - Build static site to `build/`
 - `pnpm run preview` - Preview production build locally
-- `pnpm run test` - Run tests (vitest)
+- `pnpm run test` - Run unit tests (vitest) — use `mise run test` to ensure Node v24
 - `pnpm run test:e2e` - Run E2E tests (Playwright, requires build and preview server)
-- `pnpm run coverage:full` - Run unit + E2E coverage and merge reports (Istanbul)
+- `pnpm run coverage` - Run unit tests with V8 coverage report
 - `pnpm run check` - Type checking (svelte-check)
 - `pnpm run format` - Format with Prettier + prettier-plugin-svelte
 
 ## Configuration
 
-| Variable        | Build-time | Default                 | Description                                      |
-| --------------- | ---------- | ----------------------- | ------------------------------------------------ |
-| `VITE_API_URL`  | Yes        | `http://localhost:3000` | Base URL for the Unquote REST API                |
-| `VITE_COVERAGE` | Yes        | (unset)                 | When set, enables Istanbul instrumentation       |
+| Variable       | Build-time | Default                 | Description                       |
+| -------------- | ---------- | ----------------------- | --------------------------------- |
+| `VITE_API_URL` | Yes        | `http://localhost:3000` | Base URL for the Unquote REST API |
 
 Set via environment variables at build time. In CI, injected from GitHub Actions variables.
 
@@ -92,4 +91,4 @@ Wordle-style sharing for session results and player stats. Follows Functional Co
 
 - **Uses**: Unquote REST API (`/game/*`, `/player/*` endpoints), `modern-screenshot` (DOM-to-PNG capture for share cards)
 - **Used by**: End users via browser; deployed to S3/CloudFront by `web-deploy.yml`
-- **Dev**: `@playwright/test` for E2E tests (`web/tests/`), `nyc` for coverage merging, `vite-plugin-istanbul` for build-time instrumentation
+- **Dev**: `@playwright/test` for E2E tests (`web/tests/`), `@vitest/coverage-v8` for unit test coverage

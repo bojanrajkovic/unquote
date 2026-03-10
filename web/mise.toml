@@ -33,6 +33,10 @@ run = "pnpm run test"
 description = "Run E2E tests (Playwright)"
 run = "pnpm run test:e2e"
 
+[tasks.coverage]
+description = "Run unit tests with V8 coverage"
+run = "pnpm run coverage"
+
 [tasks.fmt]
 description = "Format Svelte and TypeScript files"
 run = "pnpm run format"

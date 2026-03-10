@@ -21,18 +21,9 @@ export default defineConfig({
     passWithNoTests: true,
     setupFiles: ["./vitest.setup.ts"],
     coverage: {
-      provider: "istanbul",
-      reporter: ["text", "json", "html"],
-      exclude: [
-        "node_modules/",
-        ".svelte-kit/",
-        "build/",
-        "**/*.d.ts",
-        "**/*.config.ts",
-        "**/*.svelte.ts",
-        "**/*.svelte",
-        "tests/",
-      ],
+      provider: "v8",
+      include: ["src/**"],
+      exclude: ["src/**/*.test.ts"],
     },
   },
 });

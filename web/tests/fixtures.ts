@@ -1,4 +1,4 @@
-export { test, expect } from "./coverage-fixture.js";
+export { test, expect } from "@playwright/test";
 
 import type { Page } from "@playwright/test";
 
