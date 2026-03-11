@@ -1,6 +1,6 @@
 # @unquote/web
 
-Last verified: 2026-03-08
+Last verified: 2026-03-09
 
 SvelteKit 5 static SPA for the Unquote cryptoquip game. Builds to a fully static site (no SSR) deployed to S3/CloudFront.
 
@@ -8,7 +8,7 @@ SvelteKit 5 static SPA for the Unquote cryptoquip game. Builds to a fully static
 
 - **Framework**: SvelteKit 5 with `adapter-static` (fully prerendered, client-side routing)
 - **UI**: Svelte 5 (runes mode: `$state`, `$derived`, `$effect`) + Tailwind CSS v4
-- **Testing**: Vitest with jsdom environment; Playwright for E2E screenshot tests
+- **Testing**: Vitest (unit, V8 coverage) + Playwright (E2E)
 - **Build**: Vite 7, TypeScript 5.9
 
 ## Commands
@@ -16,8 +16,9 @@ SvelteKit 5 static SPA for the Unquote cryptoquip game. Builds to a fully static
 - `pnpm run dev` - Start dev server
 - `pnpm run build` - Build static site to `build/`
 - `pnpm run preview` - Preview production build locally
-- `pnpm run test` - Run tests (vitest)
+- `pnpm run test` - Run unit tests (vitest) — use `mise run test` to ensure Node v24
 - `pnpm run test:e2e` - Run E2E tests (Playwright, requires build and preview server)
+- `pnpm run coverage` - Run unit tests with V8 coverage report
 - `pnpm run check` - Type checking (svelte-check)
 - `pnpm run format` - Format with Prettier + prettier-plugin-svelte
 
@@ -27,7 +28,7 @@ SvelteKit 5 static SPA for the Unquote cryptoquip game. Builds to a fully static
 | -------------- | ---------- | ----------------------- | --------------------------------- |
 | `VITE_API_URL` | Yes        | `http://localhost:3000` | Base URL for the Unquote REST API |
 
-Set via `VITE_API_URL` environment variable at build time. In CI, injected from GitHub Actions variables.
+Set via environment variables at build time. In CI, injected from GitHub Actions variables.
 
 ## Architecture
 
@@ -56,6 +57,7 @@ Svelte 5 runes with singleton class instances (not stores). Two global state obj
 | `/`      | Landing page + onboarding (register, enter code, or skip)  |
 | `/game`  | Game screen (puzzle grid, keyboard, timer, solution check) |
 | `/stats` | Player statistics (requires claim code)                    |
+| `/faq`   | Static FAQ page (how to play, game rules)                  |
 
 ### Share Module (`lib/share/`)
 
@@ -89,4 +91,4 @@ Wordle-style sharing for session results and player stats. Follows Functional Co
 
 - **Uses**: Unquote REST API (`/game/*`, `/player/*` endpoints), `modern-screenshot` (DOM-to-PNG capture for share cards)
 - **Used by**: End users via browser; deployed to S3/CloudFront by `web-deploy.yml`
-- **Dev**: `@playwright/test` for E2E screenshot tests (`web/tests/`)
+- **Dev**: `@playwright/test` for E2E tests (`web/tests/`), `@vitest/coverage-v8` for unit test coverage

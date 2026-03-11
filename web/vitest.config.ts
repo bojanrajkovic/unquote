@@ -20,5 +20,10 @@ export default defineConfig({
     exclude: ["node_modules", ".svelte-kit", "build"],
     passWithNoTests: true,
     setupFiles: ["./vitest.setup.ts"],
+    coverage: {
+      provider: "v8",
+      include: ["src/**"],
+      exclude: ["src/**/*.test.ts"],
+    },
   },
 });

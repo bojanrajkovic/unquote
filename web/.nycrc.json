@@ -1,0 +1,8 @@
+{
+  "all": false,
+  "include": ["src/**/*.{ts,svelte}"],
+  "exclude": ["**/*.test.ts", "**/*.spec.ts", "**/*.d.ts"],
+  "report-dir": "coverage/merged",
+  "temp-dir": ".nyc_output",
+  "reporter": ["html", "text", "lcov"]
+}

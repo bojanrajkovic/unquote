@@ -9,6 +9,7 @@ export default defineConfig({
     sveltekit(),
   ],
   build: {
+    sourcemap: true,
     // Bundle is ~46 KB gzipped total — single chunk is faster than waterfall
     rollupOptions: {
       output: {

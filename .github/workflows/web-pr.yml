@@ -66,13 +66,15 @@ jobs:
         working-directory: web
         run: pnpm run format --check
 
-      - name: Test
+      - name: Unit tests (with coverage)
         working-directory: web
-        run: pnpm run test
+        run: pnpm run coverage:unit
 
-      - name: Build
+      - name: Build (with coverage instrumentation)
         working-directory: web
         run: pnpm run build
+        env:
+          VITE_COVERAGE: "true"
 
       - name: Install Playwright browsers
         working-directory: web
@@ -82,11 +84,16 @@ jobs:
         working-directory: web
         run: pnpm run test:e2e
 
-      - name: Upload share card screenshots
+      - name: Merge coverage reports
+        if: always()
+        working-directory: web
+        run: pnpm run coverage:merge
+
+      - name: Upload E2E screenshots
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
-          name: share-card-screenshots
+          name: e2e-screenshots
           path: web/test-results/*.png
           retention-days: 7
           if-no-files-found: ignore
@@ -105,7 +112,7 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: github-actions[bot]
-          body-includes: "Share Card Screenshots"
+          body-includes: "E2E Screenshots"
 
       - name: Create or update comment
         uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
@@ -114,7 +121,7 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           edit-mode: replace
           body: |
-            ## Share Card Screenshots
+            ## E2E Screenshots
 
             Screenshots captured from Playwright E2E tests.
             Download from [Actions artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).

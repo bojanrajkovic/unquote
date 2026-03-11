@@ -1,6 +1,6 @@
 # Unquote
 
-Last verified: 2026-03-08
+Last verified: 2026-03-09
 
 A cryptoquip game inspired by syndicated newspaper puzzles. Players decode encrypted quotes by substituting letters.
 
@@ -16,26 +16,29 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 
 ## Commands
 
+**Always use `mise run` or `mise exec` to run commands.** The project root does not pin a Node version, so bare `pnpm` invocations use the system-global Node (which may be a newer, incompatible version). `mise` ensures the correct toolchain versions from `mise.toml`.
+
 ### Build
 - `mise run build` - Build all projects
 - `mise run //api:build` - Build the API
 - `mise run //tui:build` - Build the TUI
 - `mise run //web:build` - Build the web frontend
 
-### Web Development (run from `web/`)
-- `pnpm run dev` - Start SvelteKit dev server
-- `pnpm run build` - Build static site
-- `pnpm run test` - Run tests (vitest)
-- `pnpm run test:e2e` - Run E2E tests (Playwright, requires build and preview server)
-- `pnpm run check` - Svelte type checking (svelte-check)
-- `pnpm run format` - Format with Prettier
+### Web Development
+- `mise run //web:dev` - Start SvelteKit dev server
+- `mise run //web:build` - Build static site
+- `mise run //web:test` - Run unit tests (vitest)
+- `mise run //web:test:e2e` - Run E2E tests (Playwright, requires build and preview server)
+- `mise run //web:lint` - Svelte type checking (svelte-check)
+- `mise run //web:typecheck` - Svelte type checking (svelte-check)
+- `mise run //web:fmt` - Format with Prettier
 
-### API Development (run from `api/`)
-- `pnpm run build` - Build all packages
-- `pnpm run test` - Run tests (vitest)
-- `pnpm run lint` - Lint with oxlint
-- `pnpm run format` - Format with oxfmt
-- `pnpm run typecheck` - TypeScript type checking
+### API Development
+- `mise run //api:build` - Build all packages
+- `mise run //api:test` - Run tests (vitest)
+- `mise run //api:lint` - Lint with oxlint
+- `mise run //api:fmt` - Format with oxfmt
+- `mise run //api:typecheck` - TypeScript type checking
 
 ## Project Structure
 

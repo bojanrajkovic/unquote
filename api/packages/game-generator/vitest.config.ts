@@ -9,7 +9,7 @@ export default defineConfig({
     passWithNoTests: true,
     testTimeout: 10_000,
     coverage: {
-      provider: "v8",
+      provider: "istanbul",
       exclude: ["node_modules/", "dist/", "*.d.ts", "*.config.ts"],
     },
   },

@@ -37,6 +37,7 @@
     "@tsconfig/strictest": "catalog:build",
     "@types/luxon": "catalog:build",
     "@types/node": "catalog:build",
+    "@vitest/coverage-istanbul": "catalog:testing",
     "fast-check": "catalog:testing",
     "nanoid": "catalog:testing",
     "oxfmt": "catalog:lint",

@@ -68,7 +68,7 @@
     "@types/luxon": "catalog:build",
     "@types/node": "catalog:build",
     "@types/pg": "catalog:build",
-    "@vitest/coverage-v8": "catalog:testing",
+    "@vitest/coverage-istanbul": "catalog:testing",
     "ajv": "catalog:testing",
     "drizzle-kit": "catalog:build",
     "fast-check": "catalog:testing",

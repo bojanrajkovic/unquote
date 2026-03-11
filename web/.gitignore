@@ -18,3 +18,15 @@ playwright-report/
 
 # Editor
 .DS_Store
+
+# Coverage artifacts
+coverage/
+.nyc_output/
+.nyc_merged/
+mcr-unit/
+mcr-e2e/
+monocart-unit/
+monocart-report/
+monocart-coverage/
+coverage-reports/
+assets/
