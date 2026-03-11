@@ -242,7 +242,7 @@
             }
           }}
         >
-          <div class="choice-icon">✦</div>
+          <div class="choice-icon">+</div>
           <div class="choice-body">
             <div class="choice-title">Yes — create an account</div>
             <div class="choice-desc">
@@ -275,30 +275,14 @@
           </div>
           <div class="choice-arrow">→</div>
         </div>
-
-        <!-- Enter existing code -->
-        <div
-          class="choice-card"
-          role="button"
-          tabindex="0"
-          onclick={() => (step = "enter-code")}
-          onkeydown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              step = "enter-code";
-            }
-          }}
-        >
-          <div class="choice-icon">⬡</div>
-          <div class="choice-body">
-            <div class="choice-title">I already have a claim code</div>
-            <div class="choice-desc">
-              Link your TUI or existing web account.
-            </div>
-          </div>
-          <div class="choice-arrow">→</div>
-        </div>
       </div>
+
+      <p class="enter-code-hint">
+        Already have a claim code?
+        <button class="btn-enter-code" onclick={() => (step = "enter-code")}
+          >Enter it here</button
+        >
+      </p>
     </div>
   </div>
 
@@ -562,11 +546,11 @@
   }
 
   .landing-actions {
-    margin-top: 2.75rem;
+    margin-top: 3rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.9rem;
+    gap: 1.5rem;
   }
 
   .landing-sub {
@@ -690,6 +674,32 @@
   .choice-card:hover .choice-arrow {
     color: var(--color-gold);
     transform: translateX(3px);
+  }
+
+  .enter-code-hint {
+    font-size: 0.7rem;
+    color: var(--color-text-secondary);
+    text-align: center;
+    margin-top: 1rem;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .btn-enter-code {
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--color-text-border);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    padding: 0;
+    transition: color 0.15s;
+  }
+
+  .btn-enter-code:hover {
+    color: var(--color-text-primary);
   }
 
   /* ── Registering spinner ── */
