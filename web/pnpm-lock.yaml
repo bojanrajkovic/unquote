@@ -28,7 +28,7 @@ importers:
         specifier: 4.2.1
         version: 4.2.1(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(lightningcss@1.31.1))
       '@types/node':
-        specifier: ^25.3.5
+        specifier: 25.3.5
         version: 25.3.5
       '@vitest/coverage-v8':
         specifier: 3.2.4
