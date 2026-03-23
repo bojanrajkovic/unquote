@@ -52,7 +52,7 @@ catalogs:
     sqids: ^0.3.0
     typebox: ^1.0.13
   testing:
-    '@electric-sql/pglite': ^0.3.15
+    '@electric-sql/pglite': ^0.4.0
     '@opentelemetry/context-async-hooks': ^2.5.0
     '@opentelemetry/sdk-trace-base': ^2.5.0
     '@vitest/coverage-istanbul': ^4.0.0
