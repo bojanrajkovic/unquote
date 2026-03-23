@@ -163,9 +163,6 @@ catalogs:
     ajv:
       specifier: ^8.0.0
       version: 8.18.0
-    fast-check:
-      specifier: ^4.0.0
-      version: 4.5.3
     nanoid:
       specifier: ^5.1.6
       version: 5.1.7
@@ -344,7 +341,7 @@ importers:
         version: 0.31.10
       fast-check:
         specifier: catalog:testing
-        version: 4.5.3
+        version: 4.6.0
       rimraf:
         specifier: catalog:build
         version: 6.1.3
@@ -393,7 +390,7 @@ importers:
         version: 4.0.18(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(tsx@4.21.0)(yaml@2.8.2))
       fast-check:
         specifier: catalog:testing
-        version: 4.5.3
+        version: 4.6.0
       nanoid:
         specifier: catalog:testing
         version: 5.1.7
@@ -2229,8 +2226,8 @@ packages:
     resolution: {integrity: sha512-knvyeauYhqjOYvQ66MznSMs83wmHrCycNEN6Ao+2AeYEfxUIkuiVxdEa1qlGEPK+We3n0THiDciYSsCcgW/DoA==}
     engines: {node: '>=12.0.0'}
 
-  fast-check@4.5.3:
-    resolution: {integrity: sha512-IE9csY7lnhxBnA8g/WI5eg/hygA6MGWJMSNfFRrBlXUciADEhS1EDB0SIsMSvzubzIlOBbVITSsypCsW717poA==}
+  fast-check@4.6.0:
+    resolution: {integrity: sha512-h7H6Dm0Fy+H4ciQYFxFjXnXkzR2kr9Fb22c0UBpHnm59K2zpr2t13aPTHlltFiNT6zuxp6HMPAVVvgur4BLdpA==}
     engines: {node: '>=12.17.0'}
 
   fast-decode-uri-component@1.0.1:
@@ -2621,8 +2618,8 @@ packages:
     resolution: {integrity: sha512-jx6+sE9h/UryaCZhsJWbJtTEy47yXoGNYI4z8ZaRncM0zBKeRqjO2JEcOUYwrYGb1WLhXM1FfMzW3annvFv0rw==}
     engines: {node: '>=12.0.0'}
 
-  pure-rand@7.0.1:
-    resolution: {integrity: sha512-oTUZM/NAZS8p7ANR3SHh30kXB+zK2r2BPcEn/awJIbOvq82WoMN4p62AWWp3Hhw50G0xMsw1mhIBLqHw64EcNQ==}
+  pure-rand@8.3.0:
+    resolution: {integrity: sha512-1ws1Ab8fnsf4bvpL+SujgBnr3KFs5abgCLVzavBp+f2n8Ld5YTOZlkv/ccYPhu3X9s+MEeqPRMqKlJz/kWDK8A==}
 
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
@@ -4427,9 +4424,9 @@ snapshots:
 
   expect-type@1.3.0: {}
 
-  fast-check@4.5.3:
+  fast-check@4.6.0:
     dependencies:
-      pure-rand: 7.0.1
+      pure-rand: 8.3.0
 
   fast-decode-uri-component@1.0.1: {}
 
@@ -4875,7 +4872,7 @@ snapshots:
       '@types/node': 24.12.0
       long: 5.3.2
 
-  pure-rand@7.0.1: {}
+  pure-rand@8.3.0: {}
 
   queue-microtask@1.2.3: {}
 
