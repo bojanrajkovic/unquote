@@ -79,7 +79,7 @@ jobs:
           working_directory: tui
 
       - name: Cache Go modules
-        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: |
             ~/go/pkg/mod
@@ -110,7 +110,7 @@ jobs:
 
       - name: Calculate version
         id: version
-        uses: PaulHatch/semantic-version@f29500c9d60a99ed5168e39ee367e0976884c46e # v6.0.1
+        uses: PaulHatch/semantic-version@9f72830310d5ed81233b641ee59253644cd8a8fc # v6.0.2
         with:
           tag_prefix: "v"
           change_path: "tui/"
@@ -137,7 +137,7 @@ jobs:
           working_directory: tui
 
       - name: Cache Go modules
-        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: |
             ~/go/pkg/mod
