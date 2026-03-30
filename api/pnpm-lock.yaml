@@ -19,6 +19,9 @@ catalogs:
     '@types/node':
       specifier: ^24.0.0
       version: 24.12.0
+    '@types/pg':
+      specifier: ^8.11.0
+      version: 8.20.0
     drizzle-kit:
       specifier: ^0.31.0
       version: 0.31.10
@@ -145,9 +148,6 @@ catalogs:
       specifier: ^1.0.13
       version: 1.1.6
   testing:
-    '@electric-sql/pglite':
-      specifier: ^0.4.0
-      version: 0.4.1
     '@opentelemetry/context-async-hooks':
       specifier: ^2.5.0
       version: 2.5.1
@@ -223,7 +223,7 @@ importers:
         version: 9.0.3
       '@kubiks/otel-drizzle':
         specifier: catalog:prod
-        version: 2.1.0(@opentelemetry/api@1.9.0)(drizzle-orm@0.45.1(@electric-sql/pglite@0.4.1)(@opentelemetry/api@1.9.0)(@types/pg@8.20.0)(pg@8.18.0))
+        version: 2.1.0(@opentelemetry/api@1.9.0)(drizzle-orm@0.45.1(@electric-sql/pglite@0.4.2)(@opentelemetry/api@1.9.0)(@types/pg@8.20.0)(pg@8.18.0))
       '@opentelemetry/api':
         specifier: catalog:prod
         version: 1.9.0
@@ -280,7 +280,7 @@ importers:
         version: 13.0.3
       drizzle-orm:
         specifier: catalog:prod
-        version: 0.45.1(@electric-sql/pglite@0.4.1)(@opentelemetry/api@1.9.0)(@types/pg@8.20.0)(pg@8.18.0)
+        version: 0.45.1(@electric-sql/pglite@0.4.2)(@opentelemetry/api@1.9.0)(@types/pg@8.20.0)(pg@8.18.0)
       fastify:
         specifier: catalog:prod
         version: 5.8.2
@@ -308,7 +308,7 @@ importers:
     devDependencies:
       '@electric-sql/pglite':
         specifier: catalog:testing
-        version: 0.4.1
+        version: 0.4.2
       '@opentelemetry/context-async-hooks':
         specifier: catalog:testing
         version: 2.5.1(@opentelemetry/api@1.9.0)
@@ -498,8 +498,8 @@ packages:
   '@drizzle-team/brocli@0.10.2':
     resolution: {integrity: sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w==}
 
-  '@electric-sql/pglite@0.4.1':
-    resolution: {integrity: sha512-mZ9NzzUSYPOCnxHH1oAHPRzoMFJHY472raDKwXl/+6oPbpdJ7g8LsCN4FSaIIfkiCKHhb3iF/Zqo3NYxaIhU7Q==}
+  '@electric-sql/pglite@0.4.2':
+    resolution: {integrity: sha512-1GUUl/MZpy5QWgWisD3Epho3GkJrZ1MzVgQpo2pifQWUs96F9rXKZxeVLPhkwFYck34CH/kQ8lis6wX9ifn3kg==}
 
   '@eropple/fastify-openapi3@1.0.2':
     resolution: {integrity: sha512-uaZO0gLHpQQnbOa+16EE0fpcQw4ydPZsdDtpN6jJTl2hjHmKe5WD85nb3Kwp+6xzqHA5/MDu5Izb8qAddX0ANA==}
@@ -3069,7 +3069,7 @@ snapshots:
 
   '@drizzle-team/brocli@0.10.2': {}
 
-  '@electric-sql/pglite@0.4.1': {}
+  '@electric-sql/pglite@0.4.2': {}
 
   '@eropple/fastify-openapi3@1.0.2(ajv@8.18.0)(fastify@5.8.2)(typebox@1.1.6)':
     dependencies:
@@ -3497,10 +3497,10 @@ snapshots:
 
   '@jsdevtools/ono@7.1.3': {}
 
-  '@kubiks/otel-drizzle@2.1.0(@opentelemetry/api@1.9.0)(drizzle-orm@0.45.1(@electric-sql/pglite@0.4.1)(@opentelemetry/api@1.9.0)(@types/pg@8.20.0)(pg@8.18.0))':
+  '@kubiks/otel-drizzle@2.1.0(@opentelemetry/api@1.9.0)(drizzle-orm@0.45.1(@electric-sql/pglite@0.4.2)(@opentelemetry/api@1.9.0)(@types/pg@8.20.0)(pg@8.18.0))':
     dependencies:
       '@opentelemetry/api': 1.9.0
-      drizzle-orm: 0.45.1(@electric-sql/pglite@0.4.1)(@opentelemetry/api@1.9.0)(@types/pg@8.20.0)(pg@8.18.0)
+      drizzle-orm: 0.45.1(@electric-sql/pglite@0.4.2)(@opentelemetry/api@1.9.0)(@types/pg@8.20.0)(pg@8.18.0)
 
   '@lukeed/ms@2.0.2': {}
 
@@ -4286,9 +4286,9 @@ snapshots:
       esbuild: 0.25.12
       tsx: 4.21.0
 
-  drizzle-orm@0.45.1(@electric-sql/pglite@0.4.1)(@opentelemetry/api@1.9.0)(@types/pg@8.20.0)(pg@8.18.0):
+  drizzle-orm@0.45.1(@electric-sql/pglite@0.4.2)(@opentelemetry/api@1.9.0)(@types/pg@8.20.0)(pg@8.18.0):
     optionalDependencies:
-      '@electric-sql/pglite': 0.4.1
+      '@electric-sql/pglite': 0.4.2
       '@opentelemetry/api': 1.9.0
       '@types/pg': 8.20.0
       pg: 8.18.0
