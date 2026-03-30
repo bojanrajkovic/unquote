@@ -19,6 +19,9 @@ catalogs:
     '@types/node':
       specifier: ^24.0.0
       version: 24.12.0
+    '@types/pg':
+      specifier: ^8.11.0
+      version: 8.20.0
     drizzle-kit:
       specifier: ^0.31.0
       version: 0.31.10
@@ -120,9 +123,6 @@ catalogs:
     drizzle-orm:
       specifier: ^0.45.0
       version: 0.45.1
-    fastify:
-      specifier: ^5.2.0
-      version: 5.8.2
     fastify-plugin:
       specifier: ^5.0.0
       version: 5.1.0
@@ -199,7 +199,7 @@ importers:
     dependencies:
       '@eropple/fastify-openapi3':
         specifier: catalog:prod
-        version: 1.0.2(ajv@8.18.0)(fastify@5.8.2)(typebox@1.1.6)
+        version: 1.0.2(ajv@8.18.0)(fastify@5.8.4)(typebox@1.1.6)
       '@fastify/cors':
         specifier: catalog:prod
         version: 11.2.0
@@ -283,7 +283,7 @@ importers:
         version: 0.45.1(@electric-sql/pglite@0.4.1)(@opentelemetry/api@1.9.0)(@types/pg@8.20.0)(pg@8.18.0)
       fastify:
         specifier: catalog:prod
-        version: 5.8.2
+        version: 5.8.4
       fastify-plugin:
         specifier: catalog:prod
         version: 5.1.0
@@ -2252,8 +2252,8 @@ packages:
   fastify-plugin@5.1.0:
     resolution: {integrity: sha512-FAIDA8eovSt5qcDgcBvDuX/v0Cjz0ohGhENZ/wpc3y+oZCY2afZ9Baqql3g/lC+OHRnciQol4ww7tuthOb9idw==}
 
-  fastify@5.8.2:
-    resolution: {integrity: sha512-lZmt3navvZG915IE+f7/TIVamxIwmBd+OMB+O9WBzcpIwOo6F0LTh0sluoMFk5VkrKTvvrwIaoJPkir4Z+jtAg==}
+  fastify@5.8.4:
+    resolution: {integrity: sha512-sa42J1xylbBAYUWALSBoyXKPDUvM3OoNOibIefA+Oha57FryXKKCZarA1iDntOCWp3O35voZLuDg2mdODXtPzQ==}
 
   fastq@1.20.1:
     resolution: {integrity: sha512-GGToxJ/w1x32s/D2EKND7kTil4n8OVk/9mycTc4VDza13lOvpUZTGX3mFSCtV9ksdGBVzvsyAVLM6mHFThxXxw==}
@@ -3071,12 +3071,12 @@ snapshots:
 
   '@electric-sql/pglite@0.4.1': {}
 
-  '@eropple/fastify-openapi3@1.0.2(ajv@8.18.0)(fastify@5.8.2)(typebox@1.1.6)':
+  '@eropple/fastify-openapi3@1.0.2(ajv@8.18.0)(fastify@5.8.4)(typebox@1.1.6)':
     dependencies:
       '@seriousme/openapi-schema-validator': 1.7.1
       ajv: 8.18.0
       change-case: 4.1.2
-      fastify: 5.8.2
+      fastify: 5.8.4
       fastify-plugin: 5.1.0
       js-yaml: 4.1.1
       lodash-es: 4.17.23
@@ -4458,7 +4458,7 @@ snapshots:
 
   fastify-plugin@5.1.0: {}
 
-  fastify@5.8.2:
+  fastify@5.8.4:
     dependencies:
       '@fastify/ajv-compiler': 4.0.5
       '@fastify/error': 4.2.0
