@@ -144,6 +144,9 @@ catalogs:
     type-fest:
       specifier: ^5.4.0
       version: 5.4.4
+    typebox:
+      specifier: ^1.0.13
+      version: 1.1.23
   testing:
     '@electric-sql/pglite':
       specifier: ^0.4.0
@@ -163,9 +166,6 @@ catalogs:
     fast-check:
       specifier: ^4.0.0
       version: 4.6.0
-    nanoid:
-      specifier: ^5.1.6
-      version: 5.1.7
     vitest:
       specifier: ^4.0.0
       version: 4.0.18
@@ -393,7 +393,7 @@ importers:
         version: 4.6.0
       nanoid:
         specifier: catalog:testing
-        version: 5.1.7
+        version: 5.1.9
       oxfmt:
         specifier: catalog:lint
         version: 0.42.0
@@ -2485,8 +2485,8 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  nanoid@5.1.7:
-    resolution: {integrity: sha512-ua3NDgISf6jdwezAheMOk4mbE1LXjm1DfMUDMuJf4AqxLFK3ccGpgWizwa5YV7Yz9EpXwEaWoRXSb/BnV0t5dQ==}
+  nanoid@5.1.9:
+    resolution: {integrity: sha512-ZUvP7KeBLe3OZ1ypw6dI/TzYJuvHP77IM4Ry73waSQTLn8/g8rpdjfyVAh7t1/+FjBtG4lCP42MEbDxOsRpBMw==}
     engines: {node: ^18 || >=20}
     hasBin: true
 
@@ -4698,7 +4698,7 @@ snapshots:
 
   nanoid@3.3.11: {}
 
-  nanoid@5.1.7: {}
+  nanoid@5.1.9: {}
 
   no-case@3.0.4:
     dependencies:
