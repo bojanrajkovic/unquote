@@ -123,6 +123,9 @@ catalogs:
     drizzle-orm:
       specifier: ^0.45.0
       version: 0.45.2
+    fastify:
+      specifier: ^5.2.0
+      version: 5.8.5
     fastify-plugin:
       specifier: ^5.0.0
       version: 5.1.0
@@ -141,9 +144,6 @@ catalogs:
     type-fest:
       specifier: ^5.4.0
       version: 5.4.4
-    typebox:
-      specifier: ^1.0.13
-      version: 1.1.23
   testing:
     '@electric-sql/pglite':
       specifier: ^0.4.0
@@ -163,6 +163,9 @@ catalogs:
     fast-check:
       specifier: ^4.0.0
       version: 4.6.0
+    nanoid:
+      specifier: ^5.1.6
+      version: 5.1.9
     vitest:
       specifier: ^4.0.0
       version: 4.0.18
@@ -196,7 +199,7 @@ importers:
     dependencies:
       '@eropple/fastify-openapi3':
         specifier: catalog:prod
-        version: 1.0.2(ajv@8.18.0)(fastify@5.8.5)(typebox@1.1.23)
+        version: 1.0.2(ajv@8.18.0)(fastify@5.8.5)(typebox@1.1.28)
       '@fastify/cors':
         specifier: catalog:prod
         version: 11.2.0
@@ -214,7 +217,7 @@ importers:
         version: 6.0.4
       '@fastify/type-provider-typebox':
         specifier: catalog:prod
-        version: 6.1.0(typebox@1.1.23)
+        version: 6.1.0(typebox@1.1.28)
       '@fastify/under-pressure':
         specifier: catalog:prod
         version: 9.0.3
@@ -301,7 +304,7 @@ importers:
         version: 5.4.4
       typebox:
         specifier: catalog:prod
-        version: 1.1.23
+        version: 1.1.28
     devDependencies:
       '@electric-sql/pglite':
         specifier: catalog:testing
@@ -362,7 +365,7 @@ importers:
         version: 3.7.2
       typebox:
         specifier: catalog:prod
-        version: 1.1.23
+        version: 1.1.28
     devDependencies:
       '@opentelemetry/context-async-hooks':
         specifier: catalog:testing
@@ -2811,8 +2814,8 @@ packages:
     resolution: {integrity: sha512-OZs6gsjF4vMp32qrCbiVSkrFmXtG/AZhY3t0iAMrMBiAZyV9oALtXO8hsrHbMXF9x6L3grlFuwW2oAz7cav+Gw==}
     engines: {node: '>= 0.6'}
 
-  typebox@1.1.23:
-    resolution: {integrity: sha512-LOGT/+DLfGsFzAVoYAYzLWT3iV5LfAHebW1pg336lwZg5fkaL3uBKqNXsA7aGb9rkOsVu9QohSkImHwwfHDC0A==}
+  typebox@1.1.28:
+    resolution: {integrity: sha512-OqHTHRfBpQHWPipoeFVkNgxKjjXhGY49UgekFrOuaC9O59/Hws8KHjGa1AUfNYnxWSfuNRkTB81FAL/QbTWFrg==}
 
   typescript@5.9.3:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
@@ -3079,7 +3082,7 @@ snapshots:
 
   '@electric-sql/pglite@0.4.4': {}
 
-  '@eropple/fastify-openapi3@1.0.2(ajv@8.18.0)(fastify@5.8.5)(typebox@1.1.23)':
+  '@eropple/fastify-openapi3@1.0.2(ajv@8.18.0)(fastify@5.8.5)(typebox@1.1.28)':
     dependencies:
       '@seriousme/openapi-schema-validator': 1.7.1
       ajv: 8.18.0
@@ -3090,7 +3093,7 @@ snapshots:
       lodash-es: 4.17.23
       openapi-ts: 0.3.4
       openapi3-ts: 2.0.2
-      typebox: 1.1.23
+      typebox: 1.1.28
       utility-types: 3.11.0
     transitivePeerDependencies:
       - openapi-types
@@ -3459,9 +3462,9 @@ snapshots:
       type-is: 2.0.1
       vary: 1.1.2
 
-  '@fastify/type-provider-typebox@6.1.0(typebox@1.1.23)':
+  '@fastify/type-provider-typebox@6.1.0(typebox@1.1.28)':
     dependencies:
-      typebox: 1.1.23
+      typebox: 1.1.28
 
   '@fastify/under-pressure@9.0.3':
     dependencies:
@@ -5063,7 +5066,7 @@ snapshots:
       media-typer: 1.1.0
       mime-types: 3.0.2
 
-  typebox@1.1.23: {}
+  typebox@1.1.28: {}
 
   typescript@5.9.3: {}
 
