@@ -15,7 +15,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "coverage:unit": "vitest run --coverage",
+    "coverage:merge": "echo 'E2E coverage merge not yet configured'"
   },
   "devDependencies": {
     "@playwright/test": "1.60.0",
