@@ -51,10 +51,6 @@ checksum:
 snapshot:
   version_template: "{{ .Version }}-snapshot+{{ .ShortCommit }}"
 
-git:
-  ignore_tags:
-    - "^api-"
-
 changelog:
   sort: asc
   use: git
