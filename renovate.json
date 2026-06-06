@@ -139,9 +139,12 @@
       "automergeType": "pr"
     },
     {
-      "description": "Require manual review for major updates",
+      "description": "Require manual review for major updates (except GitHub Actions)",
       "matchUpdateTypes": [
         "major"
+      ],
+      "matchManagers": [
+        "!github-actions"
       ],
       "automerge": false
     }
