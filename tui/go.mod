@@ -5,9 +5,9 @@ go 1.25.6
 require (
 	github.com/adrg/xdg v0.5.3
 	github.com/atotto/clipboard v0.1.4
-	github.com/charmbracelet/bubbletea v1.3.10
-	github.com/charmbracelet/huh v0.8.0
-	github.com/charmbracelet/lipgloss v1.1.0
+	github.com/charmbracelet/bubbletea/v2 v2.0.7
+	github.com/charmbracelet/huh/v2 v2.0.3
+	github.com/charmbracelet/lipgloss/v2 v2.0.3
 	github.com/fogleman/gg v1.3.0
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/guptarohit/asciigraph v0.7.3
