@@ -218,18 +218,20 @@ describe("getStats", () => {
       solvedAt: new Date("2020-01-01T12:00:00Z"),
     });
 
-    // Insert sessions with recent puzzle dates
+    // Insert sessions with recent puzzle dates (within the last 30 days)
+    const dayTwo = DateTime.utc().minus({ days: 2 });
+    const dayOne = DateTime.utc().minus({ days: 1 });
     await db.insert(gameSessions).values({
       playerId,
-      gameId: encodeGameId(DateTime.utc(2026, 2, 14)),
+      gameId: encodeGameId(dayTwo),
       completionTime: 120,
-      solvedAt: new Date("2026-02-14T12:00:00Z"),
+      solvedAt: dayTwo.toJSDate(),
     });
     await db.insert(gameSessions).values({
       playerId,
-      gameId: encodeGameId(DateTime.utc(2026, 2, 15)),
+      gameId: encodeGameId(dayOne),
       completionTime: 90,
-      solvedAt: new Date("2026-02-15T12:00:00Z"),
+      solvedAt: dayOne.toJSDate(),
     });
 
     const [player] = await db.select({ claimCode: players.claimCode }).from(players);
