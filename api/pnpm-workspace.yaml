@@ -11,7 +11,7 @@ catalogs:
     drizzle-kit: ^0.31.0
     rimraf: ^6.0.0
     tsx: ^4.19.0
-    typescript: ^5.8.0
+    typescript: ^6.0.0
   lint:
     oxfmt: ^0.53.0
     oxlint: ^1.42.0
