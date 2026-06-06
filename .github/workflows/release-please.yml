@@ -1,0 +1,37 @@
+name: Release Please
+
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: release-please
+  cancel-in-progress: true
+
+jobs:
+  release-please:
+    name: Release Please
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # push tags + create GitHub Release
+      pull-requests: write # open/update release PR
+      issues: write # manage autorelease labels on release PR
+    steps:
+      # Mint a GitHub App installation token so the release PR is opened/updated
+      # under the bot identity. Required (not just nice-to-have) because commits
+      # and PR events created with the default GITHUB_TOKEN do NOT trigger
+      # downstream workflows (GitHub loop-prevention rule), which would leave the
+      # release PR with no CI status checks.
+      - uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2.2.2
+        id: app-token
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
