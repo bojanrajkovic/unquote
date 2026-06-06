@@ -3,6 +3,7 @@
   "release-type": "simple",
   "include-component-in-tag": false,
   "changelog-path": "CHANGELOG.md",
+  "pull-request-title-pattern": "chore: release ${version}",
   "packages": {
     ".": {
       "extra-files": [
