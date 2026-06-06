@@ -1,0 +1,15 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "simple",
+  "include-component-in-tag": false,
+  "changelog-path": "CHANGELOG.md",
+  "pull-request-title-pattern": "chore: release ${version}",
+  "packages": {
+    ".": {
+      "extra-files": [
+        { "type": "json", "path": "api/packages/api/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "api/packages/game-generator/package.json", "jsonpath": "$.version" }
+      ]
+    }
+  }
+}
