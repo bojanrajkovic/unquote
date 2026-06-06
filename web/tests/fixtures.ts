@@ -4,6 +4,12 @@ import type { Page } from "@playwright/test";
 
 export const MOCK_CLAIM_CODE = "TEST-CODE-1234";
 
+function recentDate(daysAgo: number): string {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() - daysAgo);
+  return d.toISOString().slice(0, 10);
+}
+
 export const MOCK_STATS = {
   claimCode: MOCK_CLAIM_CODE,
   gamesPlayed: 42,
@@ -14,9 +20,9 @@ export const MOCK_STATS = {
   bestTime: 102000,
   averageTime: 151000,
   recentSolves: [
-    { date: "2026-03-01", completionTime: 120000 },
-    { date: "2026-03-02", completionTime: 130000 },
-    { date: "2026-03-03", completionTime: 110000 },
+    { date: recentDate(2), completionTime: 120000 },
+    { date: recentDate(1), completionTime: 130000 },
+    { date: recentDate(0), completionTime: 110000 },
   ],
 };
 
