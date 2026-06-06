@@ -13,12 +13,12 @@ catalogs:
     tsx: ^4.19.0
     typescript: ^5.8.0
   lint:
-    oxfmt: ^0.52.0
+    oxfmt: ^0.53.0
     oxlint: ^1.42.0
   prod:
     '@eropple/fastify-openapi3': ^1.0.0
     '@fastify/cors': ^11.0.0
-    '@fastify/env': ^5.0.0
+    '@fastify/env': ^6.0.0
     '@fastify/helmet': ^13.0.0
     '@fastify/rate-limit': ^10.0.0
     '@fastify/sensible': ^6.0.0
@@ -52,7 +52,7 @@ catalogs:
     sqids: ^0.3.0
     typebox: ^1.0.13
   testing:
-    '@electric-sql/pglite': ^0.4.0
+    '@electric-sql/pglite': ^0.5.0
     '@opentelemetry/context-async-hooks': ^2.5.0
     '@opentelemetry/sdk-trace-base': ^2.5.0
     '@vitest/coverage-istanbul': ^4.0.0

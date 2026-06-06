@@ -8,7 +8,6 @@
     "before 7am on Monday",
     "before 7am on Thursday"
   ],
-  "prHourlyLimit": 2,
   "prConcurrentLimit": 10,
   "minimumReleaseAge": "3 days",
   "packageRules": [
@@ -57,11 +56,12 @@
       "semanticCommitScope": ""
     },
     {
-      "description": "Group all GitHub Actions together",
+      "description": "Group all GitHub Actions together and automerge all updates",
       "matchManagers": [
         "github-actions"
       ],
-      "groupName": "github actions"
+      "groupName": "github actions",
+      "automerge": true
     },
     {
       "description": "Group OpenTelemetry packages",
@@ -139,9 +139,12 @@
       "automergeType": "pr"
     },
     {
-      "description": "Require manual review for major updates",
+      "description": "Require manual review for major updates (except GitHub Actions)",
       "matchUpdateTypes": [
         "major"
+      ],
+      "matchManagers": [
+        "!github-actions"
       ],
       "automerge": false
     }
