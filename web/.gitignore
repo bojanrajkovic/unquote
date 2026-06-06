@@ -21,6 +21,7 @@ playwright-report/
 
 # Coverage artifacts
 coverage/
+.vitest-reports/
 .nyc_output/
 .nyc_merged/
 mcr-unit/
