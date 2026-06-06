@@ -10,7 +10,7 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/fogleman/gg v1.3.0
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
-	github.com/guptarohit/asciigraph v0.7.3
+	github.com/guptarohit/asciigraph v0.9.0
 	github.com/lrstanley/bubblezone v1.0.0
 	github.com/spf13/cobra v1.10.2
 	github.com/srlehn/termimg v0.0.7
