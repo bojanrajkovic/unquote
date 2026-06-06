@@ -58,6 +58,7 @@ jobs:
             game-generator(/.*)?
             infra(/.*)?
             ci
+            deps
           requireScope: false
 
   ci-checks:
