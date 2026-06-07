@@ -2,8 +2,8 @@
 package cmd
 
 import (
-	tea "github.com/charmbracelet/bubbletea"
-	zone "github.com/lrstanley/bubblezone"
+	tea "charm.land/bubbletea/v2"
+	zone "github.com/lrstanley/bubblezone/v2"
 	"github.com/spf13/cobra"
 
 	"github.com/bojanrajkovic/unquote/tui/internal/app"
@@ -33,7 +33,7 @@ func NewRootCmd() *cobra.Command {
 				return err
 			}
 
-			p := tea.NewProgram(model, tea.WithAltScreen(), tea.WithMouseCellMotion())
+			p := tea.NewProgram(model)
 			_, err = p.Run()
 			return err
 		},

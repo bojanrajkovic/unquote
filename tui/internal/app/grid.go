@@ -5,8 +5,8 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/charmbracelet/lipgloss"
-	zone "github.com/lrstanley/bubblezone"
+	"charm.land/lipgloss/v2"
+	zone "github.com/lrstanley/bubblezone/v2"
 
 	"github.com/bojanrajkovic/unquote/tui/internal/puzzle"
 	"github.com/bojanrajkovic/unquote/tui/internal/ui"

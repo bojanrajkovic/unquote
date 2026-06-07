@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 
 	"github.com/bojanrajkovic/unquote/tui/internal/api"
 )
@@ -167,7 +167,7 @@ func TestHandleKeyMsg_StatsSolved_SKeyFetchesStats(t *testing.T) {
 		height:    40,
 	}
 
-	model, cmd := m.handleKeyMsg(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'s'}})
+	model, cmd := m.handleKeyMsg(tea.KeyPressMsg{Code: 's', Text: "s"})
 	result := model.(Model)
 
 	if result.state != StateLoading {
@@ -188,7 +188,7 @@ func TestHandleKeyMsg_StatsSolved_SKeyNoClaimCode(t *testing.T) {
 		height:    40,
 	}
 
-	model, cmd := m.handleKeyMsg(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'s'}})
+	model, cmd := m.handleKeyMsg(tea.KeyPressMsg{Code: 's', Text: "s"})
 	result := model.(Model)
 
 	if result.state != StateSolved {
@@ -206,7 +206,7 @@ func TestHandleKeyMsg_StateStats_EscReturnsToSolved(t *testing.T) {
 		sizeReady: true,
 	}
 
-	model, cmd := m.handleKeyMsg(tea.KeyMsg{Type: tea.KeyEsc})
+	model, cmd := m.handleKeyMsg(tea.KeyPressMsg{Code: tea.KeyEsc})
 	result := model.(Model)
 
 	if result.state != StateSolved {
@@ -224,7 +224,7 @@ func TestHandleKeyMsg_StateStats_BReturnsToSolved(t *testing.T) {
 		sizeReady: true,
 	}
 
-	model, cmd := m.handleKeyMsg(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'b'}})
+	model, cmd := m.handleKeyMsg(tea.KeyPressMsg{Code: 'b', Text: "b"})
 	result := model.(Model)
 
 	if result.state != StateSolved {

@@ -6,9 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/guptarohit/asciigraph"
-	zone "github.com/lrstanley/bubblezone"
+	zone "github.com/lrstanley/bubblezone/v2"
 
 	"github.com/bojanrajkovic/unquote/tui/internal/puzzle"
 	"github.com/bojanrajkovic/unquote/tui/internal/ui"
@@ -22,33 +23,34 @@ func formatElapsed(d time.Duration) string {
 }
 
 // View renders the UI
-func (m Model) View() string {
-	// Check if we've received window size yet
+func (m Model) View() tea.View {
+	var content string
 	if !m.sizeReady {
-		return "Initializing..."
+		content = "Initializing..."
+	} else if m.IsTooSmall() {
+		content = m.viewTooSmall()
+	} else {
+		switch m.state {
+		case StateLoading:
+			content = m.viewLoading()
+		case StateError:
+			content = m.viewError()
+		case StatePlaying, StateChecking, StateSolved:
+			content = m.viewPlaying()
+		case StateOnboarding:
+			content = m.viewOnboarding()
+		case StateClaimCodeDisplay:
+			content = m.viewClaimCodeDisplay()
+		case StateStats:
+			content = m.viewStats()
+		default:
+			content = "Unknown state"
+		}
 	}
-
-	// Check if terminal is too small
-	if m.IsTooSmall() {
-		return m.viewTooSmall()
-	}
-
-	switch m.state {
-	case StateLoading:
-		return m.viewLoading()
-	case StateError:
-		return m.viewError()
-	case StatePlaying, StateChecking, StateSolved:
-		return m.viewPlaying()
-	case StateOnboarding:
-		return m.viewOnboarding()
-	case StateClaimCodeDisplay:
-		return m.viewClaimCodeDisplay()
-	case StateStats:
-		return m.viewStats()
-	default:
-		return "Unknown state"
-	}
+	v := tea.NewView(content)
+	v.AltScreen = true
+	v.MouseMode = tea.MouseModeCellMotion
+	return v
 }
 
 func (m Model) viewTooSmall() string {

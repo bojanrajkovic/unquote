@@ -6,9 +6,9 @@ import (
 	"time"
 	"unicode"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh"
-	zone "github.com/lrstanley/bubblezone"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2"
+	zone "github.com/lrstanley/bubblezone/v2"
 
 	"github.com/bojanrajkovic/unquote/tui/internal/config"
 	"github.com/bojanrajkovic/unquote/tui/internal/puzzle"
@@ -26,10 +26,10 @@ func (m Model) Init() tea.Cmd {
 //nolint:gocyclo // Bubble Tea's Update is a central message dispatcher — each message type needs its own case.
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		return m.handleKeyMsg(msg)
 
-	case tea.MouseMsg:
+	case tea.MouseReleaseMsg:
 		return m.handleMouseMsg(msg)
 
 	case tea.WindowSizeMsg:
@@ -104,7 +104,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m Model) handleKeyMsg(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	// Stats screen intercepts Esc/b before the global quit handler
 	if m.state == StateStats {
 		switch msg.String() {
@@ -242,7 +242,7 @@ func (m Model) handleConfigLoaded(msg configLoadedMsg) (tea.Model, tea.Cmd) {
 
 // handleOnboardingKeyMsg delegates key events to the huh form.
 // When the form completes, it delegates to checkOnboardingComplete.
-func (m Model) handleOnboardingKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m Model) handleOnboardingKeyMsg(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	formModel, cmd := m.form.Update(msg)
 	if f, ok := formModel.(*huh.Form); ok {
 		m.form = f
@@ -271,9 +271,8 @@ func (m Model) checkOnboardingComplete(fallbackCmd tea.Cmd) (tea.Model, tea.Cmd)
 	return m, saveConfigCmd(cfg)
 }
 
-func (m Model) handleMouseMsg(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
-	// Only handle left click release (the "click" action)
-	if msg.Action != tea.MouseActionRelease || msg.Button != tea.MouseButtonLeft {
+func (m Model) handleMouseMsg(msg tea.MouseReleaseMsg) (tea.Model, tea.Cmd) {
+	if msg.Mouse().Button != tea.MouseLeft {
 		return m, nil
 	}
 
@@ -303,7 +302,7 @@ func (m Model) handleMouseMsg(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) handleErrorKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m Model) handleErrorKeyMsg(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	if msg.String() == "r" {
 		m.state = StateLoading
 		m.errorMsg = ""
@@ -321,7 +320,7 @@ func (m Model) handleErrorKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) handleSolvedKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m Model) handleSolvedKeyMsg(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "s":
 		if m.claimCode != "" {
@@ -354,7 +353,7 @@ func (m Model) handleSolvedKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) handlePlayingKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m Model) handlePlayingKeyMsg(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "ctrl+c":
 		// Clear all input
@@ -399,11 +398,9 @@ func (m Model) handlePlayingKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	default:
 		// Check for letter input
-		if msg.Type == tea.KeyRunes && len(msg.Runes) > 0 {
-			r := msg.Runes[0]
-			if unicode.IsLetter(r) {
-				return m.handleLetterInput(unicode.ToUpper(r))
-			}
+		runes := []rune(msg.String())
+		if len(runes) == 1 && unicode.IsLetter(runes[0]) {
+			return m.handleLetterInput(unicode.ToUpper(runes[0]))
 		}
 	}
 
