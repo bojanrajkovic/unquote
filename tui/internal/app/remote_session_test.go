@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 
 	"github.com/bojanrajkovic/unquote/tui/internal/api"
 	"github.com/bojanrajkovic/unquote/tui/internal/puzzle"

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/charmbracelet/huh"
+	"charm.land/huh/v2"
 
 	"github.com/bojanrajkovic/unquote/tui/internal/api"
 	"github.com/bojanrajkovic/unquote/tui/internal/config"
