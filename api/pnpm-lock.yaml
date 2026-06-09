@@ -141,9 +141,6 @@ catalogs:
     sqids:
       specifier: ^0.3.0
       version: 0.3.0
-    type-fest:
-      specifier: ^5.4.0
-      version: 5.4.4
     typebox:
       specifier: ^1.0.13
       version: 1.1.39
@@ -296,7 +293,7 @@ importers:
         version: 0.3.0
       type-fest:
         specifier: catalog:prod
-        version: 5.4.4
+        version: 5.7.0
       typebox:
         specifier: catalog:prod
         version: 1.1.39
@@ -2870,10 +2867,6 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
-  type-fest@5.4.4:
-    resolution: {integrity: sha512-JnTrzGu+zPV3aXIUhnyWJj4z/wigMsdYajGLIYakqyOW1nPllzXEJee0QQbHj+CTIQtXGlAjuK0UY+2xTyjVAw==}
-    engines: {node: '>=20'}
-
   type-fest@5.7.0:
     resolution: {integrity: sha512-1URUxUqfHFM1c+zfSPsa3gnkO7Aq21qyH75SIduNYz4SzY964rn1X2vCMQaHSHhktiw+0kPa2iyb6PUpXqB6Vg==}
     engines: {node: '>=20'}
@@ -5196,10 +5189,6 @@ snapshots:
       esbuild: 0.28.0
     optionalDependencies:
       fsevents: 2.3.3
-
-  type-fest@5.4.4:
-    dependencies:
-      tagged-tag: 1.0.0
 
   type-fest@5.7.0:
     dependencies:
