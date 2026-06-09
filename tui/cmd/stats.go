@@ -111,7 +111,8 @@ func renderStatsOutput(stats *api.PlayerStatsResponse) string {
 	}
 
 	for _, r := range rows {
-		fmt.Fprintf(&b, "  %s  %s\n",
+		fmt.Fprintf(
+			&b, "  %s  %s\n",
 			labelStyle.Width(16).Render(r.label),
 			valueStyle.Render(r.value),
 		)
@@ -135,7 +136,8 @@ func renderStatsOutput(stats *api.PlayerStatsResponse) string {
 			points[offset+i] = stats.RecentSolves[len(stats.RecentSolves)-n+i].CompletionTime / 60000.0
 		}
 
-		plot := asciigraph.Plot(points,
+		plot := asciigraph.Plot(
+			points,
 			asciigraph.Height(8),
 			asciigraph.Width(50),
 			asciigraph.Precision(1),

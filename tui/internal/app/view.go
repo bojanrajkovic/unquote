@@ -25,11 +25,12 @@ func formatElapsed(d time.Duration) string {
 // View renders the UI
 func (m Model) View() tea.View {
 	var content string
-	if !m.sizeReady {
+	switch {
+	case !m.sizeReady:
 		content = "Initializing..."
-	} else if m.IsTooSmall() {
+	case m.IsTooSmall():
 		content = m.viewTooSmall()
-	} else {
+	default:
 		switch m.state {
 		case StateLoading:
 			content = m.viewLoading()
@@ -270,7 +271,8 @@ func (m Model) viewStats() string {
 	if !hasData {
 		graphPanel = ui.HelpStyle.Render("No solve history in the last 30 days.")
 	} else {
-		plot := asciigraph.Plot(points,
+		plot := asciigraph.Plot(
+			points,
 			asciigraph.Height(10),
 			asciigraph.Width(graphWidth),
 			asciigraph.Precision(1),
