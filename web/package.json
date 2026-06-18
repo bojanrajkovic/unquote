@@ -25,7 +25,7 @@
     "@sveltejs/kit": "2.63.0",
     "@sveltejs/vite-plugin-svelte": "7.1.2",
     "@tailwindcss/vite": "4.3.1",
-    "@types/node": "25.9.2",
+    "@types/node": "25.9.3",
     "@vitest/coverage-v8": "4.1.8",
     "jsdom": "29.1.1",
     "prettier": "3.8.4",
