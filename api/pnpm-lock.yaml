@@ -117,9 +117,6 @@ catalogs:
     ajv-formats:
       specifier: ^3.0.0
       version: 3.0.1
-    awilix:
-      specifier: ^13.0.0
-      version: 13.0.4
     drizzle-orm:
       specifier: ^0.45.0
       version: 0.45.2
@@ -148,6 +145,9 @@ catalogs:
       specifier: ^1.0.13
       version: 1.2.1
   testing:
+    '@electric-sql/pglite':
+      specifier: ^0.5.0
+      version: 0.5.3
     '@opentelemetry/context-async-hooks':
       specifier: ^2.5.0
       version: 2.7.1
@@ -275,7 +275,7 @@ importers:
         version: 3.0.1(patch_hash=5e2c1c896124c3f00a28269fcd286b8e2b62b5d4cfdb7c541d42dfb558017ab8)(ajv@8.20.0)
       awilix:
         specifier: catalog:prod
-        version: 13.0.4
+        version: 13.0.5
       drizzle-orm:
         specifier: catalog:prod
         version: 0.45.2(@electric-sql/pglite@0.5.3)(@opentelemetry/api@1.9.1)(@types/pg@8.20.0)(pg@8.21.0)
@@ -2044,8 +2044,8 @@ packages:
   avvio@9.2.0:
     resolution: {integrity: sha512-2t/sy01ArdHHE0vRH5Hsay+RtCZt3dLPji7W7/MMOCEgze5b7SNDC4j5H6FnVgPkI1MTNFGzHdHrVXDDl7QSSQ==}
 
-  awilix@13.0.4:
-    resolution: {integrity: sha512-7jL7ksLg8fB3yyZ/gEhXfDTUTUeffLYKD5exXGpj0QdqUxN/XsQKt4JOuPE6StUfPiw17D1jp0hWlLs1cLCdwA==}
+  awilix@13.0.5:
+    resolution: {integrity: sha512-ORtca6suBdYA1FyTzqHEZDvEuUwo3lPDDBRm7GrzHgi6STESzJKdBtpqfTzObdMj1NGQUWX6k26E3EbQaGJX5Q==}
     engines: {node: '>=20.0.0'}
 
   balanced-match@4.0.4:
@@ -4361,7 +4361,7 @@ snapshots:
       '@fastify/error': 4.2.0
       fastq: 1.20.1
 
-  awilix@13.0.4:
+  awilix@13.0.5:
     dependencies:
       fast-glob: 3.3.3
 
