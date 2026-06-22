@@ -148,6 +148,9 @@ catalogs:
       specifier: ^1.0.13
       version: 1.2.1
   testing:
+    '@electric-sql/pglite':
+      specifier: ^0.5.0
+      version: 0.5.3
     '@opentelemetry/context-async-hooks':
       specifier: ^2.5.0
       version: 2.7.1
@@ -163,9 +166,6 @@ catalogs:
     fast-check:
       specifier: ^4.0.0
       version: 4.8.0
-    nanoid:
-      specifier: ^5.1.6
-      version: 5.1.11
     vitest:
       specifier: ^4.0.0
       version: 4.1.8
@@ -391,7 +391,7 @@ importers:
         version: 4.8.0
       nanoid:
         specifier: catalog:testing
-        version: 5.1.11
+        version: 5.1.14
       oxfmt:
         specifier: catalog:lint
         version: 0.54.0
@@ -2528,8 +2528,8 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  nanoid@5.1.11:
-    resolution: {integrity: sha512-v+KEsUv2ps74PaSKv0gHTxTCgMXOIfBEbaqa6w6ISIGC7ZsvHN4N9oJ8d4cmf0n5oTzQz2SLmThbQWhjd/8eKg==}
+  nanoid@5.1.14:
+    resolution: {integrity: sha512-5c8l8kVzqpnDPaicbEop/fV0Q1w16FmbWtVhMqugTozAwYdlIQojWH5a/M7UfziFmGdQRrUdV+EPzc9Xng3VAQ==}
     engines: {node: ^18 || >=20}
     hasBin: true
 
@@ -4838,7 +4838,7 @@ snapshots:
 
   nanoid@3.3.14: {}
 
-  nanoid@5.1.11: {}
+  nanoid@5.1.14: {}
 
   nanoid@5.1.15: {}
 
