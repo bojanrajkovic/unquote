@@ -13,9 +13,6 @@ catalogs:
     '@tsconfig/strictest':
       specifier: ^2.0.0
       version: 2.0.8
-    '@types/luxon':
-      specifier: ^3.4.0
-      version: 3.7.1
     '@types/node':
       specifier: ^24.0.0
       version: 24.13.2
@@ -157,6 +154,9 @@ catalogs:
     '@opentelemetry/sdk-trace-base':
       specifier: ^2.5.0
       version: 2.7.1
+    '@vitest/coverage-istanbul':
+      specifier: ^4.0.0
+      version: 4.1.9
     ajv:
       specifier: ^8.0.0
       version: 8.20.0
@@ -166,6 +166,9 @@ catalogs:
     nanoid:
       specifier: ^5.1.6
       version: 5.1.14
+    vitest:
+      specifier: ^4.0.0
+      version: 4.1.9
 
 patchedDependencies:
   ajv-formats@3.0.1: 5e2c1c896124c3f00a28269fcd286b8e2b62b5d4cfdb7c541d42dfb558017ab8
@@ -318,7 +321,7 @@ importers:
         version: 2.0.8
       '@types/luxon':
         specifier: catalog:build
-        version: 3.7.1
+        version: 3.7.2
       '@types/node':
         specifier: catalog:build
         version: 24.13.2
@@ -376,7 +379,7 @@ importers:
         version: 2.0.8
       '@types/luxon':
         specifier: catalog:build
-        version: 3.7.1
+        version: 3.7.2
       '@types/node':
         specifier: catalog:build
         version: 24.13.2
@@ -1930,8 +1933,8 @@ packages:
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
-  '@types/luxon@3.7.1':
-    resolution: {integrity: sha512-H3iskjFIAn5SlJU7OuxUmTEpebK6TKB8rxZShDslBMZJ5u9S//KM1sbdAisiSrqwLQncVjnpi2OK2J51h+4lsg==}
+  '@types/luxon@3.7.2':
+    resolution: {integrity: sha512-gW+Oib+vUtGJBtNC8V9Reww0oIpusw+4m81uncg9REGZAJfqOQHfo/nkabnc7w0QReXyPqjrbWMJk6NuAkiX3Q==}
 
   '@types/node@24.13.2':
     resolution: {integrity: sha512-fRa09kZTgu8o71KFcDjUFuc7F+dEbZYZmkI0mg5YBTRs0yMKjYHsq/c0urDKeDb+D5qVgXOdFcuu+DZPKOITwA==}
@@ -4235,7 +4238,7 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
-  '@types/luxon@3.7.1': {}
+  '@types/luxon@3.7.2': {}
 
   '@types/node@24.13.2':
     dependencies:
