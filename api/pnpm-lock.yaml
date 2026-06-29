@@ -13,6 +13,9 @@ catalogs:
     '@tsconfig/strictest':
       specifier: ^2.0.0
       version: 2.0.8
+    '@types/luxon':
+      specifier: ^3.4.0
+      version: 3.7.2
     '@types/node':
       specifier: ^24.0.0
       version: 24.13.2
@@ -163,9 +166,6 @@ catalogs:
     fast-check:
       specifier: ^4.0.0
       version: 4.8.0
-    nanoid:
-      specifier: ^5.1.6
-      version: 5.1.14
     vitest:
       specifier: ^4.0.0
       version: 4.1.9
@@ -391,7 +391,7 @@ importers:
         version: 4.8.0
       nanoid:
         specifier: catalog:testing
-        version: 5.1.14
+        version: 5.1.16
       oxfmt:
         specifier: catalog:lint
         version: 0.54.0
@@ -2528,13 +2528,8 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  nanoid@5.1.14:
-    resolution: {integrity: sha512-5c8l8kVzqpnDPaicbEop/fV0Q1w16FmbWtVhMqugTozAwYdlIQojWH5a/M7UfziFmGdQRrUdV+EPzc9Xng3VAQ==}
-    engines: {node: ^18 || >=20}
-    hasBin: true
-
-  nanoid@5.1.15:
-    resolution: {integrity: sha512-kBg3RpGtIe+RpTbyXwoI6pk5yD7KUiI3sygUqgeBMRst42KmhB4RZC7eiO9Wa1HIpaCCtpE2DJ6OI4Wi5ebwFw==}
+  nanoid@5.1.16:
+    resolution: {integrity: sha512-kVrnsrJqMR8+oLJnGEmSWw9BivK5mt7H3FZatVRjrc5wGqFYuBxX1yG7+A7Gi5AefkX6t/oCkizcQgpu0cY1dQ==}
     engines: {node: ^18 || >=20}
     hasBin: true
 
@@ -4208,7 +4203,7 @@ snapshots:
   '@scalar/types@0.12.3':
     dependencies:
       '@scalar/helpers': 0.8.1
-      nanoid: 5.1.15
+      nanoid: 5.1.16
       type-fest: 5.7.0
       zod: 4.4.3
 
@@ -4838,9 +4833,7 @@ snapshots:
 
   nanoid@3.3.15: {}
 
-  nanoid@5.1.14: {}
-
-  nanoid@5.1.15: {}
+  nanoid@5.1.16: {}
 
   no-case@3.0.4:
     dependencies:
