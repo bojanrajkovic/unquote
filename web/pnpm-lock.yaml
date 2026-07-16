@@ -17,13 +17,13 @@ importers:
         version: 1.61.1
       '@sveltejs/adapter-static':
         specifier: 3.0.10
-        version: 3.0.10(@sveltejs/kit@2.69.2(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0)))(svelte@5.56.4)(typescript@6.0.3)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0)))
+        version: 3.0.10(@sveltejs/kit@2.69.2(@sveltejs/vite-plugin-svelte@7.2.0(svelte@5.56.4)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0)))(svelte@5.56.4)(typescript@6.0.3)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0)))
       '@sveltejs/kit':
         specifier: 2.69.2
-        version: 2.69.2(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0)))(svelte@5.56.4)(typescript@6.0.3)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0))
+        version: 2.69.2(@sveltejs/vite-plugin-svelte@7.2.0(svelte@5.56.4)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0)))(svelte@5.56.4)(typescript@6.0.3)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0))
       '@sveltejs/vite-plugin-svelte':
-        specifier: 7.1.2
-        version: 7.1.2(svelte@5.56.4)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0))
+        specifier: 7.2.0
+        version: 7.2.0(svelte@5.56.4)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0))
       '@tailwindcss/vite':
         specifier: 4.3.2
         version: 4.3.2(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0))
@@ -477,8 +477,8 @@ packages:
     resolution: {integrity: sha512-BXXm+VOH/9X4N7Dd1iZ2MqA1h7M+9i2noI8QYuLDY8QcN2WHYn7D/VK/+IJNfcAmRw7ACNJ538UT9GXIhnBTiA==}
     engines: {node: '>= 18.0.0'}
 
-  '@sveltejs/vite-plugin-svelte@7.1.2':
-    resolution: {integrity: sha512-DrUBA2UXRfDmUX/ZTiEopd3X40yavsJF1FX2RygcuIScHL7o5YX1fMvoYnDhjeJQC4weCOklirpNWlcb2NiSeA==}
+  '@sveltejs/vite-plugin-svelte@7.2.0':
+    resolution: {integrity: sha512-1SpkuMSRLfugrVX+IrKfE1RUegzo8AQzKQ6qQPfVzbcWi5IhuTPaKb5ZrLpucleFznkc4/RTeSPoRnGWFxX+EQ==}
     engines: {node: ^20.19 || ^22.12 || >=24}
     peerDependencies:
       svelte: ^5.46.4
@@ -1458,15 +1458,15 @@ snapshots:
     dependencies:
       acorn: 8.16.0
 
-  '@sveltejs/adapter-static@3.0.10(@sveltejs/kit@2.69.2(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0)))(svelte@5.56.4)(typescript@6.0.3)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0)))':
+  '@sveltejs/adapter-static@3.0.10(@sveltejs/kit@2.69.2(@sveltejs/vite-plugin-svelte@7.2.0(svelte@5.56.4)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0)))(svelte@5.56.4)(typescript@6.0.3)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0)))':
     dependencies:
-      '@sveltejs/kit': 2.69.2(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0)))(svelte@5.56.4)(typescript@6.0.3)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0))
+      '@sveltejs/kit': 2.69.2(@sveltejs/vite-plugin-svelte@7.2.0(svelte@5.56.4)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0)))(svelte@5.56.4)(typescript@6.0.3)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0))
 
-  '@sveltejs/kit@2.69.2(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0)))(svelte@5.56.4)(typescript@6.0.3)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0))':
+  '@sveltejs/kit@2.69.2(@sveltejs/vite-plugin-svelte@7.2.0(svelte@5.56.4)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0)))(svelte@5.56.4)(typescript@6.0.3)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0))':
     dependencies:
       '@standard-schema/spec': 1.1.0
       '@sveltejs/acorn-typescript': 1.0.10(acorn@8.16.0)
-      '@sveltejs/vite-plugin-svelte': 7.1.2(svelte@5.56.4)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0))
+      '@sveltejs/vite-plugin-svelte': 7.2.0(svelte@5.56.4)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0))
       '@types/cookie': 0.6.0
       acorn: 8.16.0
       cookie: 0.6.0
@@ -1484,7 +1484,7 @@ snapshots:
 
   '@sveltejs/load-config@0.1.1': {}
 
-  '@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0))':
+  '@sveltejs/vite-plugin-svelte@7.2.0(svelte@5.56.4)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.27.3)(jiti@2.7.0))':
     dependencies:
       deepmerge: 4.3.1
       magic-string: 0.30.21
