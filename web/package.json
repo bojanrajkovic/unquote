@@ -23,7 +23,7 @@
     "@playwright/test": "1.61.1",
     "@sveltejs/adapter-static": "3.0.10",
     "@sveltejs/kit": "2.69.2",
-    "@sveltejs/vite-plugin-svelte": "7.1.2",
+    "@sveltejs/vite-plugin-svelte": "7.2.0",
     "@tailwindcss/vite": "4.3.2",
     "@types/node": "25.9.5",
     "@vitest/coverage-v8": "4.1.10",
