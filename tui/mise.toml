@@ -2,7 +2,7 @@
 go = "1.26.5"
 "go:golang.org/x/tools/gopls" = "latest"
 "aqua:golangci/golangci-lint" = "2.12.2"
-"aqua:mvdan/gofumpt" = "0.10.0"
+"aqua:mvdan/gofumpt" = "0.11.0"
 "aqua:goreleaser/goreleaser" = "2.17.1"
 
 [tasks.install]
