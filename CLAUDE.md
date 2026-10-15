@@ -180,3 +180,49 @@ fix(tui): correct letter substitution display on narrow terminals
 build(api): upgrade express to v5
 build(tui): pin Go version to 1.25.6
 ```
+
+## Design Context
+
+### Users
+
+Daily ritual players who open Unquote each morning as a mental warm-up — similar to how people approach Wordle or the NYT Mini crossword. They value reliability, a satisfying solve arc, and a clean experience that doesn't get in their way. Speed and clarity matter; they know what they came to do.
+
+### Brand Personality
+
+**Elegant, Contemplative, Precise.** Unquote is a refined newspaper puzzle in dark mode — timeless and exact. It respects the player's intelligence and attention. Every detail should feel considered, not accidental.
+
+### Aesthetic Direction
+
+- **Reference**: NYT Games (Wordle, Connections) — constrained palette, daily-ritual energy, strong brand identity without being loud
+- **Anti-reference**: Gamified / achievement-heavy UI — no badge-mania, confetti overload, or notification-style patterns. The puzzle is the reward.
+- **Theme**: Dark mode only. Deep navy background (`#0c0c18`), warm gold as the primary accent, editorial typography with Cormorant Garamond for quotes and Space Mono for cipher/code elements.
+- **Texture**: Subtle grain overlay, gentle gradient rules, and gold glow shadows preserve atmosphere without decoration for its own sake.
+- **Animations**: Purposeful and restrained. Fly transitions (220ms), staggered cell flip on solve, crossfade skeleton loader. Motion communicates state, not delight.
+
+### Design Tokens (from `web/src/app.css`)
+
+| Role | Token | Value |
+|------|-------|-------|
+| Primary action / focus | `--color-gold` | `#d4a140` |
+| Cipher labels / hints | `--color-teal` | `#7dd4e8` |
+| Solved / correct | `--color-green` | `#5aaa78` |
+| Conflict detection | `--color-amber` | `#c08040` |
+| Error / incorrect | `--color-red` | `#bf5757` |
+| Main background | `--color-surface` | `#0c0c18` |
+| Card / panel | `--color-surface-elevated` | `#14142a` |
+| Primary text | `--color-text-primary` | `#eae0ca` (warm off-white) |
+| Muted text | `--color-text-secondary` | `#8a8aa4` |
+
+| Role | Font |
+|------|------|
+| Display / quotes / headings | Cormorant Garamond (serif) |
+| Cipher cells / codes / logo | Space Mono (monospace) |
+| UI / buttons / labels | DM Sans (sans-serif) |
+
+### Design Principles
+
+1. **Restraint over decoration.** Every visual element earns its place. Ornamentation (gradient rules, grain texture, ✦ glyphs) is used to set atmosphere, never as filler.
+2. **Typography carries meaning.** Font choice signals context: mono = code/cipher, serif = literary/quotes, sans = action/UI. Never mix roles arbitrarily.
+3. **State through color, not noise.** Active (gold), related (teal), conflict (amber), solved (green) — the palette is a semantic language, not a theme.
+4. **Ritual over gamification.** Celebrate the solve with the decoded quote itself — no badges, streaks-as-pressure, or confetti. Stats are opt-in, never the point.
+5. **WCAG AA accessibility as baseline.** Focus indicators, `prefers-reduced-motion` support, `aria-live` regions, and 44px minimum touch targets are non-negotiable defaults.

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, tick } from "svelte";
   import { fade } from "svelte/transition";
+  import { goto } from "$app/navigation";
   import { game } from "$lib/state/game.svelte.js";
   import { identity } from "$lib/state/identity.svelte.js";
   import { assembleSolution, formatTimer } from "$lib/puzzle.js";
@@ -614,7 +615,7 @@
           {/if}
 
           {#if !revealComplete}
-            <div class="ornament-rule"><span>✦ · ✦ · ✦</span></div>
+            <div class="ornament-rule"></div>
           {/if}
 
           <!-- Solved card (AC2.11, cross-client-sync.AC2.1) -->
@@ -627,25 +628,20 @@
               in:fade={{ duration: 500, delay: game.solvedElsewhere ? 0 : 300 }}
             >
               {#if game.solvedElsewhere}
-                <div class="solved-eyebrow">✦ Already Solved ✦</div>
+                <div class="solved-eyebrow">Already Solved</div>
                 <p class="solved-elsewhere-msg">Solved on another device</p>
               {:else}
                 <div class="solved-eyebrow">✦ Decoded ✦</div>
                 <blockquote class="solved-quote">
-                  "{assembleSolution(game.cells)}"
+                  {assembleSolution(game.cells)}
                 </blockquote>
                 <div class="solved-attribution">— {game.puzzle.author}</div>
               {/if}
-              <div class="solved-stats">
-                <div class="stat-group">
-                  <span class="stat-value">
-                    {game.completionTime !== null
-                      ? formatTimer(game.completionTime)
-                      : "—"}
-                  </span>
-                  <span class="stat-label">Time</span>
-                </div>
-              </div>
+              {#if game.completionTime !== null}
+                <p class="solved-time-line">
+                  solved in {formatTimer(game.completionTime)}
+                </p>
+              {/if}
               {#if !game.solvedElsewhere}
                 <ShareMenu
                   onCopyImage={handleCopyImage}
@@ -656,6 +652,16 @@
                     : undefined}
                   feedback={sessionShareFeedback}
                 />
+                {#if !identity.claimCode}
+                  <p class="solved-register-nudge">
+                    Want to track your streak?
+                    <button
+                      class="solved-register-link"
+                      onclick={() => goto("/?action=register")}
+                      >Create an account →</button
+                    >
+                  </p>
+                {/if}
               {/if}
             </div>
           {/if}
@@ -829,21 +835,17 @@
   }
 
   .progress-track {
-    height: 2px;
+    height: 3px;
     background: var(--color-surface-2);
-    border-radius: 1px;
+    border-radius: 2px;
     margin-top: 0.2rem;
     overflow: hidden;
   }
 
   .progress-fill {
     height: 100%;
-    background: linear-gradient(
-      90deg,
-      var(--color-teal-mid),
-      var(--color-gold-mid)
-    );
-    border-radius: 1px;
+    background: linear-gradient(90deg, var(--color-teal), var(--color-gold));
+    border-radius: 2px;
     transition: width 0.25s ease;
   }
 
@@ -1014,11 +1016,6 @@
   .ornament-rule::after {
     background: linear-gradient(90deg, var(--color-border), transparent);
   }
-  .ornament-rule span {
-    color: var(--color-text-secondary);
-    font-size: 0.5rem;
-    letter-spacing: 0.3em;
-  }
 
   /* ── Solved card (AC2.11) ─────────────────────────────────────── */
 
@@ -1026,14 +1023,16 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.25rem;
-    padding: 1.75rem 1.5rem;
+    gap: 1.5rem;
+    padding: 3rem 2rem 2.5rem;
     border: 1px solid rgba(90, 170, 120, 0.22);
     background: rgba(90, 170, 120, 0.03);
     border-radius: var(--r-lg);
     text-align: center;
     margin-top: 1.5rem;
     margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
   }
 
   .solved-eyebrow {
@@ -1045,48 +1044,66 @@
     color: var(--color-green);
   }
 
+  @keyframes quoteReveal {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   .solved-quote {
     font-family: var(--font-display);
     font-style: italic;
-    font-size: clamp(1.05rem, 2.5vw, 1.4rem);
-    line-height: 1.6;
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    line-height: 1.5;
     color: var(--color-text-primary);
-    max-width: 500px;
+    max-width: 560px;
     margin: 0;
     text-wrap: pretty;
+    position: relative;
+    animation: quoteReveal 0.6s ease forwards;
+    animation-delay: 0.7s;
+    opacity: 0;
+  }
+
+  /* Large decorative opening mark */
+  .solved-quote::before {
+    content: "\201C";
+    position: absolute;
+    top: -2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-display);
+    font-size: 7rem;
+    font-style: normal;
+    color: rgba(90, 170, 120, 0.18);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
   }
 
   .solved-attribution {
     font-family: var(--font-display);
-    font-size: 0.9rem;
+    font-style: italic;
+    font-size: 1.05rem;
     color: var(--color-text-secondary);
+    letter-spacing: 0.02em;
   }
 
-  .solved-stats {
-    display: flex;
-    gap: 2rem;
-  }
-
-  .stat-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.15rem;
-  }
-
-  .stat-value {
+  .solved-time-line {
     font-family: var(--font-mono);
-    font-size: 1.3rem;
+    font-size: 0.68rem;
     font-weight: 700;
-    color: var(--color-green);
-    font-variant-numeric: tabular-nums;
-  }
-
-  .stat-label {
-    font-size: 0.6rem;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--color-text-secondary);
+    color: var(--color-green);
+    opacity: 0.75;
+    font-variant-numeric: tabular-nums;
+    margin: 0;
   }
 
   .solved-elsewhere-msg {
@@ -1094,6 +1111,29 @@
     font-size: 0.88rem;
     color: var(--color-text-secondary);
     letter-spacing: 0.02em;
+  }
+
+  .solved-register-nudge {
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+
+  .solved-register-link {
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--color-text-border);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    padding: 0;
+    transition: color 0.15s;
+  }
+
+  .solved-register-link:hover {
+    color: var(--color-text-primary);
   }
 
   /* ── Status messages ──────────────────────────────────────────── */

@@ -68,13 +68,11 @@ jobs:
 
       - name: Unit tests (with coverage)
         working-directory: web
-        run: pnpm run coverage:unit
+        run: pnpm run coverage
 
-      - name: Build (with coverage instrumentation)
+      - name: Build
         working-directory: web
         run: pnpm run build
-        env:
-          VITE_COVERAGE: "true"
 
       - name: Install Playwright browsers
         working-directory: web
@@ -83,11 +81,6 @@ jobs:
       - name: Run E2E tests
         working-directory: web
         run: pnpm run test:e2e
-
-      - name: Merge coverage reports
-        if: always()
-        working-directory: web
-        run: pnpm run coverage:merge
 
       - name: Upload E2E screenshots
         if: always()
