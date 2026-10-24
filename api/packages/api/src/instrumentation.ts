@@ -59,12 +59,14 @@ const sdkConfig = {
     traceExporter: new OTLPTraceExporter({
       url: `${otlpEndpoint}/v1/traces`,
     }),
-    metricReader: new PeriodicExportingMetricReader({
-      exporter: new OTLPMetricExporter({
-        url: `${otlpEndpoint}/v1/metrics`,
+    metricReaders: [
+      new PeriodicExportingMetricReader({
+        exporter: new OTLPMetricExporter({
+          url: `${otlpEndpoint}/v1/metrics`,
+        }),
+        exportIntervalMillis: 15_000,
       }),
-      exportIntervalMillis: 15_000,
-    }),
+    ],
   }),
   views: [
     {

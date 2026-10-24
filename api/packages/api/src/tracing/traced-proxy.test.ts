@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterEach } from "vitest";
-import { BasicTracerProvider, InMemorySpanExporter, SimpleSpanProcessor } from "@opentelemetry/sdk-trace-base";
+import { TracerProvider, InMemorySpanExporter, SimpleSpanProcessor } from "@opentelemetry/sdk-trace";
 import { AsyncLocalStorageContextManager } from "@opentelemetry/context-async-hooks";
 import { context, trace, SpanStatusCode } from "@opentelemetry/api";
 import { tracedProxy } from "./traced-proxy.js";
@@ -31,8 +31,8 @@ describe("tracedProxy", () => {
 
     // Create and register SDK with InMemorySpanExporter
     exporter = new InMemorySpanExporter();
-    const provider = new BasicTracerProvider({
-      spanProcessors: [new SimpleSpanProcessor(exporter)],
+    const provider = new TracerProvider({
+      spanProcessors: [new SimpleSpanProcessor({ exporter })],
     });
     trace.setGlobalTracerProvider(provider);
   });
