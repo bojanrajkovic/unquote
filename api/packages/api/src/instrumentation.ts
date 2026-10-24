@@ -27,7 +27,7 @@ import {
   resourceFromAttributes,
 } from "@opentelemetry/resources";
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from "@opentelemetry/semantic-conventions";
-import { FastifyInstrumentation } from "@opentelemetry/instrumentation-fastify";
+import { FastifyOtelInstrumentation } from "@fastify/otel";
 import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
 import { PinoInstrumentation } from "@opentelemetry/instrumentation-pino";
 import { UndiciInstrumentation } from "@opentelemetry/instrumentation-undici";
@@ -76,7 +76,7 @@ const sdkConfig = {
   ],
   instrumentations: [
     new HttpInstrumentation(),
-    new FastifyInstrumentation(),
+    new FastifyOtelInstrumentation({ registerOnInitialization: true }),
     new PinoInstrumentation({
       logKeys: {
         traceId: "trace_id",

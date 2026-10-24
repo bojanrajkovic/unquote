@@ -20,6 +20,7 @@ catalogs:
     '@fastify/cors': ^11.0.0
     '@fastify/env': ^6.0.0
     '@fastify/helmet': ^13.0.0
+    '@fastify/otel': ^0.21.3
     '@fastify/rate-limit': ^10.0.0
     '@fastify/sensible': ^6.0.0
     '@fastify/type-provider-typebox': ^6.1.0
@@ -28,7 +29,6 @@ catalogs:
     '@opentelemetry/exporter-metrics-otlp-http': ^0.300.0
     '@opentelemetry/exporter-trace-otlp-http': ^0.300.0
     '@opentelemetry/instrumentation': ^0.300.0
-    '@opentelemetry/instrumentation-fastify': ^0.57.0
     '@opentelemetry/instrumentation-http': ^0.300.0
     '@opentelemetry/instrumentation-runtime-node': ^0.37.0
     '@opentelemetry/instrumentation-pino': ^0.70.0

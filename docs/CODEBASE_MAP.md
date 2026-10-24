@@ -342,7 +342,7 @@ sequenceDiagram
 ```mermaid
 graph TB
     A["HTTP GET /game/:date<br/>(auto: @opentelemetry/instrumentation-http)"]
-    B["request handler - /game/:date<br/>(auto: @opentelemetry/instrumentation-fastify)"]
+    B["request handler - /game/:date<br/>(auto: @fastify/otel)"]
     C["QuoteSource.getRandomQuote<br/>(tracedProxy, attr: service.implementation=JsonQuoteSource)"]
     D["KeywordSource.getKeywords<br/>(tracedProxy, attr: service.implementation=StaticKeywordSource)"]
     E["KeywordCipherGenerator.generateDailyPuzzle<br/>(@traced decorator)"]
