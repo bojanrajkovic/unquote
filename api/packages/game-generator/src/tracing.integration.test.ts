@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { DateTime } from "luxon";
 import { beforeAll, describe, expect, it } from "vitest";
-import { BasicTracerProvider, InMemorySpanExporter, SimpleSpanProcessor } from "@opentelemetry/sdk-trace-base";
+import { TracerProvider, InMemorySpanExporter, SimpleSpanProcessor } from "@opentelemetry/sdk-trace";
 import { AsyncLocalStorageContextManager } from "@opentelemetry/context-async-hooks";
 import { context, trace } from "@opentelemetry/api";
 import type { Quote } from "./types.js";
@@ -31,8 +31,8 @@ describe("game-tracing span tree integration tests", () => {
     context.setGlobalContextManager(contextManager);
 
     exporter = new InMemorySpanExporter();
-    const tracerProvider = new BasicTracerProvider({
-      spanProcessors: [new SimpleSpanProcessor(exporter)],
+    const tracerProvider = new TracerProvider({
+      spanProcessors: [new SimpleSpanProcessor({ exporter })],
     });
     trace.setGlobalTracerProvider(tracerProvider);
 

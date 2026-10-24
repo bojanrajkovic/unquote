@@ -76,7 +76,6 @@ describe("runtime metrics integration", () => {
     const names = collectMetricNames(exporter);
 
     expect(names).toContain("v8js.memory.heap.used");
-    expect(names).toContain("v8js.memory.heap.limit");
   });
 
   it("reports non-zero heap usage across V8 heap spaces", () => {

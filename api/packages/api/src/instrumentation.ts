@@ -27,7 +27,7 @@ import {
   resourceFromAttributes,
 } from "@opentelemetry/resources";
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from "@opentelemetry/semantic-conventions";
-import { FastifyInstrumentation } from "@opentelemetry/instrumentation-fastify";
+import { FastifyOtelInstrumentation } from "@fastify/otel";
 import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
 import { PinoInstrumentation } from "@opentelemetry/instrumentation-pino";
 import { UndiciInstrumentation } from "@opentelemetry/instrumentation-undici";
@@ -59,12 +59,14 @@ const sdkConfig = {
     traceExporter: new OTLPTraceExporter({
       url: `${otlpEndpoint}/v1/traces`,
     }),
-    metricReader: new PeriodicExportingMetricReader({
-      exporter: new OTLPMetricExporter({
-        url: `${otlpEndpoint}/v1/metrics`,
+    metricReaders: [
+      new PeriodicExportingMetricReader({
+        exporter: new OTLPMetricExporter({
+          url: `${otlpEndpoint}/v1/metrics`,
+        }),
+        exportIntervalMillis: 15_000,
       }),
-      exportIntervalMillis: 15_000,
-    }),
+    ],
   }),
   views: [
     {
@@ -74,7 +76,7 @@ const sdkConfig = {
   ],
   instrumentations: [
     new HttpInstrumentation(),
-    new FastifyInstrumentation(),
+    new FastifyOtelInstrumentation({ registerOnInitialization: true }),
     new PinoInstrumentation({
       logKeys: {
         traceId: "trace_id",
