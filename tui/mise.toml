@@ -1,5 +1,5 @@
 [tools]
-go = "1.26.5"
+go = "1.27.3"
 "go:golang.org/x/tools/gopls" = "latest"
 "aqua:golangci/golangci-lint" = "2.15.0"
 "aqua:mvdan/gofumpt" = "0.12.0"
