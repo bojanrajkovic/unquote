@@ -148,6 +148,9 @@ catalogs:
       specifier: ^1.0.13
       version: 1.2.1
   testing:
+    '@electric-sql/pglite':
+      specifier: ^0.5.0
+      version: 0.5.14
     '@opentelemetry/context-async-hooks':
       specifier: ^3.0.0
       version: 3.0.0
@@ -160,9 +163,6 @@ catalogs:
     ajv:
       specifier: ^8.0.0
       version: 8.20.0
-    fast-check:
-      specifier: ^4.0.0
-      version: 4.9.0
     nanoid:
       specifier: ^5.1.6
       version: 5.1.16
@@ -339,7 +339,7 @@ importers:
         version: 0.31.11
       fast-check:
         specifier: catalog:testing
-        version: 4.9.0
+        version: 4.10.2
       rimraf:
         specifier: catalog:build
         version: 6.1.3
@@ -388,7 +388,7 @@ importers:
         version: 4.1.12(vitest@4.1.12)
       fast-check:
         specifier: catalog:testing
-        version: 4.9.0
+        version: 4.10.2
       nanoid:
         specifier: catalog:testing
         version: 5.1.16
@@ -2280,8 +2280,8 @@ packages:
     resolution: {integrity: sha512-KfYbmpRm0VbLjEvVa9yGwCi9GI34xvi7A/HXYWQO65CSD2u3MczUJSuwXKFIxlGsgBQizV9q5J9NHj4VG0n+pA==}
     engines: {node: '>=12.0.0'}
 
-  fast-check@4.9.0:
-    resolution: {integrity: sha512-7ms6T7SybUev/PQITciI0yLM2pOSFy5zpG8Ty7tQofcVaQUvrMXp6CBwqF6fThLCLOrfBtuHAtwq6Yu4XPCllg==}
+  fast-check@4.10.2:
+    resolution: {integrity: sha512-iK2f+YrcmoeGqk6fA0ea2bptcu/itMIm4NfEozq6N25+aG6h7s5HZbB/k1aV7b5w5sFLMCbbtRUsTVR+BgC3xw==}
     engines: {node: '>=12.17.0'}
 
   fast-decode-uri-component@1.0.1:
@@ -4573,7 +4573,7 @@ snapshots:
 
   expect-type@1.4.0: {}
 
-  fast-check@4.9.0:
+  fast-check@4.10.2:
     dependencies:
       pure-rand: 8.4.2
 
