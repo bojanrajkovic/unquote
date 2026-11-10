@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/bojanrajkovic/unquote/compare/v0.9.0...v0.10.0) (2026-11-10)
+
+
+### Features
+
+* **api:** log level names, service and a flat request line ([#374](https://github.com/bojanrajkovic/unquote/issues/374)) ([4becc6a](https://github.com/bojanrajkovic/unquote/commit/4becc6a2587d222c2920100cbdc45b19a454d7f6))
+
 ## [0.9.0](https://github.com/bojanrajkovic/unquote/compare/v0.8.1...v0.9.0) (2026-10-29)
 
 
