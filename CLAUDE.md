@@ -74,6 +74,7 @@ For detailed architecture, module guide, data flows, and navigation guide, see [
 - **DI**: Awilix with singleton + request scopes (see `src/deps/CLAUDE.md`)
 - **Database**: Drizzle ORM with node-postgres; optional (enabled when `DATABASE_URL` is set). Migrations via `drizzle-kit` with advisory lock for concurrent safety.
 - **Observability**: OpenTelemetry traces (auto-instrumentation for HTTP, Fastify, pg, Drizzle + manual spans via `tracedProxy` and game-generator's `@traced`/`withSpan`), Pino log correlation
+- **Logging**: Pino JSON lines on stdout with `level` as a name, `service`, `trace_id` and `span_id`. `src/logger.ts` logs one line per request with `request_id`, `http_method`, `url`, `http_status` and `duration_ms`; routes with `logLevel: "warn"` (the health probes) log none.
 - **Port**: 3000 (default, configurable via PORT env var)
 
 ### Environment Variables

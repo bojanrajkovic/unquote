@@ -136,6 +136,7 @@ unquote/
 |------|---------|--------|
 | `src/index.ts` | Server builder, plugin registration, error handler | 1160 |
 | `src/instrumentation.ts` | OpenTelemetry SDK init (ESM loader hook for HTTP, Fastify, Pino, Undici) | 645 |
+| `src/logger.ts` | Pino options (level names, `service`) and the per-request log line | 340 |
 | `src/config/schema.ts` | TypeBox env var schema (PORT, HOST, QUOTES_FILE_PATH, etc.) | 310 |
 | `src/config/type-extensions.ts` | Module augmentation for `fastify.config` | 44 |
 | `src/deps/singleton.ts` | Singleton DI container (wraps quoteSource/keywordSource with tracedProxy) | 500 |

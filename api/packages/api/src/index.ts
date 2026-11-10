@@ -16,6 +16,7 @@ import { configureContainer, registerDependencyInjection } from "./deps/index.js
 import { registerGameRoutes } from "./domain/game/routes/index.js";
 import { registerPlayerRoutes } from "./domain/player/routes/index.js";
 import { healthRoutes } from "./routes/health.js";
+import { loggerOptions, logRequests } from "./logger.js";
 
 // Import type extensions for side effects
 import "./config/type-extensions.js";
@@ -25,15 +26,17 @@ import "./deps/type-extensions.js";
 const buildServer = async (): Promise<FastifyInstance> => {
   // eslint-disable-next-line new-cap
   const fastify = Fastify({
-    logger: {
-      level: process.env["LOG_LEVEL"] ?? "info",
-    },
+    logger: loggerOptions,
+    requestIdLogLabel: "request_id",
+    disableRequestLogging: true,
     trustProxy: process.env["TRUST_PROXY"] === "true",
     ajv: {
       plugins: [oas3PluginAjv],
     },
     bodyLimit: 1_048_576,
   }).withTypeProvider<TypeBoxTypeProvider>();
+
+  logRequests(fastify);
 
   // Register environment configuration first (validates and populates fastify.config)
   await fastify.register(fastifyEnv, {
