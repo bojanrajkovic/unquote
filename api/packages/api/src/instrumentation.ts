@@ -34,6 +34,8 @@ import { UndiciInstrumentation } from "@opentelemetry/instrumentation-undici";
 import { PgInstrumentation } from "@opentelemetry/instrumentation-pg";
 import { RuntimeNodeInstrumentation } from "@opentelemetry/instrumentation-runtime-node";
 
+import { loggerOptions } from "./logger.js";
+
 // Read service metadata from package.json using fs for ESM compatibility
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const packageJsonPath = join(currentDir, "../package.json");
@@ -95,14 +97,18 @@ const sdk = new NodeSDK(sdkConfig);
 // Start the SDK
 sdk.start();
 
+// Loaded after register() and sdk.start() so PinoInstrumentation can patch it.
+const { pino } = await import("pino");
+const log = pino(loggerOptions).child({ module: "otel" });
+
 // Graceful shutdown on SIGTERM
 process.on("SIGTERM", async () => {
   try {
     await sdk.shutdown();
-    console.log("OpenTelemetry SDK shutdown successfully");
+    log.info("OpenTelemetry SDK shutdown successfully");
   } catch (error) {
-    console.error("Error shutting down OpenTelemetry SDK", error);
+    log.error({ err: error }, "Error shutting down OpenTelemetry SDK");
   }
 });
 
-console.log(`OpenTelemetry initialized: service=${serviceName}, version=${serviceVersion}`);
+log.info({ version: serviceVersion }, "OpenTelemetry initialized");
